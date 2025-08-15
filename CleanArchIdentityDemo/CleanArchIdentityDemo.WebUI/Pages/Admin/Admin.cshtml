@@ -1,0 +1,139 @@
+﻿@page
+@model CleanArchIdentityDemo.WebUI.Pages.Admin.AdminModel
+@{
+    ViewData["Title"] = "Administración de Usuarios";
+}
+
+<h2>Administración de Usuarios</h2>
+
+<!-- Botón para abrir modal Crear Usuario -->
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createUserModal">
+    Crear Usuario
+</button>
+
+<!-- Tabla de Usuarios -->
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Nombre Completo</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.Nombrempleto</td>
+                <td>@user.Role</td>
+                <td>
+                    <button class="btn btn-sm btn-warning"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editUserModal"
+                            data-id="@user.Id"
+                            data-email="@user.Email"
+                            data-nombre="@user.Nombrempleto"
+                            data-rol="@user.Role">
+                        Editar
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal Crear Usuario -->
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Create">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crear Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input asp-for="NewUser.Email" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Nombre Completo</label>
+                        <input asp-for="NewUser.Nombrempleto" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Rol</label>
+                        <select asp-for="NewUser.Role" class="form-control">
+                            <option value="SupervisorProyectos">Supervisor de Proyectos</option>
+                            <option value="Usuario">Usuario</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Contraseña</label>
+                        <input asp-for="NewUser.Password" type="password" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Crear</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Usuario -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Edit">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="EditedUser.Id" />
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input asp-for="EditedUser.Email" class="form-control" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label>Nombre Completo</label>
+                        <input asp-for="EditedUser.Nombrempleto" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Rol</label>
+                        <select asp-for="EditedUser.Role" class="form-control">
+                            <option value="SupervisorProyectos">Supervisor de Proyectos</option>
+                            <option value="Usuario">Usuario</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Llenar modal Editar con datos del botón pulsado
+        var editUserModal = document.getElementById('editUserModal');
+        editUserModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var email = button.getAttribute('data-email');
+            var nombre = button.getAttribute('data-nombre');
+            var rol = button.getAttribute('data-rol');
+
+            document.getElementById('EditedUser_Id').value = id;
+            document.getElementById('EditedUser_Email').value = email;
+            document.getElementById('EditedUser_NombreCompleto').value = nombre;
+            document.getElementById('EditedUser_Rol').value = rol;
+        });
+    </script>
+}
