@@ -1,6 +1,8 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
+using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -10,10 +12,12 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
     public class AdminModel : PageModel
     {
         private readonly IUserService _userService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AdminModel(IUserService userService)
+        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager)
         {
             _userService = userService;
+            _userManager = userManager;
         }
 
         public List<UserDto> Users { get; set; } = new(); // almacenara la lista de usuarios
@@ -29,9 +33,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         [BindProperty]
         public string NewPassword { get; set; } = string.Empty;
 
-        public async Task OnGetAsync()//muestra los usuarios
+        public async Task OnGetAsync()//muestra los usuarios excepto el del admin actual
         {
-            Users = (await _userService.GetAllUsersAsync()).ToList();
+            var idUser = _userManager.GetUserId(User);
+            if (idUser != null)
+            {
+                Users = (await _userService.GetAllUsersAsync(idUser)).ToList();
+            }
+
         }
 
         public async Task<IActionResult> OnPostCreateAsync() // crear un nuevo usuario

@@ -59,9 +59,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 await _userManager.DeleteAsync(user);
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync() // devuelve la lista de usuarios por eso retorna un IEnumerable (lista) de tipo UserDto
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync(string idUser) // devuelve la lista de usuarios por eso retorna un IEnumerable (lista) de tipo UserDto exeptuando que no se muestre el admin que inicio sesión
         {
-            var users = _userManager.Users.ToList();
+            var users = _userManager.Users.Where(u => u.Id != idUser).ToList();
             var userDtos = new List<UserDto>();
 
             foreach (var user in users) //para cada usuario en la lista de usuarios recupera sus datos
