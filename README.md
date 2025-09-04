@@ -1,2 +1,2 @@
 # CleanArquitectureDemo
-Proyecto demo usando clean arquitecture, EF, Identity
+Proyecto demo usando clean architecture, EF, Identity
