@@ -20,7 +20,7 @@ Proyecto hecho en C# ASP.NET Core, usando razor pages e implementado Identity
 
 ```bash
 ArguzCore.sln
-├── ArguzCore.Web           # UI y presentación con Razor Pages
+├── ArguzCore.WebUI           # UI y presentación con Razor Pages
 ├── ArguzCore.Application   # Lógica de negocio (services, interfaces)
 ├── ArguzCore.Infrastructure # Acceso a datos (EF Core, repositorios)
 └── ArguzCore.Domain        # Entidades y modelos del dominio
