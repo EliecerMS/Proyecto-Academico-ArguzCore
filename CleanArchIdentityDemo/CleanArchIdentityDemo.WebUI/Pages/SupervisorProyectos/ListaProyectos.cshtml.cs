@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace CleanArchIdentityDemo.WebUI.Pages.Supervisor
+namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 {
     [Authorize(Roles = "SupervisorProyectos")]
-    public class SupervisorModel : PageModel
+    public class ListaProyectosModel : PageModel
     {
         public void OnGet()
         {

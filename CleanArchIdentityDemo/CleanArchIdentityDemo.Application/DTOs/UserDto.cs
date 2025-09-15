@@ -9,7 +9,7 @@
         public string Nombrempleto { get; set; }
         public string Role { get; set; }
 
-        // solo se usa cuando se crea un usuario, no en consultas normales
+        // solo se usa cuando se crea un usuario, no en consultas de mostrar o editar
         public string Password { get; set; }
     }
 }
