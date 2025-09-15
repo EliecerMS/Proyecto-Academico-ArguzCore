@@ -7,8 +7,8 @@ namespace CleanArchIdentityDemo.WebUI
     {
         public static async Task InitializeAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            string[] roles = { "Administrador", "SupervisorProyectos", "Usuario" };
-            string[] passwords = { "Admin123$", "Supervisor$1234", "Usuario$1234" };
+            string[] roles = { "Administrador", "SupervisorProyectos", "Contador" };
+            string[] passwords = { "Admin123$", "Supervisor$1234", "Contador$1234" };
             var i = 0;
 
             var usuarios = new List<ApplicationUser>();
@@ -31,9 +31,9 @@ namespace CleanArchIdentityDemo.WebUI
 
             usuarios.Add(new ApplicationUser
             {
-                UserName = "user@demo.com",
-                Email = "user@demo.com",
-                NombreCompleto = "Usuario Prueba"
+                UserName = "contador@demo.com",
+                Email = "contador@demo.com",
+                NombreCompleto = "Contador Prueba"
             });
 
 
