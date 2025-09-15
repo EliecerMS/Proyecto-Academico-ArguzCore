@@ -12,7 +12,7 @@ Proyecto hecho en C# ASP.NET Core, usando razor pages e implementado Identity
 - **ASP.NET Identity**
 - **SQL Server / Azure SQL Database**
 - **Azure App Service** (para despliegue)
-- **Arquitectura por capas (Clean Architecture)**
+- **Enfoque de Arquitectura por capas (Clean Architecture como base)**
 
 ---
 
