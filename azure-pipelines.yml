@@ -1,0 +1,45 @@
+# azure-pipelines.yml
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - feature/*   # opcional, si desea que cualquier feature dispare el pipeline
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+
+# 1. Restaurar paquetes NuGet
+- task: DotNetCoreCLI@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+# 2. Compilar proyectos
+- task: DotNetCoreCLI@2
+  displayName: 'Build projects'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+# 3. Publicar artefactos (opcional, útil para deploy o test)
+- task: DotNetCoreCLI@2
+  displayName: 'Publish projects'
+  inputs:
+    command: 'publish'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+
+# 4. Publicar artefactos en Azure DevOps (opcional)
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish build artifacts'
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
