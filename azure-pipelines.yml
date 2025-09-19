@@ -4,42 +4,48 @@ trigger:
     include:
       - main
       - develop
-      - feature/*   # opcional, si desea que cualquier feature dispare el pipeline
+      - feature/*
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'windows-latest'  # Agente hospedado por Microsoft
 
 variables:
   buildConfiguration: 'Release'
 
 steps:
+# 1️⃣ Instalar .NET 8 SDK (respetando el proyecto net8.0)
+- task: UseDotNet@2
+  displayName: 'Instalar .NET 8 SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '8.0.x'
 
-# 1. Restaurar paquetes NuGet
+# 2️⃣ Restaurar paquetes NuGet
 - task: DotNetCoreCLI@2
-  displayName: 'Restore NuGet packages'
+  displayName: 'Restaurar paquetes NuGet'
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
 
-# 2. Compilar proyectos
+# 3️⃣ Construir solución
 - task: DotNetCoreCLI@2
-  displayName: 'Build projects'
+  displayName: 'Construir solución'
   inputs:
     command: 'build'
     projects: '**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
 
-# 3. Publicar artefactos (opcional, útil para deploy o test)
+# 4️⃣ Ejecutar pruebas (si las llegas a agregar más adelante)
 - task: DotNetCoreCLI@2
-  displayName: 'Publish projects'
+  displayName: 'Ejecutar pruebas'
   inputs:
-    command: 'publish'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    command: 'test'
+    projects: '**/*Tests/*.csproj'
+    arguments: '--configuration $(buildConfiguration) --no-build'
 
-# 4. Publicar artefactos en Azure DevOps (opcional)
+# 5️⃣ Publicar artefactos (opcional para deploy futuro)
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish build artifacts'
+  displayName: 'Publicar artefactos'
   inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'drop'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
