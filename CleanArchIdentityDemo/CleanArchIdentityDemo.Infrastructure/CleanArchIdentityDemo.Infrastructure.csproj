@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<UserSecretsId>0c3b06c6-8b57-4b28-83ca-6d66e826962a</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +21,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.6" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using System.Reflection;
 
 namespace CleanArchIdentityDemo.Infrastructure.Persistence
 {
@@ -16,6 +17,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Persistence
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(webUIPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true) // Habilitar User Secrets
                 .Build();
 
             // Obtener cadena de conexión
