@@ -25,4 +25,4 @@ ArguzCore.sln
 ├── ArguzCore.Infrastructure # Acceso a datos (EF Core, repositorios)
 └── ArguzCore.Domain        # Entidades y modelos del dominio
 
-Otras consideraciones(edicion como prueba de corrido de pipeline):
+Otras consideraciones(edicion como prueba de corrido de pipeline, ahora con PR):
