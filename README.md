@@ -24,3 +24,5 @@ ArguzCore.sln
 ├── ArguzCore.Application   # Lógica de negocio (services, interfaces)
 ├── ArguzCore.Infrastructure # Acceso a datos (EF Core, repositorios)
 └── ArguzCore.Domain        # Entidades y modelos del dominio
+
+Otras consideraciones:
