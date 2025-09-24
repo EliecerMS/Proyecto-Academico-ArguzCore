@@ -28,10 +28,4 @@
     <ProjectReference Include="..\CleanArchIdentityDemo.Infrastructure\CleanArchIdentityDemo.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Pages\Bodeguero\" />
-    <Folder Include="Pages\Contador\" />
-    <Folder Include="Pages\JefeMaquinaria\" />
-  </ItemGroup>
-
 </Project>

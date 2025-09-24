@@ -8,9 +8,71 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<IEnumerable<ProyectoDto>> MostrarProyectosAsync();
         Task<ProyectoDto> MostrarProyectoPorId(string IdProyecto);
         Task ActualizarProyectoAsync(ProyectoDto Proyecto);
-        Task EliminarProyectoAsync(int IdProyecto);
+        Task EliminarProyectoAsync(string CodigoProyecto);
 
-        //Cualquier otros metodos relacionado al modulo de proyecto abajo
 
+        //metodo para cambiar el estado de un proyecto
+
+
+        //metodo para mostrar personal asignado del proyecto
+
+
+        //metodo para asignar nuevo personal a un proyecto
+
+
+        //metodo para reasignar nuevo personal a un proyecto
+
+
+        //metodo para eliminar personal de un proyecto
+
+
+
+
+        //metodo para mostrar tareas de un proyecto
+
+
+        //metodo para crear tarea de un proyecto
+
+
+        //metodo para editar tarea de un proyecto
+
+
+        //metodo para eliminar tarea de un proyecto
+
+
+        //metodo para mostrar notas de avance de un proyecto
+
+
+        //metodo para crear nota de avance de un proyecto
+
+
+        //metodo para editar nota de avance de un proyecto
+
+
+        //metodo para destacar nota de avance de un proyecto
+
+
+
+
+
+        //metodo para mostrar incidentes de un proyecto
+
+
+        //metodo para registrar incidente de un proyecto
+
+
+        //metodo para editar incidente de un proyecto
+
+
+        //metodo para cerrar incidente de un proyecto
+
+
+        //metodo para mostrar las solicitudes de material del proyecto enviadas a bodega central
+
+
+        // metotodo para editar la solicitud de material enviada a bodega central
+
+
+        //metodo para eliminar solicitud de material enviada a bodega central
     }
 }
