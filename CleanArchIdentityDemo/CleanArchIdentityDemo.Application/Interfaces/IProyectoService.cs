@@ -8,7 +8,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<IEnumerable<ProyectoDto>> MostrarProyectosAsync();
         Task<ProyectoDto> MostrarProyectoPorId(string IdProyecto);
         Task ActualizarProyectoAsync(ProyectoDto Proyecto);
-        Task EliminarProyectoAsync(int IdProyecto);
+        Task EliminarProyectoAsync(string CodigoProyecto);
 
         //Cualquier otros metodos relacionado al modulo de proyecto abajo
 
