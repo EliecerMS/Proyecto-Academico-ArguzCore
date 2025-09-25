@@ -26,8 +26,8 @@
            @foreach (var proyecto in Model.Proyectos)
                 {
                   <tr>
-                        <td>@proyecto.CodigoProyecto</td>
-                        <td>@proyecto.Nombre</td>
+                    <td>@proyecto.CodigoProyecto</td>
+                        <td><a asp-page="./DetallesProyecto" asp-route-CodigoProyecto="@proyecto.CodigoProyecto">@proyecto.Nombre</a></td>
                         <td>@proyecto.EstadoProyecto</td>
                         <td>@proyecto.FechaFinalPropuesta.Date</td>
                         <td>
