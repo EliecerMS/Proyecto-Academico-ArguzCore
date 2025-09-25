@@ -1,4 +1,5 @@
 ﻿using CleanArchIdentityDemo.Application.DTOs;
+using CleanArchIdentityDemo.Domain.Entities;
 
 namespace CleanArchIdentityDemo.Application.Interfaces
 {
@@ -9,6 +10,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<ProyectoDto> MostrarProyectoPorId(string IdProyecto);
         Task ActualizarProyectoAsync(ProyectoDto Proyecto);
         Task EliminarProyectoAsync(string CodigoProyecto);
+        Task<Proyecto?> DetallesProyecto(string CodigoProyecto);
 
 
         //metodo para cambiar el estado de un proyecto

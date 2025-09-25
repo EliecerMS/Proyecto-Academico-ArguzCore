@@ -2,3 +2,10 @@
 @model CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos.DetallesProyectoModel
 @{
 }
+
+
+
+    @if (Model.DetalleProyecto != null)
+    {
+        <h1>@Model.DetalleProyecto.Nombre</h1>
+    }

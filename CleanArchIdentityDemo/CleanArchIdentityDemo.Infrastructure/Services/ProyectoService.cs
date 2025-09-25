@@ -43,14 +43,40 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task<Proyecto?> DetallesProyecto(string CodigoProyecto)
+        {
+            // Usar el método que carga dinámicamente todas las propiedades de navegación
+            return await BuscarProyectoPorCodigo(CodigoProyecto);
+        }
+
         public async Task EliminarProyectoAsync(string CodigoProyecto)
         {
-            var ProyectoEncontrado = await _context.Proyectos.FirstOrDefaultAsync(p => p.CodigoProyecto == CodigoProyecto);//busca el proyecto por codigo (string)
+            Proyecto? ProyectoEncontrado = await BuscarProyectoPorCodigo(CodigoProyecto);
             if (ProyectoEncontrado != null) //si lo encuentra lo elimina
             {
                 _context.Proyectos.Remove(ProyectoEncontrado);
                 _context.SaveChanges();
             }
+        }
+
+        private async Task<Proyecto?> BuscarProyectoPorCodigo(string CodigoProyecto) //busca el proyecto por codigo (string) y devuelve la entidad Proyecto con todos sus datos
+        {
+            var proyecto = await _context.Proyectos.FirstOrDefaultAsync(p => p.CodigoProyecto == CodigoProyecto);
+            if (proyecto != null)
+            {
+                var entry = _context.Entry(proyecto);
+
+                // Cargar todas las navegaciones (referencias y colecciones) de forma dinámica
+                foreach (var navigation in entry.Navigations)
+                {
+                    if (!navigation.IsLoaded)
+                    {
+                        await navigation.LoadAsync();
+                    }
+                }
+            }
+
+            return proyecto;
         }
 
         public Task<ProyectoDto> MostrarProyectoPorId(string IdProyecto)
