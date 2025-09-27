@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchIdentityDemo.Infrastructure.Services
 {
-    public class ProyectoService : IProyectoService
+    public class ProyectoService : IProyectoService 
     {
 
         private readonly ApplicationDbContext _context;
@@ -103,6 +103,17 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }
 
             return ListaProyectos;
+        }
+
+        //Metodo para cambiar el estado de un proyecto
+        public async Task CambiarEstadoAsync(string CodigoProyecto, int IdEstadoProyecto)
+        {
+            var proyecto = await BuscarProyectoPorCodigo(CodigoProyecto);
+            if (proyecto != null)
+            {
+                proyecto.EstadoProyectoId = IdEstadoProyecto;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

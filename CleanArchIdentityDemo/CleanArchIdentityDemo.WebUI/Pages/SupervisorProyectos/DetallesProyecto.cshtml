@@ -4,8 +4,51 @@
 }
 
 
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#NuevoEstadoProyectoModal">
+    Nuevo Estado
+</button>
 
-    @if (Model.DetalleProyecto != null)
-    {
-        <h1>@Model.DetalleProyecto.Nombre</h1>
-    }
+<!--Muestra un mensaje de exito cuando se cambie el estado  -->
+@if (TempData["MensajeExito"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["MensajeExito"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!--Solamente a manera de prueba muestra el nombre y estado de proyecto  -->
+@if (Model.DetalleProyecto != null)
+{
+    <h1>@Model.DetalleProyecto.Nombre</h1>
+    <h1>@Model.DetalleProyecto.EstadoProyectoId</h1>
+}
+
+<!-- Modal: Nuevo Estado Proyecto -->
+<div class="modal fade" id="NuevoEstadoProyectoModal" tabindex="-1" aria-labelledby="NuevoEstadoProyectoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CambiarEstado">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="NuevoEstadoProyectoModalLabel">Cambiar Estado del Proyecto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+                    <div class="mb-3">
+                        <label for="EstadoProyecto" class="form-label">Selecciona el nuevo estado</label>
+                        <select class="form-select" asp-for="NuevoEstado" required>
+                            <option value="1">Planificado</option>
+                            <option value="2">En ejecucion</option>
+                            <option value="3">Finalizado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Cambiar Estado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

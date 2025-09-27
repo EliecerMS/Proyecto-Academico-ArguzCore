@@ -14,7 +14,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
 
         //metodo para cambiar el estado de un proyecto
-
+        Task CambiarEstadoAsync(string CodigoProyecto, int IdEstadoProyecto);
 
         //metodo para mostrar personal asignado del proyecto
 
