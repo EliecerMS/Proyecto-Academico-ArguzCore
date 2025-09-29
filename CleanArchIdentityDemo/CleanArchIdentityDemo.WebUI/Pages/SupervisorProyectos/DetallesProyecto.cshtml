@@ -3,6 +3,7 @@
 @{
 }
 
+<a asp-page="./ListaProyectos">Volver a lista de proyectos </a>
 
 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#NuevoEstadoProyectoModal">
     Nuevo Estado
@@ -24,6 +25,64 @@
     <h1>@Model.DetalleProyecto.EstadoProyectoId</h1>
 }
 
+<nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        
+        <button class="nav-link" id="nav-marcaEntradaSalida" data-bs-toggle="tab" data-bs-target="#nav-Marca-tab" type="button" role="tab" aria-controls="nav-Marca-tab" aria-selected="false">Guardar/Marcar Salida/Entrada</button>
+        
+        <button class="nav-link" id="nav-Cronograma" data-bs-toggle="tab" data-bs-target="#nav-Cronograma-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Cronograma</button>
+        <button class="nav-link" id="nav-NotasAvance" data-bs-toggle="tab" data-bs-target="#nav-NotaAvance-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Notas de avance</button>
+        <button class="nav-link" id="nav-PersonalProyecto" data-bs-toggle="tab" data-bs-target="#nav-PersonalProyecto-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Personal del proyecto</button>
+        <button class="nav-link" id="nav-Incidentes" data-bs-toggle="tab" data-bs-target="#nav-Incidentes-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Incidentes</button>
+        <button class="nav-link" id="nav-Documentos" data-bs-toggle="tab" data-bs-target="#nav-Documentos-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Documentos
+        </button>
+        <button class="nav-link" id="nav-Materiales" data-bs-toggle="tab" data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Materiales</button>
+        <button class="nav-link active" id="nav-ReporteFinanciero" data-bs-toggle="tab" data-bs-target="#nav-ReporteFinanciero-tab" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Ver reporte financiero</button>
+    </div>
+</nav>
+<div class="tab-content" id="nav-tabContent">
+    
+    <div class="tab-pane fade" id="nav-Marca-tab" role="tabpanel" aria-labelledby="nav-marcaEntradaSalida">
+        Contenido del tab Guardar/Marcar Salida/Entrada.
+    </div>
+    <div class="tab-pane fade show active" id="nav-Cronograma-tab" role="tabpanel" aria-labelledby="nav-Cronograma">
+        Contenido del tab Cronograma.
+    </div>
+    <div class="tab-pane fade" id="nav-NotaAvance-tab" role="tabpanel" aria-labelledby="nav-NotasAvance">
+        Contenido del tab notas de avance.
+    </div>
+    <div class="tab-pane fade" id="nav-PersonalProyecto-tab" role="tabpanel" aria-labelledby="nav-PersonalProyecto">
+        Contenido del tab personal del proyecto.
+    </div>
+    <div class="tab-pane fade" id="nav-Incidentes-tab" role="tabpanel" aria-labelledby="nav-Incidentes">
+        Contenido del tab incidentes.
+    </div>
+    <div class="tab-pane fade" id="nav-Documentos-tab" role="tabpanel" aria-labelledby="nav-Documentos">
+        Contenido del tab Documentos.
+    </div>
+    <div class="tab-pane fade" id="nav-ReporteFinanciero-tab" role="tabpanel" aria-labelledby="nav-ReporteFinanciero">
+        Contenido del tab Reporte financiero.
+    </div>
+    <div class="tab-pane fade" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-Materiales">
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+
+                <button class="nav-link" id="nav-MaterialesProyecto" data-bs-toggle="tab" data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Materiales en proyecto</button>
+                <button class="nav-link" id="nav-SolicitudesMaterial" data-bs-toggle="tab" data-bs-target="#nav-SolicitudMateriales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Solicitudes de material</button>
+
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-MaterialesProyecto">
+                Contenido del sub tab Materiales en proyecto.
+            </div>
+            <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel" aria-labelledby="nav-SolicitudesMaterial">
+                Contenido del sub tab Solicitudes de material.
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Modal: Nuevo Estado Proyecto -->
 <div class="modal fade" id="NuevoEstadoProyectoModal" tabindex="-1" aria-labelledby="NuevoEstadoProyectoModalLabel" aria-hidden="true">
     <div class="modal-dialog">
