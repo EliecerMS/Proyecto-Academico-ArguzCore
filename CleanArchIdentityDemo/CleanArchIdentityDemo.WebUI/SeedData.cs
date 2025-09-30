@@ -13,7 +13,7 @@ namespace CleanArchIdentityDemo.WebUI
             await SeedEstadosProyecto(context);
 
             // Seed Roles
-            string[] roles = { "Administrador", "SupervisorProyectos", "Contador", "Bodeguero", "JefeMaquinaria" };
+            string[] roles = { "Administrador", "SupervisorProyectos", "Contador", "Bodeguero", "JefeMaquinaria", "Usuario" };
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
@@ -71,7 +71,7 @@ namespace CleanArchIdentityDemo.WebUI
 
         private static async Task SeedUsuarios(UserManager<ApplicationUser> userManager, string[] roles)
         {
-            string[] passwords = { "Admin123$", "Supervisor$1234", "Contador$1234", "Bodeguero$1234", "JefeMaquinaria$1234" };
+            string[] passwords = { "Admin123$", "Supervisor$1234", "Contador$1234", "Bodeguero$1234", "JefeMaquinaria$1234", "UsuarioEmpleado$1234" };
             var i = 0;
 
             var usuarios = new List<ApplicationUser>
@@ -105,6 +105,13 @@ namespace CleanArchIdentityDemo.WebUI
                     UserName = "jefemaquinaria@demo.com",
                     Email = "jefemaquinaria@demo.com",
                     NombreCompleto = "Jefe Maquinaria Prueba"
+                },
+
+                new ApplicationUser
+                {
+                    UserName = "usuario@demo.com",
+                    Email = "usuario@demo.com",
+                    NombreCompleto = "Usuario Nuevo Empleado"
                 }
             };
 
