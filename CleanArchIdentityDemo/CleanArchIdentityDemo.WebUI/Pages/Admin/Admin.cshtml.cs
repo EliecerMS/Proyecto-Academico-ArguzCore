@@ -22,6 +22,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
 
         public List<UserDto> Users { get; set; } = new(); // almacenara la lista de usuarios
 
+        public List<UserRolesDto> Roles { get; set; } = new(); // lista de roles disponibles
+
         // [BindProperty] es un atributo de Razor Pages que indica que una propiedad del PageModel debe enlazarse automáticamente a los datos que vienen de la solicitud HTTP, ya sea vía formulario (POST) o query string (GET).permite recibir datos del formulario en tu página sin tener que leerlos manualmente del Request.Form.
 
         [BindProperty]
@@ -33,20 +35,26 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         [BindProperty]
         public string NewPassword { get; set; } = string.Empty;
 
+        [BindProperty]
+        public string IdUsuario { get; set; } = string.Empty;
+
         public async Task OnGetAsync()//muestra los usuarios excepto el del admin actual
         {
             var idUser = _userManager.GetUserId(User);
             if (idUser != null)
             {
                 Users = (await _userService.GetAllUsersAsync(idUser)).ToList();
+                //carga la lista de roles
+                Roles = (List<UserRolesDto>)await _userService.GetRoles();
             }
+
 
         }
 
         public async Task<IActionResult> OnPostCreateAsync() // crear un nuevo usuario
         {
 
-            await _userService.CreateUserAsync(NewUser.Email, NewUser.Password, NewUser.Role, NewUser.Nombrempleto);
+            await _userService.CreateUserAsync(NewUser.Email, NewUser.Password, NewUser.Role, NewUser.NombreCompleto);
 
             return RedirectToPage(); // Recargar la página
         }
@@ -55,6 +63,12 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         {
 
             await _userService.UpdateUserAsync(EditedUser);
+            return RedirectToPage();
+        }
+
+        public async Task<ActionResult> OnPostDeleteAsync() //elimina el usuario
+        {
+            await _userService.DeleteUserAsync(IdUsuario);
             return RedirectToPage();
         }
     }
