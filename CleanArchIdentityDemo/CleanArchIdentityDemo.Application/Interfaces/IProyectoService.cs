@@ -17,16 +17,19 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task CambiarEstadoAsync(string CodigoProyecto, int IdEstadoProyecto);
 
         //metodo para mostrar personal asignado del proyecto
-
+        Task<IEnumerable<PersonalAsignadoDto>> ObtenerPersonalPorProyectoAsync(string codigoProyecto);
+        
+        
+        
 
         //metodo para asignar nuevo personal a un proyecto
-
+        Task AsignarPersonalAProyectoAsync(string codigoProyecto, string personalId);
 
         //metodo para reasignar nuevo personal a un proyecto
-
+        Task ReasignarPersonalEnProyectoAsync(string codigoProyecto, string personalId, string codigoProyectoNuevo);
 
         //metodo para eliminar personal de un proyecto
-
+        Task EliminarPersonalDeProyectoAsync(string codigoProyecto, string personalId);
 
 
 

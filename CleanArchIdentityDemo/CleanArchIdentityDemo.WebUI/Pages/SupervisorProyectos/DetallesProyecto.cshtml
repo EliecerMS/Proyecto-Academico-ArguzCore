@@ -2,12 +2,15 @@
 @model CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos.DetallesProyectoModel
 @{
 }
-
+<h2>Detalles del Proyecto - @Model.DetalleProyecto.Nombre</h2>
 <a asp-page="./ListaProyectos">Volver a lista de proyectos </a>
 
+
+<!--Boton para cambiar de estado el proyecto  -->
 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#NuevoEstadoProyectoModal">
     Nuevo Estado
 </button>
+
 
 <!--Muestra un mensaje de exito cuando se cambie el estado  -->
 @if (TempData["MensajeExito"] != null)
@@ -53,7 +56,37 @@
         Contenido del tab notas de avance.
     </div>
     <div class="tab-pane fade" id="nav-PersonalProyecto-tab" role="tabpanel" aria-labelledby="nav-PersonalProyecto">
-        Contenido del tab personal del proyecto.
+        <h4>Personal Asignado</h4>
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalAgregarPersonal">
+            Agregar Personal
+        </button>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.PersonalAsignado)
+                {
+                    <tr>
+                        <td>@p.Nombre</td>
+                        <td>
+                            <form method="post" asp-page-handler="EliminarPersonal" asp-route-CodigoProyecto="@Model.CodigoProyecto" asp-route-personalId="@p.PersonalId" style="display:inline">
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+
+                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalReasignarPersonal"
+                                    data-antiguo="@p.PersonalId">
+                                Reasignar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
     <div class="tab-pane fade" id="nav-Incidentes-tab" role="tabpanel" aria-labelledby="nav-Incidentes">
         Contenido del tab incidentes.
@@ -111,3 +144,75 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: Agregar Personal -->
+<div class="modal fade" id="modalAgregarPersonal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="AsignarPersonal">
+                <div class="modal-header">
+                    <h5 class="modal-title">Asignar nuevo personal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="CodigoProyecto" />
+                    <div class="mb-3">
+                        <label class="form-label">Selecciona un usuario</label>
+                        <select asp-for="UsuarioSeleccionado" class="form-select">
+                            @foreach (var u in Model.UsuariosDisponibles)
+                            {
+                                <option value="@u.Id">@u.NombreCompleto</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Asignar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Reasignar Personal -->
+<div class="modal fade" id="modalReasignarPersonal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="ReasignarPersonal">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reasignar Personal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="CodigoProyecto" />
+                    <input type="hidden" asp-for="UsuarioReasignar" id="UsuarioReasignar" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Selecciona nuevo usuario</label>
+                        <select asp-for="CodigoProyectoNuevo" class="form-select">
+                            @foreach (var p in Model.ProyectosDisponibles)
+                            {
+                                <option value="@p.CodigoProyecto">@p.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Reasignar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pasar el ID del usuario antiguo al modal de reasignación
+    var modalReasignar = document.getElementById('modalReasignarPersonal');
+    modalReasignar.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var antiguoId = button.getAttribute('data-antiguo');
+        document.getElementById('UsuarioReasignar').value = antiguoId;
+    });
+</script> 

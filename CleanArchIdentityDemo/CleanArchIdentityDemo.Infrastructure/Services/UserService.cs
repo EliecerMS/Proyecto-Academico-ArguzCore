@@ -58,9 +58,27 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 await _userManager.DeleteAsync(user);
         }
 
-        public Task<IEnumerable<UserDto>> GetAllNormalUsersAsync() //trae todos los usuarios con rol "usuario" que serian Empleados
+        public async Task<IEnumerable<UserDto>> GetAllNormalUsersAsync()
         {
-            throw new NotImplementedException();
+            var users = _userManager.Users.ToList();
+            var normalUsers = new List<UserDto>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles.Contains("Usuario"))
+                {
+                    normalUsers.Add(new UserDto
+                    {
+                        Id = user.Id,
+                        NombreCompleto = user.NombreCompleto,
+                        Email = user.Email,
+                        Role = "Usuario"
+                    });
+                }
+            }
+
+            return normalUsers;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync(string idUser) // devuelve la lista de usuarios por eso retorna un IEnumerable (lista) de tipo UserDto exeptuando que no se muestre el admin que inicio sesión

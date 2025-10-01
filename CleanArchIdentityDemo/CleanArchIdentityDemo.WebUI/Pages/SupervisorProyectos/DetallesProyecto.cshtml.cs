@@ -22,7 +22,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public Proyecto DetalleProyecto { get; set; }
 
 
-        [BindProperty]
+        [BindProperty(SupportsGet = true)]
         public string CodigoProyecto { get; set; }
 
         [BindProperty]
@@ -31,8 +31,21 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         [TempData]
         public string MensajeExito { get; set; }
 
+        [BindProperty]
+        public string UsuarioSeleccionado { get; set; } // Para asignar nuevo usuario
+
+        [BindProperty]
+        public string UsuarioReasignar { get; set; }
+
+        [BindProperty]
+        public string CodigoProyectoNuevo { get; set; }
+
+
+        public List<ProyectoDto> ProyectosDisponibles { get; set; } = new();
+
         //lista de usuarios para asignar a un proyecto
-        public List<UserDto> UsuariosEmpleado { get; set; } = new List<UserDto>();
+        public List<PersonalAsignadoDto> PersonalAsignado { get; set; } = new();
+        public List<UserDto> UsuariosDisponibles { get; set; } = new();
 
 
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
@@ -57,7 +70,36 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             //codigo aca abajo de otras cosas que se quieran cargar inmediatamente cargue esta vista
 
-            //UsuariosEmpleado = await _userService.GetAllNormalUsersAsync().ToList();
+            // Personal asignado actualmente
+            PersonalAsignado = (await _proyectoService.ObtenerPersonalPorProyectoAsync(CodigoProyecto)).ToList();
+
+            // Lista de usuarios posibles
+            UsuariosDisponibles = (await _userService.GetAllNormalUsersAsync()).ToList();
+
+
+            ProyectosDisponibles = (await _proyectoService.MostrarProyectosAsync()).ToList();
+
+        }
+        //UsuariosEmpleado = await _userService.GetAllNormalUsersAsync().ToList();
+
+        public async Task<IActionResult> OnPostAsignarPersonalAsync()
+        {
+            await _proyectoService.AsignarPersonalAProyectoAsync(CodigoProyecto, UsuarioSeleccionado);
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEliminarPersonalAsync(string personalId)
+        {
+            await _proyectoService.EliminarPersonalDeProyectoAsync(CodigoProyecto, personalId);
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+
+        public async Task<IActionResult> OnPostReasignarPersonalAsync()
+        {
+            await _proyectoService.ReasignarPersonalEnProyectoAsync(CodigoProyecto, UsuarioReasignar, CodigoProyectoNuevo);
+            return RedirectToPage(new { CodigoProyecto });
         }
     }
-}
+    }
+
