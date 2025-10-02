@@ -4,6 +4,7 @@ using CleanArchIdentityDemo.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Threading;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 {
@@ -28,6 +29,11 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         [TempData]
         public string MensajeExito { get; set; }
+        public List<TareaDto> Tareas { get; private set; } // Este es el elemento donde se guardan las tareas
+        
+        [BindProperty]
+        public TareaDto NuevaTarea { get; set; } = new TareaDto(); // Propiedad para enlazar el formulario de nueva tarea y poder crearla
+
 
 
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
@@ -47,8 +53,46 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         public async Task OnGet(string CodigoProyecto)
         {
-            // Aquí programacion para cargar todo absolutamente relacionado a un proyecto usando el CódigoProyecto
+             // Aquí programacion para cargar todo absolutamente relacionado a un proyecto usando el CódigoProyecto
             DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto) ?? new Proyecto();
+
+
+            // Traer proyecto completo usando el CódigoProyecto
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto) ?? new Proyecto();
+
+            // Traer las tareas relacionadas usando el IdProyecto con el metodo que ya tienes en el servicio
+            if (DetalleProyecto != null)
+            {
+                Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+            }
         }
+
+        public async Task<IActionResult> OnPostCrearTareaAsync()
+        {
+            // Recargar el proyecto completo antes de usarlo para acceder a IdProyecto
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+            if (DetalleProyecto == null)
+            {
+                // Manejo de error si no se encuentra el proyecto
+                return NotFound("Proyecto no encontrado");
+            }
+
+            // Ahora sí podemos asignar IdProyecto
+            NuevaTarea.ProyectoId = DetalleProyecto.IdProyecto;
+
+            // Crear la tarea
+            await _proyectoService.CrearTareaAsync(NuevaTarea);
+
+            // Recargar lista de tareas
+            Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+
+            // Redirigir a la misma página con el CódigoProyecto
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+
+
+
+
+
     }
 }
