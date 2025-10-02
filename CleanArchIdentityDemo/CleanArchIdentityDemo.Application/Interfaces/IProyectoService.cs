@@ -33,19 +33,21 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task EliminarPersonalDeProyectoAsync(string codigoProyecto, string personalId);
 
 
-
+        // ====================== MÉTODOS PARA TAREAS (Checho)======================
         //metodo para mostrar tareas de un proyecto
-
+        Task<IEnumerable<TareaDto>> MostrarTareasPorProyectoAsync(int IdProyecto);
 
         //metodo para crear tarea de un proyecto
-
+        Task CrearTareaAsync(TareaDto tarea);
 
         //metodo para editar tarea de un proyecto
-
+        Task EditarTareaAsync(TareaDto tarea);
 
         //metodo para eliminar tarea de un proyecto
+        Task EliminarTareaAsync(int IdTarea);
 
 
+        // ====================== MÉTODOS PARA NOTAS (Checho)======================
         //metodo para mostrar notas de avance de un proyecto
 
 

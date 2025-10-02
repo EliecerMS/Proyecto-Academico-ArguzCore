@@ -71,17 +71,131 @@
         <button class="nav-link active" id="nav-ReporteFinanciero" data-bs-toggle="tab" data-bs-target="#nav-ReporteFinanciero-tab" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Ver reporte financiero</button>
     </div>
 </nav>
+
 <div class="tab-content" id="nav-tabContent">
     
     <div class="tab-pane fade" id="nav-Marca-tab" role="tabpanel" aria-labelledby="nav-marcaEntradaSalida">
         Contenido del tab Guardar/Marcar Salida/Entrada.
     </div>
+    
+
+
+
     <div class="tab-pane fade show active" id="nav-Cronograma-tab" role="tabpanel" aria-labelledby="nav-Cronograma">
-        Contenido del tab Cronograma.
+        
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearTareaModal">
+            Nueva Tarea
+        </button>
+
+
+        <!-- Tabla de tareas del proyecto -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nombre de la Tarea</th>
+                    <th>Fecha Esperada de Inicio</th>
+                    <th>Fecha Esperada de Fin</th>
+                    <th>Descripción</th>
+                    <th>Editar</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+
+            <!-- Cuerpo de la tabla -->
+            <tbody> 
+                @if (Model.Tareas != null && Model.Tareas.Any()) // Validamos que sí haya tareas
+                {
+                    @foreach (var tarea in Model.Tareas) // Recorremos la lista de tareas que creamos en DetallesProyectoModel
+                    {
+                        <tr>
+                            <td>@tarea.Nombre</td>
+                            <td>@tarea.FechaInicio.ToShortDateString()</td>
+                            <td>@tarea.FechaFin.ToShortDateString()</td>
+                            <td>@tarea.Descripcion</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarTareaModal"
+                                        data-id="@tarea.Id"
+                                        data-nombre="@tarea.Nombre"
+                                        data-descripcion="@tarea.Descripcion"
+                                        data-fechainicio="@tarea.FechaInicio.ToString("yyyy-MM-dd")"
+                                        data-fechafin="@tarea.FechaFin.ToString("yyyy-MM-dd")">
+                                    Editar
+                                </button>
+                            </td>
+                            <td>
+                                <form method="post" asp-page-handler="EliminarTarea" asp-route-IdTarea="@tarea.Id" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea eliminar esta tarea?')">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else // Si no hay tareas, mostramos un mensaje
+                {
+                    <tr> 
+                        <td colspan="6" class="text-center">El proyecto no cuenta con tareas.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Modal: Crear Nueva Tarea -->
+        <div class="modal fade" id="crearTareaModal" tabindex="-1" aria-labelledby="crearTareaModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" asp-page-handler="CrearTarea">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="crearTareaModalLabel">Nueva Tarea</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Nombre -->
+                            <div class="mb-3">
+                                <label for="Nombre" class="form-label">Nombre de la Tarea</label>
+                                <input type="text" class="form-control" asp-for="NuevaTarea.Nombre" required />
+                            </div>
+
+                            <!-- Descripción -->
+                            <div class="mb-3">
+                                <label for="Descripcion" class="form-label">Descripción</label>
+                                <textarea class="form-control" asp-for="NuevaTarea.Descripcion" rows="3"></textarea>
+                            </div>
+
+                            <!-- Fecha Inicio -->
+                            <div class="mb-3">
+                                <label for="FechaInicio" class="form-label">Fecha Esperada de Inicio</label>
+                                <input type="date" class="form-control" asp-for="NuevaTarea.FechaInicio" required />
+                            </div>
+
+                            <!-- Fecha Fin -->
+                            <div class="mb-3">
+                                <label for="FechaFin" class="form-label">Fecha Esperada de Fin</label>
+                                <input type="date" class="form-control" asp-for="NuevaTarea.FechaFin" required />
+                            </div>
+
+                            <!-- Id del proyecto oculto -->
+                            <input type="hidden" asp-for="NuevaTarea.ProyectoId" value="@Model.DetalleProyecto.IdProyecto" />
+                            <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" /> 
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Agregar Tarea</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+
+    
+
+
     <div class="tab-pane fade" id="nav-NotaAvance-tab" role="tabpanel" aria-labelledby="nav-NotasAvance">
         Contenido del tab notas de avance.
     </div>
+    
     <div class="tab-pane fade" id="nav-PersonalProyecto-tab" role="tabpanel" aria-labelledby="nav-PersonalProyecto">
         <h4>Personal Asignado</h4>
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalAgregarPersonal">
@@ -115,15 +229,19 @@
             </tbody>
         </table>
     </div>
+    
     <div class="tab-pane fade" id="nav-Incidentes-tab" role="tabpanel" aria-labelledby="nav-Incidentes">
         Contenido del tab incidentes.
     </div>
+    
     <div class="tab-pane fade" id="nav-Documentos-tab" role="tabpanel" aria-labelledby="nav-Documentos">
         Contenido del tab Documentos.
     </div>
+    
     <div class="tab-pane fade" id="nav-ReporteFinanciero-tab" role="tabpanel" aria-labelledby="nav-ReporteFinanciero">
         Contenido del tab Reporte financiero.
     </div>
+    
     <div class="tab-pane fade" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-Materiales">
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
