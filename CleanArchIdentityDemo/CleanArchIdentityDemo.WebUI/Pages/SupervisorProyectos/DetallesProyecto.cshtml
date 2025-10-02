@@ -170,6 +170,8 @@
                 </tr>
             </thead>
             <tbody>
+                @if (Model.PersonalAsignado != null && Model.PersonalAsignado.Any()) // Validamos que sí haya tareas
+                {
                 @foreach (var p in Model.PersonalAsignado)
                 {
                 <tr>
@@ -187,6 +189,12 @@
                         </button>
                     </td>
                 </tr>
+                }
+                }
+                else
+                {   <tr>
+                        <td colspan="6" class="text-center">No hay personal asignado a este proyecto.</td>
+                    </tr>
                 }
             </tbody>
         </table>

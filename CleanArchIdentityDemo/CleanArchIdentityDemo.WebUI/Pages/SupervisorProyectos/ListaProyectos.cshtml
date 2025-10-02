@@ -99,7 +99,7 @@
                     </div>
                     <div class="mb-3">
                         <label>Presupuesto</label>
-                        <input asp-for="NuevoProyecto.Presupuesto" type="number" class="form-control" />
+                        <input asp-for="NuevoProyecto.Presupuesto" type="number" min="1" step="1" value="1" class="form-control" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -137,7 +137,7 @@
                     </div>
                     <div class="mb-3">
                         <label>Presupuesto</label>
-                        <input asp-for="ProyectoEditado.Presupuesto" type="number" class="form-control" />
+                        <input asp-for="ProyectoEditado.Presupuesto" type="number" min="1" step="1" value="1" class="form-control" />
                     </div>
                 </div>
                 <div class="modal-footer">
