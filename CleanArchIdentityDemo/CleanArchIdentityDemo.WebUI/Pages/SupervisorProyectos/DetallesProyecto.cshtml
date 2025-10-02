@@ -93,7 +93,7 @@
                                 </button>
                             </td>
                             <td>
-                                <form method="post" asp-page-handler="EliminarTarea" asp-route-IdTarea="@tarea.Id" style="display:inline;">
+                                <form method="post" asp-page-handler="EliminarTarea" asp-route-IdTarea="@tarea.Id" asp-route-codigoProyecto="@Model.DetalleProyecto.CodigoProyecto" style="display:inline;">
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea eliminar esta tarea?')">
                                         Eliminar
                                     </button>
@@ -130,19 +130,19 @@
                             <!-- Descripción -->
                             <div class="mb-3">
                                 <label for="Descripcion" class="form-label">Descripción</label>
-                                <textarea class="form-control" asp-for="NuevaTarea.Descripcion" rows="3"></textarea>
+                                <textarea class="form-control" asp-for="NuevaTarea.Descripcion" rows="3" required></textarea>
                             </div>
 
                             <!-- Fecha Inicio -->
                             <div class="mb-3">
                                 <label for="FechaInicio" class="form-label">Fecha Esperada de Inicio</label>
-                                <input type="date" class="form-control" asp-for="NuevaTarea.FechaInicio" required />
+                                <input type="date" class="form-control" asp-for="NuevaTarea.FechaInicio" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
                             </div>
 
                             <!-- Fecha Fin -->
                             <div class="mb-3">
                                 <label for="FechaFin" class="form-label">Fecha Esperada de Fin</label>
-                                <input type="date" class="form-control" asp-for="NuevaTarea.FechaFin" required />
+                                <input type="date" class="form-control" asp-for="NuevaTarea.FechaFin" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
                             </div>
 
                             <!-- Id del proyecto oculto -->
@@ -158,6 +158,83 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal: Editar Tarea -->
+    <div class="modal fade" id="editarTareaModal" tabindex="-1" aria-labelledby="editarTareaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="EditarTarea">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editarTareaLabel">Editar Tarea</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+
+                        <!-- Hidden para Id de la tarea -->
+                        <input type="hidden" asp-for="NuevaTarea.Id" id="edit-id" />
+                        <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+
+                        <!-- Nombre -->
+                        <div class="mb-3">
+                            <label for="edit-nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" asp-for="NuevaTarea.Nombre" id="edit-nombre" required />
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-3">
+                            <label for="edit-descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" asp-for="NuevaTarea.Descripcion" id="edit-descripcion" required></textarea>
+                        </div>
+
+                        <!-- Fecha Inicio -->
+                        <div class="mb-3">
+                            <label for="edit-fechainicio" class="form-label">Fecha Inicio</label>
+                            <input type="date" class="form-control" asp-for="NuevaTarea.FechaInicio" id="edit-fechainicio" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                        <!-- Fecha Fin -->
+                        <div class="mb-3">
+                            <label for="edit-fechafin" class="form-label">Fecha Fin</label>
+                            <input type="date" class="form-control" asp-for="NuevaTarea.FechaFin" id="edit-fechafin" required value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                        <!-- Hidden ProyectoId -->
+                        <input type="hidden" asp-for="NuevaTarea.ProyectoId" value="@Model.DetalleProyecto.IdProyecto" />
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var editarTareaModal = document.getElementById('editarTareaModal');
+        editarTareaModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+
+            // Extraer valores de los atributos data-*
+            var id = button.getAttribute('data-id');
+            var nombre = button.getAttribute('data-nombre');
+            var descripcion = button.getAttribute('data-descripcion');
+            var fechainicio = button.getAttribute('data-fechainicio');
+            var fechafin = button.getAttribute('data-fechafin');
+
+            // Asignar los valores a los inputs del modal
+            editarTareaModal.querySelector('#edit-id').value = id;
+            editarTareaModal.querySelector('#edit-nombre').value = nombre;
+            editarTareaModal.querySelector('#edit-descripcion').value = descripcion;
+            editarTareaModal.querySelector('#edit-fechainicio').value = fechainicio;
+            editarTareaModal.querySelector('#edit-fechafin').value = fechafin;
+        });
+    </script>
+</div>
+
+    
+
 
     
 

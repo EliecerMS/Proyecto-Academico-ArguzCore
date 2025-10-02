@@ -35,7 +35,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         //lista de usuarios para asignar a un proyecto
         public List<UserDto> UsuariosEmpleado { get; set; } = new List<UserDto>();
         public List<TareaDto> Tareas { get; private set; } // Este es el elemento donde se guardan las tareas
-        
+
         [BindProperty]
         public TareaDto NuevaTarea { get; set; } = new TareaDto(); // Propiedad para enlazar el formulario de nueva tarea y poder crearla
 
@@ -59,7 +59,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         public async Task OnGet(string CodigoProyecto)
         {
-             // Aquí programacion para cargar todo absolutamente relacionado a un proyecto usando el CódigoProyecto
+            // Aquí programacion para cargar todo absolutamente relacionado a un proyecto usando el CódigoProyecto
             DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto) ?? new Proyecto();
 
             //codigo aca abajo de otras cosas que se quieran cargar inmediatamente cargue esta vista
@@ -96,6 +96,43 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             // Recargar lista de tareas
             Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
 
+            // Redirigir a la misma página con el CódigoProyecto
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+
+
+        public async Task<IActionResult> OnPostEliminarTareaAsync(int IdTarea)
+        {
+            // Eliminar la tarea
+            await _proyectoService.EliminarTareaAsync(IdTarea);
+
+            // Recargar el proyecto completo para ovalidar que no se haya roto
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+
+            if (DetalleProyecto == null)
+            {
+                return NotFound("Tarea no encontrada");
+            }
+
+            // Recargar lista de tareas
+            Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+
+            // Redirigir a la misma página con el CódigoProyecto
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEditarTareaAsync()
+        {
+            // Actualizar la tarea
+            await _proyectoService.EditarTareaAsync(NuevaTarea);
+            // Recargar el proyecto completo para ovalidar que no se haya roto
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+            if (DetalleProyecto == null)
+            {
+                return NotFound("Tarea no encontrada");
+            }
+            // Recargar lista de tareas
+            Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
             // Redirigir a la misma página con el CódigoProyecto
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
