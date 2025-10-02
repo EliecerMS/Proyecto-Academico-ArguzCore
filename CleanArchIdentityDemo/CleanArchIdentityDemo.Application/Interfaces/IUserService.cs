@@ -10,5 +10,9 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task UpdateUserAsync(UserDto user);
         Task DeleteUserAsync(string userId);
         Task AssignRoleAsync(string userId, string role);
+        Task<IEnumerable<UserRolesDto>> GetRoles();
+
+        //metodo que obtiene todos los usuarios con el rol usuario
+        Task<IEnumerable<UserDto>> GetAllNormalUsersAsync();
     }
 }

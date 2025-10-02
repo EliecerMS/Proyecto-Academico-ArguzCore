@@ -43,12 +43,11 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             if (result.Succeeded)
             {
-                //resultado exitoso valida si el usuario creado tiene un rol
-                if (!await _roleManager.RoleExistsAsync(role))
-                    //de no tenerlo se le crea el rol
-                    await _roleManager.CreateAsync(new IdentityRole(role));
-                // agrega el rol para el usuario
-                await _userManager.AddToRoleAsync(user, role);
+                if (await _roleManager.RoleExistsAsync(role))
+                { // verifica si el rol existe, de ser exitoso la creacion del usuario y existencia del del rol lo asigna
+                    await _userManager.AddToRoleAsync(user, role);
+
+                }
             }
         }
 
@@ -57,6 +56,11 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             var user = await _userManager.FindByIdAsync(userId);
             if (user != null)
                 await _userManager.DeleteAsync(user);
+        }
+
+        public Task<IEnumerable<UserDto>> GetAllNormalUsersAsync() //trae todos los usuarios con rol "usuario" que serian Empleados
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync(string idUser) // devuelve la lista de usuarios por eso retorna un IEnumerable (lista) de tipo UserDto exeptuando que no se muestre el admin que inicio sesión
@@ -70,13 +74,30 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 userDtos.Add(new UserDto
                 {
                     Id = user.Id,
-                    Nombrempleto = user.NombreCompleto,
+                    NombreCompleto = user.NombreCompleto,
                     Email = user.Email,
                     Role = roles.FirstOrDefault()
                 });
             }
 
             return userDtos;
+        }
+
+        public async Task<IEnumerable<UserRolesDto>> GetRoles()
+        {
+            var roles = _roleManager.Roles.ToList();// recupera la lista de roles
+            var RolesDto = new List<UserRolesDto>();
+
+            foreach (var rol in roles) // para cada rol en la lista de roles recupera el id y nombre del rol
+            {
+                RolesDto.Add(new UserRolesDto
+                {
+                    RolId = rol.Id,
+                    NombreRol = rol.Name
+                });
+            }
+            return RolesDto;//retorna la lista de roles
+
         }
 
         public async Task<UserDto> GetUserByIdAsync(string userId)
@@ -89,7 +110,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return new UserDto
             {
                 Id = user.Id,
-                Nombrempleto = user.NombreCompleto,
+                NombreCompleto = user.NombreCompleto,
                 Email = user.Email,
                 Role = roles.FirstOrDefault()
             };
@@ -102,7 +123,11 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             {
                 user.Email = userDto.Email;
                 user.UserName = userDto.Email;
-                user.NombreCompleto = userDto.Nombrempleto;
+                user.NombreCompleto = userDto.NombreCompleto;
+                if (!string.IsNullOrEmpty(userDto.Password))
+                {  //actualizar la contraseña si se proporciona una nueva
+                    user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, userDto.Password);
+                }
                 await _userManager.UpdateAsync(user);
 
                 var currentRoles = await _userManager.GetRolesAsync(user); // busca el rol actual de usuario a editar

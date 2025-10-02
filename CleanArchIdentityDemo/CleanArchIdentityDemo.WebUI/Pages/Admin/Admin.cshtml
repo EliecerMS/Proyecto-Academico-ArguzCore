@@ -26,7 +26,7 @@
         {
             <tr>
                 <td>@user.Email</td>
-                <td>@user.Nombrempleto</td>
+                <td>@user.NombreCompleto</td>
                 <td>@user.Role</td>
                 <td>
                     <button class="btn btn-sm btn-warning"
@@ -34,10 +34,16 @@
                             data-bs-target="#editUserModal"
                             data-id="@user.Id"
                             data-email="@user.Email"
-                            data-nombre="@user.Nombrempleto"
+                            data-nombre="@user.NombreCompleto"
                             data-rol="@user.Role">
                         Editar
                     </button>
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="IdUsuario" value="@user.Id" />
+                        <button class="btn btn-sm btn-danger">
+                        Eliminar
+                    </button>
+                    </form>
                 </td>
             </tr>
         }
@@ -60,13 +66,15 @@
                     </div>
                     <div class="mb-3">
                         <label>Nombre Completo</label>
-                        <input asp-for="NewUser.Nombrempleto" class="form-control" />
+                        <input asp-for="NewUser.NombreCompleto" class="form-control" />
                     </div>
                     <div class="mb-3">
                         <label>Rol</label>
                         <select asp-for="NewUser.Role" class="form-control">
-                            <option value="SupervisorProyectos">Supervisor de Proyectos</option>
-                            <option value="Usuario">Usuario</option>
+                            @foreach (var rol in Model.Roles)
+                            {
+                                <option value="@rol.NombreRol">@rol.NombreRol</option>
+                            }
                         </select>
                     </div>
                     <div class="mb-3">
@@ -96,18 +104,24 @@
                     <input type="hidden" asp-for="EditedUser.Id" />
                     <div class="mb-3">
                         <label>Email</label>
-                        <input asp-for="EditedUser.Email" class="form-control" readonly />
+                        <input asp-for="EditedUser.Email" class="form-control" />
                     </div>
                     <div class="mb-3">
                         <label>Nombre Completo</label>
-                        <input asp-for="EditedUser.Nombrempleto" class="form-control" />
+                        <input asp-for="EditedUser.NombreCompleto" class="form-control" />
                     </div>
                     <div class="mb-3">
                         <label>Rol</label>
                         <select asp-for="EditedUser.Role" class="form-control">
-                            <option value="SupervisorProyectos">Supervisor de Proyectos</option>
-                            <option value="Usuario">Usuario</option>
+                            @foreach (var rol in Model.Roles)
+                            {
+                                <option value="@rol.NombreRol">@rol.NombreRol</option>
+                            }
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Nueva contraseña</label>
+                        <input asp-for="EditedUser.Password" type="password" class="form-control" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -133,7 +147,7 @@
             document.getElementById('EditedUser_Id').value = id;
             document.getElementById('EditedUser_Email').value = email;
             document.getElementById('EditedUser_NombreCompleto').value = nombre;
-            document.getElementById('EditedUser_Rol').value = rol;
+            document.getElementById('EditedUser_Role').value = rol;
         });
     </script>
 }

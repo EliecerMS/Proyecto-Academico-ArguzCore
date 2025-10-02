@@ -27,7 +27,16 @@
                 {
                   <tr>
                     <td>@proyecto.CodigoProyecto</td>
-                        <td><a asp-page="./DetallesProyecto" asp-route-CodigoProyecto="@proyecto.CodigoProyecto">@proyecto.Nombre</a></td>
+                    <td>
+                        <a asp-page="./DetallesProyecto" asp-route-CodigoProyecto="@proyecto.CodigoProyecto">@proyecto.Nombre</a>
+                            <div class="mt-2">
+                                <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: @proyecto.PorcentajeAvance%;" aria-valuenow="@proyecto.PorcentajeAvance" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            <span class="text-xs text-gray-500">@proyecto.PorcentajeAvance%</span>
+                            </div>
+                       
+                    </td>
                         <td>@proyecto.EstadoProyecto</td>
                         <td>@proyecto.FechaFinalPropuesta.Date</td>
                         <td>
@@ -39,7 +48,8 @@
                                     data-DescripcionProyecto="@proyecto.Descripcion"
                                     data-ProyectoFechaFinal="@proyecto.FechaFinalPropuesta"
                                     data-ProyectoPresupuesto="@proyecto.Presupuesto">
-                                Editar
+                            <i class="fas fa-edit"></i>  Editar
+                               
                             </button>
                         </td>
                     <td>
@@ -106,13 +116,12 @@
         <div class="modal-content">
             <form method="post" asp-page-handler="Edit">
                 <div class="modal-header">
-                    <h5 class="modal-title">Crear nuevo proyecto</h5>
+                    <h5 class="modal-title">Editar proyecto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label>Código</label>
-                        <input asp-for="ProyectoEditado.CodigoProyecto" class="form-control"/>
+                        <input type="hidden" asp-for="ProyectoEditado.CodigoProyecto" class="form-control"/>
                     </div>
                     <div class="mb-3">
                         <label>Nombre</label>
