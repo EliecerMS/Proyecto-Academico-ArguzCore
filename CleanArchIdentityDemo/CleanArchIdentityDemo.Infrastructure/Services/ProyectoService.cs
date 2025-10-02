@@ -161,7 +161,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return Math.Clamp(porcentajeProyecto, 0, 100);
 
         }
-        }
 
 
         // ====================== MÉTODOS PARA TAREAS (Checho)======================

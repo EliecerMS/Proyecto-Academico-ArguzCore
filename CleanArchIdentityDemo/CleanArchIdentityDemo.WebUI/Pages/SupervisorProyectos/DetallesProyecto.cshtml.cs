@@ -99,10 +99,5 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             // Redirigir a la misma página con el CódigoProyecto
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
-
-
-
-
-
     }
 }
