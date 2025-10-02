@@ -23,7 +23,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public Proyecto DetalleProyecto { get; set; }
 
 
-        [BindProperty]
+        [BindProperty(SupportsGet = true)]
         public string CodigoProyecto { get; set; }
 
         [BindProperty]
@@ -32,12 +32,29 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         [TempData]
         public string MensajeExito { get; set; }
 
+        [BindProperty]
+        public string UsuarioSeleccionado { get; set; } // Para asignar nuevo usuario
+
+        [BindProperty]
+        public string UsuarioReasignar { get; set; }
+
+        [BindProperty]
+        public string CodigoProyectoNuevo { get; set; }
+
+
+        public List<ProyectoDto> ProyectosDisponibles { get; set; } = new();
+
         //lista de usuarios para asignar a un proyecto
+
+        public List<PersonalAsignadoDto> PersonalAsignado { get; set; } = new();
+        public List<UserDto> UsuariosDisponibles { get; set; } = new();
+
         public List<UserDto> UsuariosEmpleado { get; set; } = new List<UserDto>();
         public List<TareaDto> Tareas { get; private set; } // Este es el elemento donde se guardan las tareas
         
         [BindProperty]
         public TareaDto NuevaTarea { get; set; } = new TareaDto(); // Propiedad para enlazar el formulario de nueva tarea y poder crearla
+
 
 
 
@@ -63,6 +80,51 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto) ?? new Proyecto();
 
             //codigo aca abajo de otras cosas que se quieran cargar inmediatamente cargue esta vista
+
+
+            // Personal asignado actualmente
+            PersonalAsignado = (await _proyectoService.ObtenerPersonalPorProyectoAsync(CodigoProyecto)).ToList();
+
+            // Lista de usuarios posibles
+            UsuariosDisponibles = (await _userService.GetAllNormalUsersAsync()).ToList();
+
+
+            ProyectosDisponibles = (await _proyectoService.MostrarProyectosListaReasignacionAsync(CodigoProyecto)).ToList();
+
+        }
+        //UsuariosEmpleado = await _userService.GetAllNormalUsersAsync().ToList();
+
+        public async Task<IActionResult> OnPostAsignarPersonalAsync()
+        {
+            try
+            {
+                await _proyectoService.AsignarPersonalAProyectoAsync(CodigoProyecto, UsuarioSeleccionado);
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorPersonal"] = ex.Message;
+            }
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEliminarPersonalAsync(string personalId)
+        {
+            await _proyectoService.EliminarPersonalDeProyectoAsync(CodigoProyecto, personalId);
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+
+        public async Task<IActionResult> OnPostReasignarPersonalAsync()
+        {
+            try
+            {
+                await _proyectoService.ReasignarPersonalEnProyectoAsync(CodigoProyecto, UsuarioReasignar, CodigoProyectoNuevo);
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorPersonal"] = ex.Message;
+            }
+            return RedirectToPage(new { CodigoProyecto });
 
             //UsuariosEmpleado = await _userService.GetAllNormalUsersAsync().ToList();
 
@@ -98,6 +160,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             // Redirigir a la misma página con el CódigoProyecto
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+
         }
     }
-}
+    }
+
+

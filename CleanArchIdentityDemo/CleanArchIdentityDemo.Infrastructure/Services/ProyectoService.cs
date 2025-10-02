@@ -231,5 +231,171 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 await _context.SaveChangesAsync();// Guardar los cambios en la base de datos
             }
         }
+        //Asignar personal a un proyecto
+        public async Task AsignarPersonalAProyectoAsync(string codigoProyecto, string personalId)
+        {
+            // Buscar el proyecto por su código
+            var proyecto = await _context.Set<Proyecto>()
+                .FirstOrDefaultAsync(p => p.CodigoProyecto == codigoProyecto);
+            if (proyecto == null)
+                throw new InvalidOperationException("Proyecto no encontrado.");
+
+            // Verificar si el usuario ya está asignado al proyecto
+            bool yaAsignadoEste = await _context.PersonalProyecto
+                .AnyAsync(pp => pp.ProyectoId == proyecto.IdProyecto && pp.UsuarioId == personalId);
+
+            if (yaAsignadoEste)
+                throw new InvalidOperationException("El personal ya está asignado a este proyecto.");
+
+            // Ya está en otro proyecto
+            bool yaAsignadoOtro = await _context.PersonalProyecto
+                .AnyAsync(pp => pp.UsuarioId == personalId && pp.ProyectoId != proyecto.IdProyecto);
+
+            if (yaAsignadoOtro)
+                throw new InvalidOperationException("El personal ya está asignado a otro proyecto.");
+
+            // Crear el registro de asignación
+            var asignacion = new PersonalProyecto
+            {
+                ProyectoId = proyecto.IdProyecto,
+                UsuarioId = personalId
+            };
+
+            _context.PersonalProyecto.Add(asignacion);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task EliminarPersonalDeProyectoAsync(string codigoProyecto, string personalId)
+        {
+            // Buscar el proyecto por su código
+            var proyecto = await _context.Proyectos.FirstOrDefaultAsync(p => p.CodigoProyecto == codigoProyecto);
+            if (proyecto == null)
+                throw new InvalidOperationException("Proyecto no encontrado.");
+
+            // Buscar la asignación de personal en el proyecto
+            var asignacion = await _context.PersonalProyecto
+                .FirstOrDefaultAsync(pp => pp.ProyectoId == proyecto.IdProyecto && pp.UsuarioId == personalId);
+
+            if (asignacion == null)
+                throw new InvalidOperationException("El personal no está asignado a este proyecto.");
+
+            _context.PersonalProyecto.Remove(asignacion);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<PersonalAsignadoDto>> ObtenerPersonalPorProyectoAsync(string codigoProyecto)
+        {
+            // Buscar el proyecto por su código
+            var proyecto = await _context.Set<Proyecto>()
+                .FirstOrDefaultAsync(p => p.CodigoProyecto == codigoProyecto);
+
+            if (proyecto == null)
+                return Enumerable.Empty<PersonalAsignadoDto>();
+
+            // Obtener los registros de personal asignado al proyecto
+            var personalProyectos = await _context.PersonalProyecto
+                .Where(pp => pp.ProyectoId == proyecto.IdProyecto)
+                .ToListAsync();
+
+            // Obtener los datos de usuario para cada personal asignado
+            var usuariosIds = personalProyectos.Select(pp => pp.UsuarioId).ToList();
+
+            var usuarios = await _context.Users
+                .Where(u => usuariosIds.Contains(u.Id))
+                .ToListAsync();
+
+            // Mapear a DTO
+            var resultado = personalProyectos
+                .Select(pp =>
+                {
+                    var usuario = usuarios.FirstOrDefault(u => u.Id == pp.UsuarioId);
+                    return new PersonalAsignadoDto
+                    {
+                        PersonalId = usuario?.Id ?? "Desconocido",
+                        Nombre = usuario?.NombreCompleto ?? "Desconocido"
+                    };
+                })
+                .ToList();
+
+            return resultado;
+        }
+
+        public async Task ReasignarPersonalEnProyectoAsync(string codigoProyecto, string personalId, string codigoProyectoNuevo)
+        {
+            // Buscar el proyecto actual
+            var proyectoActual = await _context.Proyectos.FirstOrDefaultAsync(p => p.CodigoProyecto == codigoProyecto);
+            if (proyectoActual == null)
+                throw new InvalidOperationException("Proyecto actual no encontrado.");
+
+            // Buscar el nuevo proyecto
+            var proyectoNuevo = await _context.Proyectos.FirstOrDefaultAsync(p => p.CodigoProyecto == codigoProyectoNuevo);
+            if (proyectoNuevo == null)
+                throw new InvalidOperationException("Proyecto nuevo no encontrado.");
+
+            // Buscar la asignación actual del personal en el proyecto actual
+            var asignacionActual = await _context.PersonalProyecto
+                .FirstOrDefaultAsync(pp => pp.ProyectoId == proyectoActual.IdProyecto && pp.UsuarioId == personalId);
+
+            if (asignacionActual == null)
+                throw new InvalidOperationException("El personal no está asignado al proyecto actual.");
+
+            // Verificar si ya está asignado al nuevo proyecto
+            var yaAsignadoNuevo = await _context.PersonalProyecto
+                .AnyAsync(pp => pp.ProyectoId == proyectoNuevo.IdProyecto && pp.UsuarioId == personalId);
+
+            if (yaAsignadoNuevo)
+                throw new InvalidOperationException("El personal ya está asignado al nuevo proyecto.");
+
+            // Eliminar la asignación del proyecto actual
+            _context.PersonalProyecto.Remove(asignacionActual);
+
+            // Crear la nueva asignación en el nuevo proyecto
+            var nuevaAsignacion = new PersonalProyecto
+            {
+                ProyectoId = proyectoNuevo.IdProyecto,
+                UsuarioId = personalId
+            };
+            _context.PersonalProyecto.Add(nuevaAsignacion);
+
+            await _context.SaveChangesAsync();
+        }
+
+
+
+        public async Task<IEnumerable<ProyectoDto>> MostrarProyectosListaReasignacionAsync(string codigoProyectoActual)
+        {
+            var proyectos = await _context.Proyectos
+                .Include(p => p.EstadoProyecto)
+                .Where(p => p.CodigoProyecto != codigoProyectoActual)
+                .ToListAsync();
+
+            var listaProyectos = new List<ProyectoDto>();
+
+            foreach (var proyecto in proyectos)
+            {
+                var porcentajeAvance = await RecalculoPorcentajeAvance(proyecto.CodigoProyecto);
+                listaProyectos.Add(new ProyectoDto
+                {
+                    Descripcion = proyecto.Descripcion,
+                    CodigoProyecto = proyecto.CodigoProyecto,
+                    Nombre = proyecto.Nombre,
+                    FechaFinalPropuesta = proyecto.FechaFinalPropuesta.Date,
+                    Presupuesto = proyecto.Presupuesto,
+                    EstadoProyecto = proyecto.EstadoProyecto?.NombreEstado,
+                    PorcentajeAvance = porcentajeAvance
+                });
+            }
+
+            return listaProyectos;
+        }
     }
 }
+    
+
+
+        
+    
+        
+
+        
+
