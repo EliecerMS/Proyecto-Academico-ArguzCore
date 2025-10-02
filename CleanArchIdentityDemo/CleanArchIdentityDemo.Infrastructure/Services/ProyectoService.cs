@@ -161,5 +161,75 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return Math.Clamp(porcentajeProyecto, 0, 100);
 
         }
+
+
+        // ====================== MÉTODOS PARA TAREAS (Checho)======================
+        // Metodos para trabajar las tareas
+        public async Task<IEnumerable<TareaDto>> MostrarTareasPorProyectoAsync(int IdProyecto)
+        {
+            var proyecto = await _context.Proyectos // Se llama la tabla Proyectos
+                .Include(p => p.Tareas) // incluir las tareas asociadas
+                .FirstOrDefaultAsync(p => p.IdProyecto == IdProyecto); // buscar el proyecto por su Id
+
+            if (proyecto == null) return new List<TareaDto>(); // Si no se encuentra el proyecto, devolver una lista vacía
+
+            return proyecto.Tareas.Select(t => new TareaDto // Mapear cada tarea a TareaDto
+            {
+                Id = t.IdTarea,
+                Nombre = t.NombreTarea,
+                Descripcion = t.Descripcion,
+                FechaInicio = t.FechaInicioEsperada,
+                FechaFin = t.FechaFinalEsperada,
+                ProyectoId = proyecto.IdProyecto 
+            }).ToList(); // Devolver la lista de TareaDto
+        }
+
+
+        // Crear una tarea nueva
+        public async Task CrearTareaAsync(TareaDto dto)
+        {
+            var proyecto = await _context.Proyectos.FirstOrDefaultAsync(p => p.IdProyecto == dto.ProyectoId); // buscar el proyecto por su Id
+
+            if (proyecto == null) throw new Exception("Proyecto no encontrado"); // Si no se encuentra el proyecto, lanzar una excepción
+
+            var nuevaTarea = new Tarea // Crear una nueva instancia de Tarea
+            {
+                NombreTarea = dto.Nombre,
+                Descripcion = dto.Descripcion,
+                FechaInicioEsperada = dto.FechaInicio,
+                FechaFinalEsperada = dto.FechaFin,
+                ProyectoId = proyecto.IdProyecto
+            }; 
+
+            _context.Tareas.Add(nuevaTarea); // Agregar la nueva tarea al contexto
+            await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
+        }
+
+        // Editar tarea
+        public async Task EditarTareaAsync(TareaDto dto)
+        {
+            var tarea = await _context.Tareas.FirstOrDefaultAsync(t => t.IdTarea == dto.Id); // buscar la tarea por su Id
+
+            if (tarea != null) //si lo encuentra actualiza solo los campos editables
+            { // Actualizar los campos editables
+                tarea.NombreTarea = dto.Nombre;
+                tarea.Descripcion = dto.Descripcion;
+                tarea.FechaInicioEsperada = dto.FechaInicio;
+                tarea.FechaFinalEsperada = dto.FechaFin;
+
+                await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
+            }
+        }
+
+        public async Task EliminarTareaAsync(int IdTarea)
+        {
+            var tarea = await _context.Tareas.FirstOrDefaultAsync(t => t.IdTarea == IdTarea); // buscar la tarea por su Id
+
+            if (tarea != null) //si lo encuentra lo elimina
+            {
+                _context.Tareas.Remove(tarea); // Eliminar la tarea del contexto
+                await _context.SaveChangesAsync();// Guardar los cambios en la base de datos
+            }
+        }
     }
 }
