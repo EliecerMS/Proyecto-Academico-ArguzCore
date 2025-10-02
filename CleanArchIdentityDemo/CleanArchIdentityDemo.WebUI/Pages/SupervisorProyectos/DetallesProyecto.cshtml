@@ -42,74 +42,115 @@
     </div>
 </nav>
 
-<div class="tab-content" id="nav-tabContent">
+    <div class="tab-content" id="nav-tabContent">
     
-    <div class="tab-pane fade" id="nav-Marca-tab" role="tabpanel" aria-labelledby="nav-marcaEntradaSalida">
-        Contenido del tab Guardar/Marcar Salida/Entrada.
-    </div>
+        <div class="tab-pane fade" id="nav-Marca-tab" role="tabpanel" aria-labelledby="nav-marcaEntradaSalida">
+            Contenido del tab Guardar/Marcar Salida/Entrada.
+        </div>
     
 
 
 
-    <div class="tab-pane fade show active" id="nav-Cronograma-tab" role="tabpanel" aria-labelledby="nav-Cronograma">
+        <div class="tab-pane fade show active" id="nav-Cronograma-tab" role="tabpanel" aria-labelledby="nav-Cronograma">
         
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearTareaModal">
-            Nueva Tarea
-        </button>
+            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearTareaModal">
+                Nueva Tarea
+            </button>
 
 
-        <!-- Tabla de tareas del proyecto -->
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Nombre de la Tarea</th>
-                    <th>Fecha Esperada de Inicio</th>
-                    <th>Fecha Esperada de Fin</th>
-                    <th>Descripción</th>
-                    <th>Editar</th>
-                    <th>Eliminar</th>
-                </tr>
-            </thead>
+            <!-- Tabla de tareas del proyecto -->
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Nombre de la Tarea</th>
+                        <th>Fecha Esperada de Inicio</th>
+                        <th>Fecha Esperada de Fin</th>
+                        <th>Descripción</th>
+                        <th>Editar</th>
+                        <th>Eliminar</th>
+                    </tr>
+                </thead>
 
-            <!-- Cuerpo de la tabla -->
-            <tbody> 
-                @if (Model.Tareas != null && Model.Tareas.Any()) // Validamos que sí haya tareas
-                {
-                    @foreach (var tarea in Model.Tareas) // Recorremos la lista de tareas que creamos en DetallesProyectoModel
+                <!-- Cuerpo de la tabla -->
+                <tbody> 
+                    @if (Model.Tareas != null && Model.Tareas.Any()) // Validamos que sí haya tareas
                     {
-                        <tr>
-                            <td>@tarea.Nombre</td>
-                            <td>@tarea.FechaInicio.ToShortDateString()</td>
-                            <td>@tarea.FechaFin.ToShortDateString()</td>
-                            <td>@tarea.Descripcion</td>
-                            <td>
-                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarTareaModal"
-                                        data-id="@tarea.Id"
-                                        data-nombre="@tarea.Nombre"
-                                        data-descripcion="@tarea.Descripcion"
-                                        data-fechainicio="@tarea.FechaInicio.ToString("yyyy-MM-dd")"
-                                        data-fechafin="@tarea.FechaFin.ToString("yyyy-MM-dd")">
-                                    Editar
-                                </button>
-                            </td>
-                            <td>
-                                <form method="post" asp-page-handler="EliminarTarea" asp-route-IdTarea="@tarea.Id" asp-route-codigoProyecto="@Model.DetalleProyecto.CodigoProyecto" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea eliminar esta tarea?')">
-                                        Eliminar
+                        @foreach (var tarea in Model.Tareas) // Recorremos la lista de tareas que creamos en DetallesProyectoModel
+                        {
+                            <tr>
+                                <td>@tarea.Nombre</td>
+                                <td>@tarea.FechaInicio.ToShortDateString()</td>
+                                <td>@tarea.FechaFin.ToShortDateString()</td>
+                                <td>@tarea.Descripcion</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarTareaModal"
+                                            data-id="@tarea.Id"
+                                            data-nombre="@tarea.Nombre"
+                                            data-descripcion="@tarea.Descripcion"
+                                            data-fechainicio="@tarea.FechaInicio.ToString("yyyy-MM-dd")"
+                                            data-fechafin="@tarea.FechaFin.ToString("yyyy-MM-dd")">
+                                        Editar
                                     </button>
-                                </form>
-                            </td>
+                                </td>
+                                <td>
+                                    <form method="post" asp-page-handler="EliminarTarea" asp-route-IdTarea="@tarea.Id" asp-route-codigoProyecto="@Model.DetalleProyecto.CodigoProyecto" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea eliminar esta tarea?')">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else // Si no hay tareas, mostramos un mensaje
+                    {
+                        <tr> 
+                            <td colspan="6" class="text-center">El proyecto no cuenta con tareas.</td>
                         </tr>
                     }
-                }
-                else // Si no hay tareas, mostramos un mensaje
-                {
-                    <tr> 
-                        <td colspan="6" class="text-center">El proyecto no cuenta con tareas.</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
+
+    <div class="tab-pane fade" id="nav-NotaAvance-tab" role="tabpanel" aria-labelledby="nav-NotasAvance">
+        Contenido del tab notas de avance.
+    </div>
+
+    <div class="tab-pane fade" id="nav-PersonalProyecto-tab" role="tabpanel" aria-labelledby="nav-PersonalProyecto">
+        Contenido del tab personal del proyecto.
+    </div>
+
+    <div class="tab-pane fade" id="nav-Incidentes-tab" role="tabpanel" aria-labelledby="nav-Incidentes">
+        Contenido del tab incidentes.
+    </div>
+
+    <div class="tab-pane fade" id="nav-Documentos-tab" role="tabpanel" aria-labelledby="nav-Documentos">
+        Contenido del tab Documentos.
+    </div>
+
+    <div class="tab-pane fade" id="nav-ReporteFinanciero-tab" role="tabpanel" aria-labelledby="nav-ReporteFinanciero">
+        Contenido del tab Reporte financiero.
+    </div>
+
+    <div class="tab-pane fade" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-Materiales">
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+
+                <button class="nav-link" id="nav-MaterialesProyecto" data-bs-toggle="tab" data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Materiales en proyecto</button>
+                <button class="nav-link" id="nav-SolicitudesMaterial" data-bs-toggle="tab" data-bs-target="#nav-SolicitudMateriales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Solicitudes de material</button>
+
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-MaterialesProyecto">
+                Contenido del sub tab Materiales en proyecto.
+            </div>
+            <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel" aria-labelledby="nav-SolicitudesMaterial">
+                Contenido del sub tab Solicitudes de material.
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- Modal: Crear Nueva Tarea -->
         <div class="modal fade" id="crearTareaModal" tabindex="-1" aria-labelledby="crearTareaModalLabel" aria-hidden="true">
@@ -157,7 +198,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- Modal: Editar Tarea -->
     <div class="modal fade" id="editarTareaModal" tabindex="-1" aria-labelledby="editarTareaLabel" aria-hidden="true">
@@ -211,6 +251,35 @@
         </div>
     </div>
 
+    <!-- Modal: Nuevo Estado Proyecto -->
+    <div class="modal fade" id="NuevoEstadoProyectoModal" tabindex="-1" aria-labelledby="NuevoEstadoProyectoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="CambiarEstado">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="NuevoEstadoProyectoModalLabel">Cambiar Estado del Proyecto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+                        <div class="mb-3">
+                            <label for="EstadoProyecto" class="form-label">Selecciona el nuevo estado</label>
+                            <select class="form-select" asp-for="NuevoEstado" required>
+                                <option value="1">Planificado</option>
+                                <option value="2">En ejecucion</option>
+                                <option value="3">Finalizado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Cambiar Estado</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         var editarTareaModal = document.getElementById('editarTareaModal');
         editarTareaModal.addEventListener('show.bs.modal', function (event) {
@@ -231,78 +300,3 @@
             editarTareaModal.querySelector('#edit-fechafin').value = fechafin;
         });
     </script>
-</div>
-
-    
-
-
-    
-
-
-    <div class="tab-pane fade" id="nav-NotaAvance-tab" role="tabpanel" aria-labelledby="nav-NotasAvance">
-        Contenido del tab notas de avance.
-    </div>
-    
-    <div class="tab-pane fade" id="nav-PersonalProyecto-tab" role="tabpanel" aria-labelledby="nav-PersonalProyecto">
-        Contenido del tab personal del proyecto.
-    </div>
-    
-    <div class="tab-pane fade" id="nav-Incidentes-tab" role="tabpanel" aria-labelledby="nav-Incidentes">
-        Contenido del tab incidentes.
-    </div>
-    
-    <div class="tab-pane fade" id="nav-Documentos-tab" role="tabpanel" aria-labelledby="nav-Documentos">
-        Contenido del tab Documentos.
-    </div>
-    
-    <div class="tab-pane fade" id="nav-ReporteFinanciero-tab" role="tabpanel" aria-labelledby="nav-ReporteFinanciero">
-        Contenido del tab Reporte financiero.
-    </div>
-    
-    <div class="tab-pane fade" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-Materiales">
-        <nav>
-            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-
-                <button class="nav-link" id="nav-MaterialesProyecto" data-bs-toggle="tab" data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Materiales en proyecto</button>
-                <button class="nav-link" id="nav-SolicitudesMaterial" data-bs-toggle="tab" data-bs-target="#nav-SolicitudMateriales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Solicitudes de material</button>
-
-            </div>
-        </nav>
-        <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-MaterialesProyecto">
-                Contenido del sub tab Materiales en proyecto.
-            </div>
-            <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel" aria-labelledby="nav-SolicitudesMaterial">
-                Contenido del sub tab Solicitudes de material.
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Modal: Nuevo Estado Proyecto -->
-<div class="modal fade" id="NuevoEstadoProyectoModal" tabindex="-1" aria-labelledby="NuevoEstadoProyectoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="post" asp-page-handler="CambiarEstado">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="NuevoEstadoProyectoModalLabel">Cambiar Estado del Proyecto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
-                    <div class="mb-3">
-                        <label for="EstadoProyecto" class="form-label">Selecciona el nuevo estado</label>
-                        <select class="form-select" asp-for="NuevoEstado" required>
-                            <option value="1">Planificado</option>
-                            <option value="2">En ejecucion</option>
-                            <option value="3">Finalizado</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Cambiar Estado</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
