@@ -77,14 +77,21 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             UsuariosDisponibles = (await _userService.GetAllNormalUsersAsync()).ToList();
 
 
-            ProyectosDisponibles = (await _proyectoService.MostrarProyectosAsync()).ToList();
+            ProyectosDisponibles = (await _proyectoService.MostrarProyectosListaReasignacionAsync(CodigoProyecto)).ToList();
 
         }
         //UsuariosEmpleado = await _userService.GetAllNormalUsersAsync().ToList();
 
         public async Task<IActionResult> OnPostAsignarPersonalAsync()
         {
-            await _proyectoService.AsignarPersonalAProyectoAsync(CodigoProyecto, UsuarioSeleccionado);
+            try
+            {
+                await _proyectoService.AsignarPersonalAProyectoAsync(CodigoProyecto, UsuarioSeleccionado);
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorPersonal"] = ex.Message;
+            }
             return RedirectToPage(new { CodigoProyecto });
         }
 
@@ -97,9 +104,18 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         public async Task<IActionResult> OnPostReasignarPersonalAsync()
         {
-            await _proyectoService.ReasignarPersonalEnProyectoAsync(CodigoProyecto, UsuarioReasignar, CodigoProyectoNuevo);
+            try
+            {
+                await _proyectoService.ReasignarPersonalEnProyectoAsync(CodigoProyecto, UsuarioReasignar, CodigoProyectoNuevo);
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorPersonal"] = ex.Message;
+            }
             return RedirectToPage(new { CodigoProyecto });
+
         }
     }
     }
+
 

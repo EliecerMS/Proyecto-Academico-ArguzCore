@@ -21,6 +21,33 @@
     </div>
 }
 
+
+@if (TempData["ErrorPersonal"] != null)
+{
+    <div class="modal fade" id="modalErrorPersonal" tabindex="-1" aria-modal="true" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>@TempData["ErrorPersonal"]</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var myModal = new bootstrap.Modal(document.getElementById('modalErrorPersonal'));
+            myModal.show();
+        });
+    </script>
+}
+
 <!--Solamente a manera de prueba muestra el nombre y estado de proyecto  -->
 @if (Model.DetalleProyecto != null)
 {
@@ -215,4 +242,4 @@
         var antiguoId = button.getAttribute('data-antiguo');
         document.getElementById('UsuarioReasignar').value = antiguoId;
     });
-</script> 
+</script>

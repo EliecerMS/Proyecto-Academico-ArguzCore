@@ -11,11 +11,12 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task ActualizarProyectoAsync(ProyectoDto Proyecto);
         Task EliminarProyectoAsync(string CodigoProyecto);
         Task<Proyecto?> DetallesProyecto(string CodigoProyecto);
-
+        Task<int> RecalculoPorcentajeAvance(string CodigoProyecto);//metodo para recalcular el porcentaje de avance del proyecto
 
         //metodo para cambiar el estado de un proyecto
         Task CambiarEstadoAsync(string CodigoProyecto, int IdEstadoProyecto);
 
+        Task<IEnumerable<ProyectoDto>> MostrarProyectosListaReasignacionAsync(string codigoProyecto);
         //metodo para mostrar personal asignado del proyecto
         Task<IEnumerable<PersonalAsignadoDto>> ObtenerPersonalPorProyectoAsync(string codigoProyecto);
         
