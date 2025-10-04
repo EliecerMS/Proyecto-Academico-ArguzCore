@@ -57,29 +57,30 @@
 
 <nav>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
-
-        <button class="nav-link" id="nav-marcaEntradaSalida" data-bs-toggle="tab" data-bs-target="#nav-Marca-tab"
-            type="button" role="tab" aria-controls="nav-Marca-tab" aria-selected="false">Guardar/Marcar
-            Salida/Entrada</button>
-
-        <button class="nav-link" id="nav-Cronograma" data-bs-toggle="tab" data-bs-target="#nav-Cronograma-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Cronograma</button>
-        <button class="nav-link" id="nav-NotasAvance" data-bs-toggle="tab" data-bs-target="#nav-NotaAvance-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Notas de avance</button>
+        <button class="nav-link" id="nav-marcaEntradaSalida" data-bs-toggle="tab" data-bs-target="#nav-Marca-tab" type="button" role="tab" aria-controls="nav-Marca-tab" aria-selected="false">
+            Guardar/MarcarSalida/Entrada
+        </button>
+        <button class="nav-link" id="nav-Cronograma" data-bs-toggle="tab" data-bs-target="#nav-Cronograma-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Cronograma
+        </button>
+        <button class="nav-link" id="nav-NotasAvance" data-bs-toggle="tab" data-bs-target="#nav-NotaAvance-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Notas de avance
+        </button>
         <button class="nav-link" id="nav-PersonalProyecto" data-bs-toggle="tab"
             data-bs-target="#nav-PersonalProyecto-tab" type="button" role="tab" aria-controls="nav-contact"
             aria-selected="false">Personal del proyecto</button>
-        <button class="nav-link" id="nav-Incidentes" data-bs-toggle="tab" data-bs-target="#nav-Incidentes-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Incidentes</button>
-        <button class="nav-link" id="nav-Documentos" data-bs-toggle="tab" data-bs-target="#nav-Documentos-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+        <button class="nav-link" id="nav-Incidentes" data-bs-toggle="tab" data-bs-target="#nav-Incidentes-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Incidentes
+        </button>
+        <button class="nav-link" id="nav-Documentos" data-bs-toggle="tab" data-bs-target="#nav-Documentos-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
             Documentos
         </button>
-        <button class="nav-link" id="nav-Materiales" data-bs-toggle="tab" data-bs-target="#nav-Materiales-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Materiales</button>
-        <button class="nav-link active" id="nav-ReporteFinanciero" data-bs-toggle="tab"
-            data-bs-target="#nav-ReporteFinanciero-tab" type="button" role="tab" aria-controls="nav-home"
-            aria-selected="true">Ver reporte financiero</button>
+        <button class="nav-link" id="nav-Materiales" data-bs-toggle="tab" data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Materiales
+        </button>
+        <button class="nav-link" id="nav-ReporteFinanciero" data-bs-toggle="tab" data-bs-target="#nav-ReporteFinanciero-tab" type="button" role="tab" aria-controls="nav-home" aria-selected="true">
+            Ver reporte financiero
+        </button>
     </div>
 </nav>
 
@@ -89,15 +90,11 @@
         Contenido del tab Guardar/Marcar Salida/Entrada.
     </div>
 
-
-
-
-    <div class="tab-pane fade show active" id="nav-Cronograma-tab" role="tabpanel" aria-labelledby="nav-Cronograma">
+    <div class="tab-pane fade " id="nav-Cronograma-tab" role="tabpanel" aria-labelledby="nav-Cronograma">
 
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearTareaModal">
             Nueva Tarea
         </button>
-
 
         <!-- Tabla de tareas del proyecto -->
         <table class="table table-bordered">
@@ -125,16 +122,17 @@
                     <td>@tarea.Descripcion</td>
                     <td>
                         <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarTareaModal"
-                            data-id="@tarea.Id" data-nombre="@tarea.Nombre" data-descripcion="@tarea.Descripcion"
+                            data-id="@tarea.Id" 
+                            data-nombre="@tarea.Nombre" 
+                            data-descripcion="@tarea.Descripcion"
                             data-fechainicio="@tarea.FechaInicio.ToString(" yyyy-MM-dd")"
                             data-fechafin="@tarea.FechaFin.ToString(" yyyy-MM-dd")">
                             Editar
                         </button>
                     </td>
                     <td>
-                                <form method="post" asp-page-handler="EliminarTarea" asp-route-IdTarea="@tarea.Id" asp-route-CodigoProyecto="@Model.CodigoProyecto"
-                            style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea eliminar esta tarea?')">
+                        <form method="post" asp-page-handler="EliminarTarea" asp-route-IdTarea="@tarea.Id" asp-route-CodigoProyecto="@Model.CodigoProyecto" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea eliminar esta tarea?')">
                                 Eliminar
                             </button>
                         </form>
@@ -153,7 +151,59 @@
     </div>
 
     <div class="tab-pane fade" id="nav-NotaAvance-tab" role="tabpanel" aria-labelledby="nav-NotasAvance">
-        Contenido del tab notas de avance.
+         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearNotaAvanceModal">
+            Crear Nota
+        </button>
+
+        <!-- Tabla de notas de avance del proyecto -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Descripcion</th>
+                    <th>Fecha Subida</th>
+                    <th></th> <!-- Columna para los botones de Editar, Eliminar -->
+                </tr>
+            </thead>
+
+            <!-- Cuerpo de la tabla -->
+            <tbody>
+                @foreach (var nota in Model.Notas.OrderByDescending(n => n.FechaNota))
+                {
+                    // Definimos el tipo de fila según si queremos destacarla o no
+                    var filaClase = nota.Destacada ? "table-success" : ""; // table-success para verde claro
+
+                    <tr class="@filaClase">
+                        <td>@nota.Descripcion</td>
+                        <td>@nota.FechaNota.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <form method="post" asp-page-handler="DestacarNota" class="d-inline">
+                                <input type="hidden" name="idNota" value="@nota.IdNota" />
+                                <input type="hidden" name="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+                                <button type="submit" class="btn btn-success">
+                                    Destacar
+                                </button>
+                            </form>
+
+                            <button class="btn btn-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editarNotaModal"
+                                    data-id="@nota.IdNota"
+                                    data-descripcion="@nota.Descripcion">
+                                Editar
+                            </button>
+                            <form method="post" asp-page-handler="EliminarNota" class="d-inline">
+                                <input type="hidden" name="idNota" value="@nota.IdNota" />
+                                <input type="hidden" name="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Desea eliminar esta Nota?')">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
     </div>
 
     <div class="tab-pane fade" id="nav-PersonalProyecto-tab" role="tabpanel" aria-labelledby="nav-PersonalProyecto">
@@ -434,6 +484,63 @@
     </div>
 </div>
 
+<!-- Modal: Crear Nueva Nota Avance -->
+<div class="modal fade" id="crearNotaAvanceModal" tabindex="-1" aria-labelledby="crearNotaAvanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CrearNota">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crearNotaAvanceModalLabel">Nueva Nota</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Descripción -->
+                    <div class="mb-3">
+                        <label for="Descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" asp-for="NuevaNota.Descripcion" rows="3" required></textarea>
+
+                        <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Nota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Nota Avance -->
+<div class="modal fade" id="editarNotaModal" tabindex="-1" aria-labelledby="editarNotaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EditarNota">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarNotaModalLabel">Editar Nota</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit-Descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" asp-for="NuevaNota.Descripcion" id="edit-Descripcion" rows="3" required></textarea>
+                    </div>
+                    <!-- Hidden para Id de la nota -->
+                    <input type="hidden" asp-for="NuevaNota.IdNota" id="edit-IdNota" />
+                    <!-- Hidden para CodigoProyecto -->
+                    <input type="hidden" asp-for="CodigoProyecto" value="@Model.CodigoProyecto" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Script de Modal Editar Tarea -->
 <script>
     var editarTareaModal = document.getElementById('editarTareaModal');
     editarTareaModal.addEventListener('show.bs.modal', function (event) {
@@ -462,3 +569,35 @@
         document.getElementById('UsuarioReasignar').value = antiguoId;
     });
 </script>
+
+<!-- Script de Modal Editar Nota -->
+<script>
+    var editarNotaModal = document.getElementById('editarNotaModal');
+    editarNotaModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+
+        // Extraer valores de los atributos data-*
+        var idNota = button.getAttribute('data-id');
+        var descripcion = button.getAttribute('data-descripcion');
+
+        // Presentar el valores actuales en el textbox
+        editarNotaModal.querySelector('#edit-IdNota').value = idNota;
+        editarNotaModal.querySelector('#edit-Descripcion').value = descripcion;
+    });
+</script>
+
+<!-- Script para Guardar Ultimo Tab -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var tabActiva = '@TempData["TabActiva"]';
+        if(tabActiva) {
+            var triggerEl = document.querySelector(`#nav-${tabActiva}`);
+            if(triggerEl){
+                var tab = new bootstrap.Tab(triggerEl);
+                tab.show();
+            }
+        }
+    });
+</script>
+
+
