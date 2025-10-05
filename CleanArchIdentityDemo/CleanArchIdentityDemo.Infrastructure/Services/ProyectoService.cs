@@ -118,7 +118,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }
         }
 
-
         public async Task<int> RecalculoPorcentajeAvance(string CodigoProyecto)
         {
             Proyecto? ProyectoEncontrado = await BuscarProyectoPorCodigo(CodigoProyecto);
@@ -162,9 +161,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
         }
 
-
         // ====================== MÉTODOS PARA TAREAS (Checho)======================
-        // Metodos para trabajar las tareas
         public async Task<IEnumerable<TareaDto>> MostrarTareasPorProyectoAsync(int IdProyecto)
         {
             var proyecto = await _context.Proyectos // Se llama la tabla Proyectos
@@ -184,8 +181,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }).ToList(); // Devolver la lista de TareaDto
         }
 
-
-        // Crear una tarea nueva
         public async Task CrearTareaAsync(TareaDto dto)
         {
             var proyecto = await _context.Proyectos.FirstOrDefaultAsync(p => p.IdProyecto == dto.ProyectoId); // buscar el proyecto por su Id
@@ -205,7 +200,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
         }
 
-        // Editar tarea
         public async Task EditarTareaAsync(TareaDto dto)
         {
             var tarea = await _context.Tareas.FirstOrDefaultAsync(t => t.IdTarea == dto.Id); // buscar la tarea por su Id
@@ -231,7 +225,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 await _context.SaveChangesAsync();// Guardar los cambios en la base de datos
             }
         }
-        //Asignar personal a un proyecto
+
+        // ====================== MÉTODOS PARA PERSONAL DEL PROYECTO======================
         public async Task AsignarPersonalAProyectoAsync(string codigoProyecto, string personalId)
         {
             // Buscar el proyecto por su código
@@ -360,8 +355,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             await _context.SaveChangesAsync();
         }
 
-
-
         public async Task<IEnumerable<ProyectoDto>> MostrarProyectosListaReasignacionAsync(string codigoProyectoActual)
         {
             var proyectos = await _context.Proyectos
@@ -388,6 +381,80 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return listaProyectos;
         }
+
+        // ====================== MÉTODOS PARA NOTAS (Checho)======================
+        public async Task<List<NotaAvanceDto>> MostrarNotasAsync(int idProyecto)
+        {
+            return await _context.NotasAvance
+                .Where(n => n.ProyectoId == idProyecto)
+                .OrderByDescending(n => n.FechaNota)
+                .Select(n => new NotaAvanceDto
+                {
+                    IdNota = n.IdNota,
+                    ProyectoId = n.ProyectoId,
+                    Descripcion = n.Descripcion,
+                    Destacada = n.Destacada,
+                    FechaNota = n.FechaNota,
+                    CreadoPor = n.CreadoPor
+                })
+                .ToListAsync();
+        }
+
+        public async Task CrearNotaAsync(NotaAvanceDto notaDto)
+        {
+            var nota = new NotaAvance
+            {
+                ProyectoId = notaDto.ProyectoId,
+                Descripcion = notaDto.Descripcion,
+                Destacada = notaDto.Destacada,
+                FechaNota = notaDto.FechaNota,
+                CreadoPor = notaDto.CreadoPor
+            };
+
+            _context.NotasAvance.Add(nota);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task EditarNotaAsync(NotaAvanceDto notaDto)
+        {
+            var notaExistente = await _context.NotasAvance
+                .FirstOrDefaultAsync(n => n.IdNota == notaDto.IdNota);
+           
+            notaExistente.Descripcion = notaDto.Descripcion;
+            notaExistente.FechaNota = notaDto.FechaNota;
+            notaExistente.CreadoPor = notaDto.CreadoPor;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task EliminarNotaAsync(int IdNota)
+        {
+            var nota = await _context.NotasAvance.FirstOrDefaultAsync(n => n.IdNota == IdNota);
+
+            if (nota != null) //si lo encuentra lo elimina
+            {
+                _context.NotasAvance.Remove(nota); // Eliminar la tarea del contexto
+                await _context.SaveChangesAsync();// Guardar los cambios en la base de datos
+            }
+        }
+
+        public async Task<bool> DestacarNotaAsync(int idNota)
+        {
+            var nota = await _context.NotasAvance
+                .FirstOrDefaultAsync(n => n.IdNota == idNota);
+
+            if (nota == null)
+            {
+                return false;
+            }
+
+            nota.Destacada = !nota.Destacada;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+
+    
 
         //Mostrar incidente 
         public async Task<IEnumerable<Incidente>> MostrarIncidentesPorProyectoAsync(int proyectoId)

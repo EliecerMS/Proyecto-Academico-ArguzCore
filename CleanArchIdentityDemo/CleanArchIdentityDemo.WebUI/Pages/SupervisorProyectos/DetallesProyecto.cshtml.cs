@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Security.Claims;
 
 
 namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
@@ -46,7 +47,6 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         [BindProperty]
         public string CodigoProyectoNuevo { get; set; }
 
-
         public List<ProyectoDto> ProyectosDisponibles { get; set; } = new();
 
         //lista de usuarios para asignar a un proyecto
@@ -55,6 +55,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public List<UserDto> UsuariosDisponibles { get; set; } = new();
 
         public List<UserDto> UsuariosEmpleado { get; set; } = new List<UserDto>();
+
+        // ---------- VARIABLES PARA TAREAS
         public List<TareaDto> Tareas { get; private set; } // Este es el elemento donde se guardan las tareas
 
         [BindProperty]
@@ -63,8 +65,15 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         //Incidente
         public List<Incidente> Incidentes { get; set; } = new();
 
+        // ---------- VARIABLES PARA NOTAS DE AVANCE
+        [BindProperty]
+        public NotaAvanceDto NuevaNota { get; set; }
+        public List<NotaAvanceDto> Notas { get; set; } = new();
         [BindProperty]
         public Incidente NuevoIncidente { get; set; } = new Incidente();
+
+        [BindProperty]
+        public NotaAvanceDto EditarNota { get; set; } = new();
 
 
 
@@ -100,16 +109,25 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             ProyectosDisponibles = (await _proyectoService.MostrarProyectosListaReasignacionAsync(CodigoProyecto)).ToList();
 
-            // Traer proyecto completo usando el CódigoProyecto
-            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto) ?? new Proyecto();
 
             // Traer las tareas relacionadas usando el IdProyecto con el metodo que ya tienes en el servicio
             if (DetalleProyecto != null)
             {
                 Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+
+                // Traer las notas relacionadas usando el IdProyecto
+                Notas = (await _proyectoService.MostrarNotasAsync(DetalleProyecto.IdProyecto)).ToList();
                 //Cargar Incidentes
                 Incidentes = (await _proyectoService.MostrarIncidentesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList(); 
             }
+            else
+            {
+                // Inicializar listas vacías si no se encontró el proyecto
+                Tareas = new List<TareaDto>();
+                Notas = new List<NotaAvanceDto>();
+            }
+
+
 
         }
         //UsuariosEmpleado = await _userService.GetAllNormalUsersAsync().ToList();
@@ -133,7 +151,6 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             return RedirectToPage(new { CodigoProyecto });
         }
 
-
         public async Task<IActionResult> OnPostReasignarPersonalAsync()
         {
             try
@@ -147,6 +164,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             return RedirectToPage(new { CodigoProyecto });
         }
 
+        // --------- METODOS PARA TAREAS
         public async Task<IActionResult> OnPostCrearTareaAsync()
         {
             // Recargar el proyecto completo antes de usarlo para acceder a IdProyecto
@@ -164,10 +182,10 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             await _proyectoService.CrearTareaAsync(NuevaTarea);
 
             // Redirigir a la misma página con el CódigoProyecto
-            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+            TempData["TabActiva"] = "Cronograma";
+            return RedirectToPage(new { CodigoProyecto });
 
         }
-
 
         public async Task<IActionResult> OnPostEliminarTareaAsync(int IdTarea, string CodigoProyecto)
         {
@@ -177,16 +195,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             // Recargar el proyecto completo para ovalidar que no se haya roto
             DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
 
-            /*if (DetalleProyecto == null)
-            {
-                return NotFound("Tarea no encontrada");
-            }*/ //validar con mensaje de error, return NotFound lo que hace es mostrar una pagina de error 404, no es lo ideal, es mas correcto mostrar un mensaje en la misma pagina
-
-            // Recargar lista de tareas
-            //Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
-
             // Redirigir a la misma página con el CódigoProyecto
-            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+            TempData["TabActiva"] = "Cronograma";
+            return RedirectToPage(new { CodigoProyecto });
         }
 
         public async Task<IActionResult> OnPostEditarTareaAsync()
@@ -202,8 +213,88 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             // Recargar lista de tareas
             Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
             // Redirigir a la misma página con el CódigoProyecto
-            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+            TempData["TabActiva"] = "Cronograma";
+            return RedirectToPage(new { CodigoProyecto });
         }
+
+        // --------- METODOS PARA NOTAS DE AVANCE
+        public async Task<IActionResult> OnPostCrearNota()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Traer proyecto y validar que exista
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+            if (DetalleProyecto == null)
+            {
+                TempData["Error"] = "No se encontró el proyecto. La nota no pudo crearse.";
+
+                TempData["TabActiva"] = "NotasAvance";
+                return RedirectToPage(new { CodigoProyecto }); // o redirige a un listado general
+            }
+
+            NuevaNota.CreadoPor = userId;
+            NuevaNota.ProyectoId = DetalleProyecto.IdProyecto;
+            NuevaNota.FechaNota = DateTime.Now;
+
+            await _proyectoService.CrearNotaAsync(NuevaNota);
+
+            TempData["MensajeExito"] = "Nota creada correctamente."; // Depuración, se puede borrar
+
+            TempData["TabActiva"] = "NotasAvance";
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEditarNotaAsync()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+            if (DetalleProyecto == null)
+            {
+                TempData["Error"] = "No se encontró el proyecto. La nota no pudo actualizarse.";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+
+            NuevaNota.ProyectoId = DetalleProyecto.IdProyecto;
+            NuevaNota.FechaNota = DateTime.Now;
+            NuevaNota.CreadoPor = userId;
+
+            await _proyectoService.EditarNotaAsync(NuevaNota);
+
+            //TempData["MensajeExito"] = "Mensaje de depuracion";
+            
+            TempData["TabActiva"] = "NotasAvance";
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEliminarNotaAsync(int idNota)
+        {
+            await _proyectoService.EliminarNotaAsync(idNota);
+            //TempData["MensajeExito"] = "Nota eliminada correctamente.";
+
+            TempData["TabActiva"] = "NotasAvance";
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostDestacarNotaAsync(int idNota)
+        {
+            bool resultado = await _proyectoService.DestacarNotaAsync(idNota);
+
+            /*if (!resultado)
+            {
+                TempData["Error"] = "No se encontró la nota seleccionada.";
+            }
+            else
+            {
+                TempData["MensajeExito"] = resultado
+                    ? "La nota ha sido destacada correctamente."
+                    : "La nota ya no está destacada.";
+            }
+            */
+            TempData["TabActiva"] = "NotasAvance";
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
         //Agregar Incidente
         public async Task<IActionResult> OnPostCrearIncidenteAsync()
         {
