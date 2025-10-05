@@ -63,16 +63,18 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
 
 
-        //metodo para mostrar incidentes de un proyecto
+        // Método para listar incidentes de un proyecto
+        Task<IEnumerable<Incidente>> MostrarIncidentesPorProyectoAsync(int proyectoId);
 
+        // Método para registrar incidente de un proyecto
+        Task CrearIncidenteAsync(Incidente incidente);
 
-        //metodo para registrar incidente de un proyecto
+        // Método para editar/cerrar (actualizar) un incidente
+        Task ActualizarIncidenteAsync(Incidente incidente);
 
+        // Método para obtener un incidente por Id (usado en editar y cerrar)
+        Task<Incidente> ObtenerIncidentePorIdAsync(int idIncidente);
 
-        //metodo para editar incidente de un proyecto
-
-
-        //metodo para cerrar incidente de un proyecto
 
 
         //metodo para mostrar las solicitudes de material del proyecto enviadas a bodega central

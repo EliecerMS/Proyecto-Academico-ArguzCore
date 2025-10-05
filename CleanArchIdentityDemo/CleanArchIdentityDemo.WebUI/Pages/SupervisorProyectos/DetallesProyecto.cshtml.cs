@@ -1,9 +1,12 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Domain.Entities;
+using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+
 
 namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 {
@@ -12,11 +15,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
     {
         private readonly IProyectoService _proyectoService;
         private readonly IUserService _userService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public DetallesProyectoModel(IProyectoService proyectoService, IUserService userService)
+
+        public DetallesProyectoModel(IProyectoService proyectoService, IUserService userService, UserManager<ApplicationUser> userManager)
         {
             _proyectoService = proyectoService;
             _userService = userService;
+            _userManager = userManager;
         }
 
         public Proyecto DetalleProyecto { get; set; }
@@ -54,7 +60,11 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         [BindProperty]
         public TareaDto NuevaTarea { get; set; } = new TareaDto(); // Propiedad para enlazar el formulario de nueva tarea y poder crearla
 
+        //Incidente
+        public List<Incidente> Incidentes { get; set; } = new();
 
+        [BindProperty]
+        public Incidente NuevoIncidente { get; set; } = new Incidente();
 
 
 
@@ -97,6 +107,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             if (DetalleProyecto != null)
             {
                 Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+                //Cargar Incidentes
+                Incidentes = (await _proyectoService.MostrarIncidentesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList(); 
             }
 
         }
@@ -192,6 +204,57 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             // Redirigir a la misma página con el CódigoProyecto
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
+        //Agregar Incidente
+        public async Task<IActionResult> OnPostCrearIncidenteAsync()
+        {
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+            if (DetalleProyecto == null)
+            {
+                return NotFound("Proyecto no encontrado");
+            }
+
+            NuevoIncidente.ProyectoId = DetalleProyecto.IdProyecto;
+            NuevoIncidente.FechaRegistro = DateTime.Now;
+            NuevoIncidente.Estado = "Abierto";
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                NuevoIncidente.CreadoPor = user.Id;
+            }
+
+            await _proyectoService.CrearIncidenteAsync(NuevoIncidente);
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+        public async Task<IActionResult> OnPostCerrarIncidenteAsync(int IdIncidente, string CodigoProyecto)
+        {
+            var incidente = await _proyectoService.ObtenerIncidentePorIdAsync(IdIncidente);
+            if (incidente == null)
+            {
+                return NotFound("Incidente no encontrado");
+            }
+
+            incidente.Estado = "Cerrado";
+            await _proyectoService.ActualizarIncidenteAsync(incidente);
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+        public async Task<IActionResult> OnPostEditarIncidenteAsync(int IdIncidente, string Descripcion, string CodigoProyecto)
+        {
+            var incidente = await _proyectoService.ObtenerIncidentePorIdAsync(IdIncidente);
+            if (incidente == null || incidente.Estado != "Abierto")
+            {
+                return NotFound("Incidente no encontrado o ya cerrado");
+            }
+
+            // Actualizar solo la descripción
+            incidente.Descripcion = Descripcion;
+
+            await _proyectoService.ActualizarIncidenteAsync(incidente);
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        } 
     }
 }
 

@@ -201,7 +201,75 @@
     </div>
 
     <div class="tab-pane fade" id="nav-Incidentes-tab" role="tabpanel" aria-labelledby="nav-Incidentes">
-        Contenido del tab incidentes.
+
+        <!-- Botón para abrir modal -->
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearIncidenteModal">
+            Nuevo Incidente
+        </button>
+
+        <!-- Tabla de incidentes -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Incidentes != null && Model.Incidentes.Any())
+                {
+                    foreach (var incidente in Model.Incidentes)
+                    {
+                        <tr>
+                            <td>@incidente.Descripcion</td>
+                            <td>@incidente.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@incidente.Estado</td>
+                            <td>
+                                @if (incidente.Estado == "Abierto")
+                                {
+                                    <form method="post" asp-page-handler="CerrarIncidente"
+                                          asp-route-idIncidente="@incidente.IdIncidente"
+                                          asp-route-CodigoProyecto="@Model.CodigoProyecto"
+                                          style="display:inline;">
+
+                                        <button type="button" class="btn btn-sm btn-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEditarIncidente"
+                                                data-id="@incidente.IdIncidente"
+                                                data-descripcion="@incidente.Descripcion">
+                                            Editar
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalCerrarIncidente"
+                                                data-id="@incidente.IdIncidente"
+                                                data-descripcion="@incidente.Descripcion">
+                                            Cerrar
+                                        </button>
+
+
+                                    </form> 
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Ya cerrado</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center">No hay incidentes registrados.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
     </div>
 
     <div class="tab-pane fade" id="nav-Documentos-tab" role="tabpanel" aria-labelledby="nav-Documentos">
@@ -433,7 +501,82 @@
         </div>
     </div>
 </div>
+<!-- Modal: Crear Incidente -->
+<div class="modal fade" id="crearIncidenteModal" tabindex="-1" aria-labelledby="crearIncidenteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CrearIncidente">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crearIncidenteModalLabel">Nuevo Incidente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
 
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" asp-for="NuevoIncidente.Descripcion" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
+<!-- Modal: Cerrar Incidente -->
+<div class="modal fade" id="modalCerrarIncidente" tabindex="-1" aria-labelledby="modalCerrarIncidenteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CerrarIncidente">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCerrarIncidenteLabel">Confirmar Cierre</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Seguro que quieres cerrar este incidente?</p>
+                    <p><strong id="descripcionIncidente"></strong></p>
+
+                    <!-- valores ocultos -->
+                    <input type="hidden" name="IdIncidente" id="incidenteId" />
+                    <input type="hidden" name="CodigoProyecto" value="@Model.CodigoProyecto" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar Cierre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
+<!-- Modal: Editar Incidente -->
+<div class="modal fade" id="modalEditarIncidente" tabindex="-1" aria-labelledby="modalEditarIncidenteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EditarIncidente">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarIncidenteLabel">Editar Incidente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="IdIncidente" id="editIncidenteId" />
+                    <input type="hidden" name="CodigoProyecto" value="@Model.CodigoProyecto" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" name="Descripcion" id="editIncidenteDescripcion" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Aplicar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
 <script>
     var editarTareaModal = document.getElementById('editarTareaModal');
     editarTareaModal.addEventListener('show.bs.modal', function (event) {
@@ -462,3 +605,26 @@
         document.getElementById('UsuarioReasignar').value = antiguoId;
     });
 </script>
+<script>
+    var modalCerrarIncidente = document.getElementById('modalCerrarIncidente');
+    modalCerrarIncidente.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var id = button.getAttribute('data-id');
+        var descripcion = button.getAttribute('data-descripcion');
+
+        // asignar al hidden input y al texto
+        modalCerrarIncidente.querySelector('#incidenteId').value = id;
+        modalCerrarIncidente.querySelector('#descripcionIncidente').textContent = descripcion;
+    });
+</script> 
+<script>
+    var modalEditarIncidente = document.getElementById('modalEditarIncidente');
+    modalEditarIncidente.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var id = button.getAttribute('data-id');
+        var descripcion = button.getAttribute('data-descripcion');
+
+        document.getElementById('editIncidenteId').value = id;
+        document.getElementById('editIncidenteDescripcion').value = descripcion;
+    });
+</script> 

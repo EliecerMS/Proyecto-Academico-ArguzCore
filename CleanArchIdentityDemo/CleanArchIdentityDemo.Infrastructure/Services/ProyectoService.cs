@@ -388,6 +388,36 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return listaProyectos;
         }
+
+        //Mostrar incidente 
+        public async Task<IEnumerable<Incidente>> MostrarIncidentesPorProyectoAsync(int proyectoId)
+        {
+            return await _context.Incidentes
+                .Where(i => i.ProyectoId == proyectoId)
+                .OrderByDescending(i => i.FechaRegistro)
+                .ToListAsync();
+        }
+
+        //Crear Incidente
+        public async Task CrearIncidenteAsync(Incidente incidente)
+        {
+            _context.Incidentes.Add(incidente);
+            await _context.SaveChangesAsync();
+        }
+
+        //Cerrar Incidente
+        public async Task<Incidente> ObtenerIncidentePorIdAsync(int idIncidente)
+        {
+            return await _context.Incidentes.FindAsync(idIncidente);
+        }
+
+        public async Task ActualizarIncidenteAsync(Incidente incidente)
+        {
+            _context.Incidentes.Update(incidente);
+            await _context.SaveChangesAsync();
+
+        }
+
     }
 }
     
