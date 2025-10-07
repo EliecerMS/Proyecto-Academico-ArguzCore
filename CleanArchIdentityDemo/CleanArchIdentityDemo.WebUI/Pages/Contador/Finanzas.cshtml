@@ -2,3 +2,26 @@
 @model CleanArchIdentityDemo.WebUI.Pages.Contador.FinanzasModel
 @{
 }
+
+
+<h2>Finanzas</h2>
+
+<nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <button class="nav-link" id="nav-PagosProveedor" data-bs-toggle="tab" data-bs-target="#nav-PagosProveedor-tab" type="button" role="tab" aria-controls="nav-PagosProveedor-tab" aria-selected="false">
+            Pagos por proveedor
+        </button>
+        <button class="nav-link" id="nav-GastosEjecutados" data-bs-toggle="tab" data-bs-target="#nav-GastosEjecutados-tab" type="button" role="tab" aria-controls="nav-GastosEjecutados-tab" aria-selected="false">
+            Gastos ejecutados
+        </button>
+    </div>
+</nav>
+
+<div class="tab-content" id="nav-tabContent">
+    <div class="tab-pane fade" id="nav-PagosProveedor-tab" role="tabpanel" aria-labelledby="nav-PagosProveedor">
+        Contenido del tab pagos por proveedor
+    </div>
+    <div class="tab-pane fade" id="nav-GastosEjecutados-tab" role="tabpanel" aria-labelledby="nav-GastosEjecutados">
+        Contenido del tab Gastos Ejecutados
+    </div>
+</div>

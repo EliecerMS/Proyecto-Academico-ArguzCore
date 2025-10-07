@@ -36,12 +36,12 @@
                             data-email="@user.Email"
                             data-nombre="@user.NombreCompleto"
                             data-rol="@user.Role">
-                        Editar
+                        <i class="fas fa-edit"></i> Editar
                     </button>
                     <form method="post" asp-page-handler="Delete">
                         <input type="hidden" name="IdUsuario" value="@user.Id" />
                         <button class="btn btn-sm btn-danger">
-                        Eliminar
+                            <i class="fas fa-trash"></i> Eliminar
                     </button>
                     </form>
                 </td>
