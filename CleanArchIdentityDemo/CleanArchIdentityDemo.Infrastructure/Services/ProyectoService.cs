@@ -388,6 +388,52 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return listaProyectos;
         }
+        //Materiales
+        public async Task CrearSolicitudMaterialAsync(SolicitudMaterial solicitud)
+        {
+            _context.SolicitudesMaterial.Add(solicitud);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<SolicitudMaterial?> ObtenerSolicitudPorIdAsync(int idSolicitud)
+        {
+            return await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .ThenInclude(ms => ms.Material)
+                .FirstOrDefaultAsync(s => s.IdSolicitud == idSolicitud);
+        }
+
+        public async Task ActualizarSolicitudAsync(SolicitudMaterial solicitud)
+        {
+            _context.SolicitudesMaterial.Update(solicitud);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<Material>> ObtenerMaterialesAsync()
+        {
+            return await _context.Materiales.ToListAsync();
+        }
+        public async Task<List<SolicitudMaterial>> MostrarSolicitudesPorProyectoAsync(int proyectoId)
+        {
+            return await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                    .ThenInclude(ms => ms.Material)
+                .Where(s => s.ProyectoId == proyectoId)
+                .ToListAsync();
+        }
+        public async Task EliminarSolicitudMaterialAsync(int idSolicitud)
+        {
+            var solicitud = await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .FirstOrDefaultAsync(s => s.IdSolicitud == idSolicitud);
+
+            if (solicitud != null)
+            {
+                _context.MaterialesSolicitados.RemoveRange(solicitud.MaterialesSolicitados);
+                _context.SolicitudesMaterial.Remove(solicitud);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }
     

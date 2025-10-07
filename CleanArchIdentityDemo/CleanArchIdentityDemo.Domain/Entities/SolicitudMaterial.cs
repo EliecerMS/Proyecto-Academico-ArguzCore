@@ -24,6 +24,6 @@ namespace CleanArchIdentityDemo.Domain.Entities
 
 
         // Colección
-        public ICollection<MaterialSolicitado> MaterialesSolicitados { get; set; } = new List<MaterialSolicitado>();
+        public List<MaterialSolicitado> MaterialesSolicitados { get; set; } = new List<MaterialSolicitado>();
     }
 }

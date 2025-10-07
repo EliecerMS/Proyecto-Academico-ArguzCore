@@ -53,7 +53,30 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         [BindProperty]
         public TareaDto NuevaTarea { get; set; } = new TareaDto(); // Propiedad para enlazar el formulario de nueva tarea y poder crearla
+                                                                   // Solicitud Material
+        public class NuevoMaterialInput
+        {
+            public int MaterialId { get; set; }
+            public int Cantidad { get; set; }
+        }
+        public List<SolicitudMaterial> SolicitudesMaterial { get; set; } = new();
+        public List<Material> MaterialesDisponibles { get; set; } = new();
 
+        [BindProperty]
+        public SolicitudMaterial NuevaSolicitud { get; set; } = new SolicitudMaterial
+        {
+            MaterialesSolicitados = new List<MaterialSolicitado>
+            {
+            new MaterialSolicitado()
+            }
+        };
+
+
+        [BindProperty]
+        public List<NuevoMaterialInput> NuevosMateriales { get; set; } = new()
+        {
+            new NuevoMaterialInput()
+        };
 
 
 
@@ -98,6 +121,11 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             {
                 Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
             }
+            //Cargar solicitudes de material del proyecto
+            SolicitudesMaterial = (await _proyectoService.MostrarSolicitudesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+
+            //Cargar materiales disponibles para mostrar en el combo
+            MaterialesDisponibles = (await _proyectoService.ObtenerMaterialesAsync()).ToList();
 
         }
         //UsuariosEmpleado = await _userService.GetAllNormalUsersAsync().ToList();
@@ -190,6 +218,71 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             // Recargar lista de tareas
             Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
             // Redirigir a la misma página con el CódigoProyecto
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+        //Solicitud de Materiales  
+
+        public async Task<IActionResult> OnPostCrearSolicitudAsync()
+        {
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+            if (DetalleProyecto == null)
+            {
+                return NotFound("Proyecto no encontrado");
+            }
+
+            NuevaSolicitud.ProyectoId = DetalleProyecto.IdProyecto;
+            NuevaSolicitud.FechaSolicitud = DateTime.Now;
+            NuevaSolicitud.EstadoSolicitud = "Abierta";
+
+            foreach (var mat in NuevaSolicitud.MaterialesSolicitados)
+            {
+                mat.SolicitudMaterial = NuevaSolicitud;
+
+            }
+
+            await _proyectoService.CrearSolicitudMaterialAsync(NuevaSolicitud);
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+
+
+
+        public async Task<IActionResult> OnPostEditarSolicitudAsync(int IdSolicitud, int MaterialId, int Cantidad, string Prioridad, string Observaciones, string CodigoProyecto)
+        {
+            var solicitud = await _proyectoService.ObtenerSolicitudPorIdAsync(IdSolicitud);
+            if (solicitud == null || solicitud.EstadoSolicitud != "Abierta")
+            {
+                return NotFound("Solicitud no encontrada o ya cerrada");
+            }
+
+
+            var materialSolicitado = solicitud.MaterialesSolicitados.FirstOrDefault();
+            if (materialSolicitado != null)
+            {
+                materialSolicitado.MaterialId = MaterialId;
+                materialSolicitado.Cantidad = Cantidad;
+                materialSolicitado.Prioridad = Prioridad;
+            }
+
+            solicitud.ObservacionesBodeguero = Observaciones;
+
+            await _proyectoService.ActualizarSolicitudAsync(solicitud);
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+        public async Task<IActionResult> OnPostEliminarSolicitudAsync(int idSolicitud, string CodigoProyecto)
+        {
+            var solicitud = await _proyectoService.ObtenerSolicitudPorIdAsync(idSolicitud);
+            if (solicitud == null)
+            {
+                TempData["ErrorPersonal"] = "La solicitud no fue encontrada o ya fue eliminada.";
+                return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+            }
+
+            await _proyectoService.EliminarSolicitudMaterialAsync(idSolicitud);
+
+            TempData["MensajeExito"] = "La solicitud de material fue eliminada correctamente.";
+
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
     }

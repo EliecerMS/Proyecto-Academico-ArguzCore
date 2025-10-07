@@ -217,23 +217,95 @@
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
 
                 <button class="nav-link" id="nav-MaterialesProyecto" data-bs-toggle="tab"
-                    data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact"
-                    aria-selected="false">Materiales en proyecto</button>
+                        data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact"
+                        aria-selected="false">
+                    Materiales en proyecto
+                </button>
                 <button class="nav-link" id="nav-SolicitudesMaterial" data-bs-toggle="tab"
-                    data-bs-target="#nav-SolicitudMateriales-tab" type="button" role="tab" aria-controls="nav-contact"
-                    aria-selected="false">Solicitudes de material</button>
+                        data-bs-target="#nav-SolicitudMateriales-tab" type="button" role="tab" aria-controls="nav-contact"
+                        aria-selected="false">
+                    Solicitudes de material
+                </button>
 
             </div>
         </nav>
         <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel"
-                aria-labelledby="nav-MaterialesProyecto">
+            <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-MaterialesProyecto">
                 Contenido del sub tab Materiales en proyecto.
             </div>
-            <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel"
-                aria-labelledby="nav-SolicitudesMaterial">
-                Contenido del sub tab Solicitudes de material.
+            <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel" aria-labelledby="nav-SolicitudesMaterial">
+
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearSolicitudModal">
+                    Solicitar Material
+                </button>
+
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Cantidad</th>
+                            <th>Prioridad</th>
+                            <th>Fecha Solicitud</th>
+                            <th>Estado</th>
+                            <th>Observaciones</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.SolicitudesMaterial != null && Model.SolicitudesMaterial.Any())
+                        {
+                            foreach (var solicitud in Model.SolicitudesMaterial)
+                            {
+                                foreach (var mat in solicitud.MaterialesSolicitados)
+                                {
+                                    <tr>
+                                        <td>@mat.Material?.NombreMaterial</td>
+                                        <td>@mat.Cantidad</td>
+                                        <td>@mat.Prioridad</td>
+                                        <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@solicitud.EstadoSolicitud</td>
+                                        <td>@solicitud.ObservacionesBodeguero</td>
+                                        <td>
+                                            @if (solicitud.EstadoSolicitud == "Abierta")
+                                            {
+                                                <button type="button" class="btn btn-sm btn-warning"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editarSolicitudModal"
+                                                        data-id="@solicitud.IdSolicitud"
+                                                        data-material="@mat.MaterialId"
+                                                        data-cantidad="@mat.Cantidad"
+                                                        data-prioridad="@mat.Prioridad"
+                                                        data-observaciones="@solicitud.ObservacionesBodeguero">
+                                                    Editar
+                                                </button>
+
+                                                <form method="post" asp-page-handler="EliminarSolicitud"
+                                                      asp-route-idSolicitud="@solicitud.IdSolicitud"
+                                                      asp-route-CodigoProyecto="@Model.CodigoProyecto"
+                                                      style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No editable</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center">No hay solicitudes registradas.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
+
         </div>
     </div>
 </div>
@@ -433,7 +505,111 @@
         </div>
     </div>
 </div>
+<!-- Modal: Crear Solicitud de Material -->
+<div class="modal fade" id="crearSolicitudModal" tabindex="-1" aria-labelledby="crearSolicitudModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CrearSolicitud">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crearSolicitudModalLabel">Nueva Solicitud de Material</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
 
+                    <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Material</label>
+                        <select asp-for="NuevaSolicitud.MaterialesSolicitados[0].MaterialId" class="form-select">
+                            @foreach (var material in Model.MaterialesDisponibles)
+                            {
+                                <option value="@material.IdMaterial">@material.NombreMaterial</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" asp-for="NuevaSolicitud.MaterialesSolicitados[0].Cantidad" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Prioridad</label>
+                        <select asp-for="NuevaSolicitud.MaterialesSolicitados[0].Prioridad" class="form-select">
+                            <option value="Alta">Alta</option>
+                            <option value="Media">Media</option>
+                            <option value="Baja">Baja</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea asp-for="NuevaSolicitud.ObservacionesBodeguero" class="form-control" rows="3"></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal: Editar Solicitud -->
+<div class="modal fade" id="editarSolicitudModal" tabindex="-1" aria-labelledby="editarSolicitudModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EditarSolicitud">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarSolicitudModalLabel">Editar Solicitud de Material</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <input type="hidden" name="IdSolicitud" id="editSolicitudId" />
+                    <input type="hidden" name="CodigoProyecto" value="@Model.CodigoProyecto" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Material</label>
+                        <select name="MaterialId" id="editMaterialId" class="form-select">
+                            @foreach (var material in Model.MaterialesDisponibles)
+                            {
+                                <option value="@material.IdMaterial">@material.NombreMaterial</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" name="Cantidad" id="editCantidad" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Prioridad</label>
+                        <select name="Prioridad" id="editPrioridad" class="form-select">
+                            <option value="Alta">Alta</option>
+                            <option value="Media">Media</option>
+                            <option value="Baja">Baja</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea name="Observaciones" id="editObservaciones" class="form-control" rows="3"></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <script>
     var editarTareaModal = document.getElementById('editarTareaModal');
     editarTareaModal.addEventListener('show.bs.modal', function (event) {
@@ -460,5 +636,22 @@
         var button = event.relatedTarget;
         var antiguoId = button.getAttribute('data-antiguo');
         document.getElementById('UsuarioReasignar').value = antiguoId;
+    });
+    // Editar solicitud de material
+        var modalEditarSolicitud = document.getElementById('editarSolicitudModal');
+    modalEditarSolicitud.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+
+        var id = button.getAttribute('data-id');
+        var material = button.getAttribute('data-material');
+        var cantidad = button.getAttribute('data-cantidad');
+        var prioridad = button.getAttribute('data-prioridad');
+        var observaciones = button.getAttribute('data-observaciones');
+
+        document.getElementById('editSolicitudId').value = id;
+        document.getElementById('editMaterialId').value = material;
+        document.getElementById('editCantidad').value = cantidad;
+        document.getElementById('editPrioridad').value = prioridad;
+        document.getElementById('editObservaciones').value = observaciones;
     });
 </script>

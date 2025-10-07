@@ -75,12 +75,19 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         //metodo para cerrar incidente de un proyecto
 
 
-        //metodo para mostrar las solicitudes de material del proyecto enviadas a bodega central
+        //Método para mostrar las solicitudes de material del proyecto enviadas a bodega central
+        Task CrearSolicitudMaterialAsync(SolicitudMaterial solicitud);
 
+        // Método para editar la solicitud de material enviada a bodega central
+        Task ActualizarSolicitudAsync(SolicitudMaterial solicitud);
+        Task<SolicitudMaterial> ObtenerSolicitudPorIdAsync(int idSolicitud);
 
-        // metotodo para editar la solicitud de material enviada a bodega central
+        //Método para obtener materiales
+        Task<IEnumerable<Material>> ObtenerMaterialesAsync();
+        // para mostrar todas las solicitudes de material de un proyecto
+        Task<List<SolicitudMaterial>> MostrarSolicitudesPorProyectoAsync(int proyectoId);
 
-
-        //metodo para eliminar solicitud de material enviada a bodega central
+        //Método para eliminar solicitud de material enviada a bodega central
+        Task EliminarSolicitudMaterialAsync(int idSolicitud);
     }
 }
