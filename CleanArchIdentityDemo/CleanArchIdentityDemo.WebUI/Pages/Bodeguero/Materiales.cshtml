@@ -2,3 +2,27 @@
 @model CleanArchIdentityDemo.WebUI.Pages.Bodeguero.MaterialesModel
 @{
 }
+
+
+<h2>Materiales</h2>
+
+
+<nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <button class="nav-link" id="nav-MaterialesBodega" data-bs-toggle="tab" data-bs-target="#nav-MaterialesBodega-tab" type="button" role="tab" aria-controls="nav-MaterialesBodega-tab" aria-selected="false">
+            Materiales en Bodega
+        </button>
+        <button class="nav-link" id="nav-SolicitudesMaterial" data-bs-toggle="tab" data-bs-target="#nav-SolicitudesMaterial-tab" type="button" role="tab" aria-controls="nav-SolicitudesMaterial-tab" aria-selected="false">
+            Solicitudes de material
+        </button>
+    </div>
+</nav>
+
+<div class="tab-content" id="nav-tabContent">
+    <div class="tab-pane fade" id="nav-MaterialesBodega-tab" role="tabpanel" aria-labelledby="nav-MaterialesBodega">
+        Contenido del tab Materiales en Bodega
+    </div>
+    <div class="tab-pane fade" id="nav-SolicitudesMaterial-tab" role="tabpanel" aria-labelledby="nav-SolicitudesMaterial">
+        Contenido del tab Solicitudes de material
+    </div>
+</div>
