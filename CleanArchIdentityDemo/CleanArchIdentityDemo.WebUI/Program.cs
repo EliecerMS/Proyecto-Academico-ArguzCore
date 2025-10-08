@@ -15,6 +15,9 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 //Registar los servicios al iniciar el programa
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProyectoService, ProyectoService>();
+builder.Services.AddScoped<IEquipoService, EquipoService>();
+builder.Services.AddScoped<IFinanzasService, FinanzasService>();
+builder.Services.AddScoped<IMaterialesService, MaterialesService>();
 
 
 // Configurar Identity
