@@ -1,6 +1,87 @@
 ﻿@page
 @model CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria.ListaMaquinariaModel
 @{
+    ViewData["Title"] = "Administración de Equipos";
 }
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11; margin-top: 25px;">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" id="successToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" id="errorToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" id="warningToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @TempData["WarningMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-info-circle me-2"></i>
+                    @TempData["InfoMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+</div>
 
 <h2>Equipos</h2>
+
+
+<!-- aca otro codigo html como tabla que muestra todos los equipos existentes y botones de acciones CRUD y detalles segun prototipo-->
+
+
+
+
+
+
+@section Scripts {
+    <script>
+        //script que hace funcionar las alertas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar todos los toasts que existan
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function(toastEl) {
+                return new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 3000  // 3 segundos
+                });
+            });
+
+            // Activar cada toast
+            toastList.forEach(toast => toast.show());
+        });
+    </script>
+}

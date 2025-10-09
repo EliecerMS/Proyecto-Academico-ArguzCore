@@ -53,22 +53,50 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
 
         public async Task<IActionResult> OnPostCreateAsync() // crear un nuevo usuario
         {
+            try
+            {
+                await _userService.CreateUserAsync(NewUser.Email, NewUser.Password, NewUser.Role, NewUser.NombreCompleto);
 
-            await _userService.CreateUserAsync(NewUser.Email, NewUser.Password, NewUser.Role, NewUser.NombreCompleto);
+                TempData["SuccessMessage"] = "Se creó el usuario correctamente";
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción (por ejemplo, mostrar un mensaje de error)
+                TempData["ErrorMessage"] = "Error al crear el usuario";
+            }
 
             return RedirectToPage(); // Recargar la página
         }
 
         public async Task<IActionResult> OnPostEditAsync() //edita el usuario
         {
+            try
+            {
 
-            await _userService.UpdateUserAsync(EditedUser);
+                await _userService.UpdateUserAsync(EditedUser);
+                TempData["SuccessMessage"] = "Se editó el usuario correctamente";
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción (por ejemplo, mostrar un mensaje de error)
+                TempData["ErrorMessage"] = "Error al editar el usuario";
+            }
             return RedirectToPage();
         }
 
         public async Task<ActionResult> OnPostDeleteAsync() //elimina el usuario
         {
-            await _userService.DeleteUserAsync(IdUsuario);
+            try
+            {
+                await _userService.DeleteUserAsync(IdUsuario);
+                TempData["SuccessMessage"] = "Se eliminó el usuario correctamente";
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción (por ejemplo, mostrar un mensaje de error)
+                TempData["ErrorMessage"] = "Error al eliminar el usuario";
+            }
+
             return RedirectToPage();
         }
     }
