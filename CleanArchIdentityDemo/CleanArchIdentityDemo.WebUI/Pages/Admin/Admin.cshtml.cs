@@ -55,9 +55,16 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         {
             try
             {
-                await _userService.CreateUserAsync(NewUser.Email, NewUser.Password, NewUser.Role, NewUser.NombreCompleto);
+                bool resultado = await _userService.CreateUserAsync(NewUser.Email, NewUser.Password, NewUser.Role, NewUser.NombreCompleto);
+                if (!resultado)
+                {
+                    TempData["ErrorMessage"] = "Ya hay un usuario con ese correo, intente de nuevo";
 
-                TempData["SuccessMessage"] = "Se creó el usuario correctamente";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Se creó el usuario correctamente";
+                }
             }
             catch (Exception ex)
             {

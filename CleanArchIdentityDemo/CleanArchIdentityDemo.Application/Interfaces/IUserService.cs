@@ -4,7 +4,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 {
     public interface IUserService
     {
-        Task CreateUserAsync(string email, string password, string role, string Nombre);
+        Task<bool> CreateUserAsync(string email, string password, string role, string Nombre);
         Task<IEnumerable<UserDto>> GetAllUsersAsync(string id);
         Task<UserDto> GetUserByIdAsync(string userId);
         Task UpdateUserAsync(UserDto user);
