@@ -2,7 +2,59 @@
 @model CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos.ListaProyectosModel
 @{
 }
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11; margin-top: 25px;">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" id="successToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
 
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" id="errorToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" id="warningToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @TempData["WarningMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-info-circle me-2"></i>
+                    @TempData["InfoMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+</div>
 
 <!-- Botón para abrir modal Crear proyecto -->
 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearProyectoModal">
@@ -10,15 +62,14 @@
 </button>
 
 <!-- Tabla de Proyectos -->
-<table class="table table-bordered">
+<table class="table table-striped align-middle">
     <thead>
         <tr>
             <th>Código</th>
             <th>Nombre</th>
             <th>Estado</th>
             <th>Fecha final propuesta</th>
-            <th>Editar</th>
-            <th>Eliminar</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -26,9 +77,11 @@
            @foreach (var proyecto in Model.Proyectos)
                 {
                   <tr>
-                    <td>@proyecto.CodigoProyecto</td>
                     <td>
-                        <a asp-page="./DetallesProyecto" asp-route-CodigoProyecto="@proyecto.CodigoProyecto">@proyecto.Nombre</a>
+                        @proyecto.CodigoProyecto
+                    </td>
+                    <td>
+                        <a asp-page="./DetallesProyecto" asp-route-CodigoProyecto="@proyecto.CodigoProyecto">@proyecto.Nombre <i class="fa-solid fa-eye"></i></a>
                             <div class="mt-2">
                                 <div class="progress" style="height: 8px;">
                                 <div class="progress-bar bg-success" role="progressbar" style="width: @proyecto.PorcentajeAvance%;" aria-valuenow="@proyecto.PorcentajeAvance" aria-valuemin="0" aria-valuemax="100"></div>
@@ -37,29 +90,42 @@
                             </div>
                        
                     </td>
-                        <td>@proyecto.EstadoProyecto</td>
-                        <td>@proyecto.FechaFinalPropuesta.Date</td>
-                        <td>
-                            <button class="btn btn-sm btn-warning"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#editarProyectoModal"
-                                    data-CodigoProyecto="@proyecto.CodigoProyecto"
-                                    data-NombreProyecto="@proyecto.Nombre"
-                                    data-DescripcionProyecto="@proyecto.Descripcion"
-                                    data-ProyectoFechaFinal="@proyecto.FechaFinalPropuesta"
-                                    data-ProyectoPresupuesto="@proyecto.Presupuesto">
-                            <i class="fas fa-edit"></i>  Editar
-                               
-                            </button>
-                        </td>
                     <td>
-                        <form method="post" asp-page-handler="Delete" asp-route-CodigoProyecto="@proyecto.CodigoProyecto" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                    onclick="return confirm('¿Estás seguro de que deseas eliminar este proyecto?')">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </form>
+                        @proyecto.EstadoProyecto
                     </td>
+                    <td>
+                        @proyecto.FechaFinalPropuesta.ToShortDateString()
+                    </td>
+                        <td>
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col">
+
+                                        <button class="btn btn-sm btn-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editarProyectoModal"
+                                                data-CodigoProyecto="@proyecto.CodigoProyecto"
+                                                data-NombreProyecto="@proyecto.Nombre"
+                                                data-DescripcionProyecto="@proyecto.Descripcion"
+                                                data-ProyectoFechaFinal="@proyecto.FechaFinalPropuesta"
+                                                data-ProyectoPresupuesto="@proyecto.Presupuesto">
+                                            <i class="fas fa-edit"></i>  Editar
+
+                                        </button>
+                                    </div>
+                                    <div class="col">
+                                       
+                                        <form method="post" asp-page-handler="Delete" asp-route-CodigoProyecto="@proyecto.CodigoProyecto" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('¿Estás seguro de que deseas eliminar este proyecto?')">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                                
+                        </td>
                   </tr>
             }
         }
@@ -149,6 +215,22 @@
 </div>
 
 @section Scripts {
+    <script>
+        //script que hace funcionar las alertas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar todos los toasts que existan
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function(toastEl) {
+                return new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 3000  // 3 segundos
+                });
+            });
+
+            // Activar cada toast
+            toastList.forEach(toast => toast.show());
+        });
+    </script>
     <script>
         // Llenar modal Editar con datos del botón pulsado
         var editUserModal = document.getElementById('editarProyectoModal');

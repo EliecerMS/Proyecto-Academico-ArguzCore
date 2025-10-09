@@ -38,20 +38,48 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         public async Task<IActionResult> OnPostCreateAsync() // crear un nuevo proyecto
         {
-            await _proyectoService.CrearProyectoAsync(NuevoProyecto);
+            try
+            {
+
+                await _proyectoService.CrearProyectoAsync(NuevoProyecto);
+                TempData["SuccessMessage"] = "Se creó el proyecto correctamente";
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción (por ejemplo, registrar el error)
+                TempData["ErrorMessage"] = "Error al crear el proyecto, intente de nuevo";
+            }
 
             return RedirectToPage(); // Recargar la página
         }
 
         public async Task<IActionResult> OnPostEditAsync() //edita el proyecto
         {
-            await _proyectoService.ActualizarProyectoAsync(ProyectoEditado);
+            try
+            {
+                await _proyectoService.ActualizarProyectoAsync(ProyectoEditado);
+                TempData["SuccessMessage"] = "Se editó el proyecto correctamente";
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción (por ejemplo, registrar el error)
+                TempData["ErrorMessage"] = "Error al editar el proyecto, intente de nuevo";
+            }
             return RedirectToPage(); // Recargar la página
         }
 
         public async Task<IActionResult> OnPostDeleteAsync(string CodigoProyecto) //elimina el proyecto
         {
-            await _proyectoService.EliminarProyectoAsync(CodigoProyecto);
+            try
+            {
+                await _proyectoService.EliminarProyectoAsync(CodigoProyecto);
+                TempData["SuccessMessage"] = "Se eliminó el proyecto correctamente";
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción (por ejemplo, registrar el error)
+                TempData["ErrorMessage"] = "Error al eliminar el proyecto, intente de nuevo";
+            }
             return RedirectToPage(); // Recargar la página
         }
     }
