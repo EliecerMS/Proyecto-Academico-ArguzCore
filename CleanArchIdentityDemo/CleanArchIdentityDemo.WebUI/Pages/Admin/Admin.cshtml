@@ -66,44 +66,63 @@
 </button>
 
 <!-- Tabla de Usuarios -->
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Email</th>
-            <th>Nombre Completo</th>
-            <th>Rol</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model.Users)
-        {
+<table class="table table-striped align-middle">
+        <thead class="table-light">
             <tr>
-                <td>@user.Email</td>
-                <td>@user.NombreCompleto</td>
-                <td>@user.Role</td>
-                <td>
-                    <button class="btn btn-sm btn-warning"
-                            data-bs-toggle="modal"
-                            data-bs-target="#editUserModal"
-                            data-id="@user.Id"
-                            data-email="@user.Email"
-                            data-nombre="@user.NombreCompleto"
-                            data-rol="@user.Role">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <form method="post" asp-page-handler="Delete">
-                        <input type="hidden" name="IdUsuario" value="@user.Id" />
-                        <button class="btn btn-sm btn-danger">
-                            <i class="fas fa-trash"></i> Eliminar
-                    </button>
-                    </form>
-                </td>
+                <th>Email</th>
+                <th>Nombre Completo</th>
+                <th>Rol</th>
+                <th class="align-content-center">Acciones</th>
             </tr>
-        }
-    </tbody>
-</table>
-
+        </thead>
+        <tbody>
+            @if (Model.Users != null && Model.Users.Any())
+            {
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td>@user.Email</td>
+                        <td>@user.NombreCompleto</td>
+                        <td>@user.Role</td>
+                        <td>
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col">
+                                        <!-- Contenido para columna accion 1 -->
+                                        <button class="btn btn-sm btn-warning"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editUserModal"
+                                            data-id="@user.Id"
+                                            data-email="@user.Email"
+                                            data-nombre="@user.NombreCompleto"
+                                            data-rol="@user.Role">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                    </div>
+                                    <div class="col">
+                                    <!-- Contenido para columna accion 2 -->
+                                        <form method="post" asp-page-handler="Delete">
+                                            <input type="hidden" name="IdUsuario" value="@user.Id" />
+                                            <button class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center">No hay usuarios disponibles.</td>
+                </tr>
+            }
+        </tbody>
+        
+    </table>
 <!-- Modal Crear Usuario -->
 <div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
