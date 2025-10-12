@@ -62,6 +62,9 @@
 
 <nav>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <button class="nav-link" id="nav-GestionProveedor" data-bs-toggle="tab" data-bs-target="#nav-GestionProveedor-tab" type="button" role="tab" aria-controls="nav-GestionProveedor-tab" aria-selected="false">
+            Gestion de proveedores
+        </button>
         <button class="nav-link" id="nav-PagosProveedor" data-bs-toggle="tab" data-bs-target="#nav-PagosProveedor-tab" type="button" role="tab" aria-controls="nav-PagosProveedor-tab" aria-selected="false">
             Pagos por proveedor
         </button>
@@ -71,10 +74,92 @@
     </div>
 </nav>
 
+
+
 <div class="tab-content" id="nav-tabContent">
-    <div class="tab-pane fade" id="nav-PagosProveedor-tab" role="tabpanel" aria-labelledby="nav-PagosProveedor">
-        Contenido del tab pagos por proveedor
+
+    <div class="tab-pane fade" id="nav-GestionProveedor-tab" role="tabpanel" aria-labelledby="nav-GestionProveedor">
+        Contenido del tab Gestion de proveedores (Este ttab es nuevo y Eliecer es encargado de este tab)
     </div>
+
+
+    <div class="tab-pane fade" id="nav-PagosProveedor-tab" role="tabpanel" aria-labelledby="nav-PagosProveedor">
+        Pagos por proveedor
+        <!--- Ajustar el siguiente botón con lo necesario para abrir un modal y registrar un nuevo pago a proveedor, luego borrar este comentario -->
+        <div class="d-flex justify-content-end mb-4">
+            <button class="btn btn-success" id="registrarPagoBtn">
+                <i class="fas fa-plus"></i> Registrar pago
+            </button>
+        </div>
+
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <label for="filtroProveedor" class="form-label">Filtrar por proveedor</label>
+                <select class="form-select" id="filtroProveedor">
+                    <option value="">Todos los proveedores</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="fechaInicio" class="form-label">Fecha inicio</label>
+                <input type="date" class="form-control" id="fechaInicio" placeholder="dd/mm/aaaa">
+            </div>
+            <div class="col-md-3">
+                <label for="fechaFin" class="form-label">Fecha fin</label>
+                <input type="date" class="form-control" id="fechaFin" placeholder="dd/mm/aaaa">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-primary w-100" id="filtrarPagosBtn">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+            </div>
+        </div>
+
+
+        <!--- Tabla de pagos a proveedores --->
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Proveedor</th>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                        <th>Concepto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.PagosProveedores != null && Model.PagosProveedores.Any())
+                    {
+                        @foreach (var pago in Model.PagosProveedores)
+                        {
+                            <tr>
+                                <td>@pago.NombreProveedor</td>
+                                <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
+                                <td>@pago.Monto.ToString("C", new System.Globalization.CultureInfo("es-CR"))</td>
+                                <td>@pago.Descripcion</td>
+                                <td>
+                                    <form method="post" asp-page-handler="VerRecibo" target="_blank" class="d-inline">
+                                        <input type="hidden" name="PagoId" value="@pago.IdPago" />
+                                        <button class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> Ver comprobante
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                           <td colspan="4" class="text-center">No se encontraron pagos a proveedores.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div class="tab-pane fade" id="nav-GastosEjecutados-tab" role="tabpanel" aria-labelledby="nav-GastosEjecutados">
         Contenido del tab Gastos Ejecutados
     </div>
