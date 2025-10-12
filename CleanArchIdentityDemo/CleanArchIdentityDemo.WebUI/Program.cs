@@ -4,8 +4,10 @@ using CleanArchIdentityDemo.Infrastructure.Services;
 using CleanArchIdentityDemo.WebUI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 using IdentityDbContext = CleanArchIdentityDemo.Infrastructure.Identity.ApplicationDbContext;
 
+QuestPDF.Settings.License = LicenseType.Community;
 var builder = WebApplication.CreateBuilder(args);
 
 // Conexión a SQL Server local
