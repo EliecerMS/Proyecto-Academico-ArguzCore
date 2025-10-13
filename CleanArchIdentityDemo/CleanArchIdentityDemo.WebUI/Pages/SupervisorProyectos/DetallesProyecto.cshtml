@@ -248,7 +248,6 @@
                             <th>Prioridad</th>
                             <th>Fecha Solicitud</th>
                             <th>Estado</th>
-                            <th>Observaciones</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -260,12 +259,11 @@
                                 foreach (var mat in solicitud.MaterialesSolicitados)
                                 {
                                     <tr>
-                                        <td>@mat.Material?.NombreMaterial</td>
+                                        <td>@mat.NombreMaterial</td>
                                         <td>@mat.Cantidad</td>
                                         <td>@mat.Prioridad</td>
                                         <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
                                         <td>@solicitud.EstadoSolicitud</td>
-                                        <td>@solicitud.ObservacionesBodeguero</td>
                                         <td>
                                             @if (solicitud.EstadoSolicitud == "Abierta")
                                             {
@@ -275,8 +273,7 @@
                                                         data-id="@solicitud.IdSolicitud"
                                                         data-material="@mat.MaterialId"
                                                         data-cantidad="@mat.Cantidad"
-                                                        data-prioridad="@mat.Prioridad"
-                                                        data-observaciones="@solicitud.ObservacionesBodeguero">
+                                                        data-prioridad="@mat.Prioridad">
                                                     Editar
                                                 </button>
 
@@ -299,11 +296,12 @@
                         else
                         {
                             <tr>
-                                <td colspan="7" class="text-center">No hay solicitudes registradas.</td>
+                                <td colspan="6" class="text-center">No hay solicitudes registradas.</td>
                             </tr>
                         }
                     </tbody>
                 </table>
+
             </div>
 
         </div>
@@ -542,11 +540,6 @@
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Observaciones</label>
-                        <textarea asp-for="NuevaSolicitud.ObservacionesBodeguero" class="form-control" rows="3"></textarea>
-                    </div>
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -556,6 +549,7 @@
         </div>
     </div>
 </div>
+
 
 
 <!-- Modal: Editar Solicitud -->
@@ -596,11 +590,6 @@
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Observaciones</label>
-                        <textarea name="Observaciones" id="editObservaciones" class="form-control" rows="3"></textarea>
-                    </div>
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -610,6 +599,7 @@
         </div>
     </div>
 </div>
+
 <script>
     var editarTareaModal = document.getElementById('editarTareaModal');
     editarTareaModal.addEventListener('show.bs.modal', function (event) {
@@ -638,7 +628,7 @@
         document.getElementById('UsuarioReasignar').value = antiguoId;
     });
     // Editar solicitud de material
-        var modalEditarSolicitud = document.getElementById('editarSolicitudModal');
+    var modalEditarSolicitud = document.getElementById('editarSolicitudModal');
     modalEditarSolicitud.addEventListener('show.bs.modal', function (event) {
         var button = event.relatedTarget;
 
@@ -646,12 +636,10 @@
         var material = button.getAttribute('data-material');
         var cantidad = button.getAttribute('data-cantidad');
         var prioridad = button.getAttribute('data-prioridad');
-        var observaciones = button.getAttribute('data-observaciones');
 
         document.getElementById('editSolicitudId').value = id;
         document.getElementById('editMaterialId').value = material;
         document.getElementById('editCantidad').value = cantidad;
         document.getElementById('editPrioridad').value = prioridad;
-        document.getElementById('editObservaciones').value = observaciones;
     });
 </script>

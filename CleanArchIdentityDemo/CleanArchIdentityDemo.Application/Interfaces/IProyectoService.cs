@@ -76,18 +76,19 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
 
         //Método para mostrar las solicitudes de material del proyecto enviadas a bodega central
-        Task CrearSolicitudMaterialAsync(SolicitudMaterial solicitud);
+        Task CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto);
 
         // Método para editar la solicitud de material enviada a bodega central
-        Task ActualizarSolicitudAsync(SolicitudMaterial solicitud);
-        Task<SolicitudMaterial> ObtenerSolicitudPorIdAsync(int idSolicitud);
+        Task ActualizarSolicitudAsync(SolicitudMaterialDto solicitudDto);
+        Task<SolicitudMaterialDto?> ObtenerSolicitudPorIdAsync(int idSolicitud);
 
         //Método para obtener materiales
-        Task<IEnumerable<Material>> ObtenerMaterialesAsync();
+        Task<List<MaterialDto>> ObtenerMaterialesAsync();
         // para mostrar todas las solicitudes de material de un proyecto
-        Task<List<SolicitudMaterial>> MostrarSolicitudesPorProyectoAsync(int proyectoId);
+        Task<List<SolicitudMaterialDto>> MostrarSolicitudesPorProyectoAsync(int proyectoId);
 
         //Método para eliminar solicitud de material enviada a bodega central
         Task EliminarSolicitudMaterialAsync(int idSolicitud);
+
     }
 }

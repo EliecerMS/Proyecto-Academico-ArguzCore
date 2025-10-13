@@ -59,18 +59,17 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             public int MaterialId { get; set; }
             public int Cantidad { get; set; }
         }
-        public List<SolicitudMaterial> SolicitudesMaterial { get; set; } = new();
-        public List<Material> MaterialesDisponibles { get; set; } = new();
+        public List<SolicitudMaterialDto> SolicitudesMaterial { get; set; } = new();
+        public List<MaterialDto> MaterialesDisponibles { get; set; } = new();
 
         [BindProperty]
-        public SolicitudMaterial NuevaSolicitud { get; set; } = new SolicitudMaterial
+        public SolicitudMaterialDto NuevaSolicitud { get; set; } = new SolicitudMaterialDto
         {
-            MaterialesSolicitados = new List<MaterialSolicitado>
+            MaterialesSolicitados = new List<MaterialSolicitadoDto>
             {
-            new MaterialSolicitado()
+                new MaterialSolicitadoDto()
             }
         };
-
 
         [BindProperty]
         public List<NuevoMaterialInput> NuevosMateriales { get; set; } = new()
@@ -220,8 +219,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             // Redirigir a la misma página con el CódigoProyecto
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
-        //Solicitud de Materiales  
 
+        //Solicitud de Materiales  
         public async Task<IActionResult> OnPostCrearSolicitudAsync()
         {
             DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
@@ -234,27 +233,18 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             NuevaSolicitud.FechaSolicitud = DateTime.Now;
             NuevaSolicitud.EstadoSolicitud = "Abierta";
 
-            foreach (var mat in NuevaSolicitud.MaterialesSolicitados)
-            {
-                mat.SolicitudMaterial = NuevaSolicitud;
-
-            }
-
             await _proyectoService.CrearSolicitudMaterialAsync(NuevaSolicitud);
 
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
 
-
-
-        public async Task<IActionResult> OnPostEditarSolicitudAsync(int IdSolicitud, int MaterialId, int Cantidad, string Prioridad, string Observaciones, string CodigoProyecto)
+        public async Task<IActionResult> OnPostEditarSolicitudAsync(int IdSolicitud, int MaterialId, int Cantidad, string Prioridad, string CodigoProyecto)
         {
             var solicitud = await _proyectoService.ObtenerSolicitudPorIdAsync(IdSolicitud);
             if (solicitud == null || solicitud.EstadoSolicitud != "Abierta")
             {
                 return NotFound("Solicitud no encontrada o ya cerrada");
             }
-
 
             var materialSolicitado = solicitud.MaterialesSolicitados.FirstOrDefault();
             if (materialSolicitado != null)
@@ -264,12 +254,11 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 materialSolicitado.Prioridad = Prioridad;
             }
 
-            solicitud.ObservacionesBodeguero = Observaciones;
-
             await _proyectoService.ActualizarSolicitudAsync(solicitud);
 
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
+
         public async Task<IActionResult> OnPostEliminarSolicitudAsync(int idSolicitud, string CodigoProyecto)
         {
             var solicitud = await _proyectoService.ObtenerSolicitudPorIdAsync(idSolicitud);
@@ -285,6 +274,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
+
     }
 }
 
