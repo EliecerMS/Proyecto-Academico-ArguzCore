@@ -248,6 +248,7 @@
                             <th>Prioridad</th>
                             <th>Fecha Solicitud</th>
                             <th>Estado</th>
+                            <th>Observaciones bodeguero</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -264,6 +265,7 @@
                                         <td>@mat.Prioridad</td>
                                         <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
                                         <td>@solicitud.EstadoSolicitud</td>
+                                        <td>@solicitud.ObservacionesBodeguero</td>
                                         <td>
                                             @if (solicitud.EstadoSolicitud == "Abierta")
                                             {

@@ -19,9 +19,9 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<IEnumerable<ProyectoDto>> MostrarProyectosListaReasignacionAsync(string codigoProyecto);
         //metodo para mostrar personal asignado del proyecto
         Task<IEnumerable<PersonalAsignadoDto>> ObtenerPersonalPorProyectoAsync(string codigoProyecto);
-        
-        
-        
+
+
+
 
         //metodo para asignar nuevo personal a un proyecto
         Task AsignarPersonalAProyectoAsync(string codigoProyecto, string personalId);
@@ -83,9 +83,9 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<SolicitudMaterialDto?> ObtenerSolicitudPorIdAsync(int idSolicitud);
 
         //Método para obtener materiales
-        Task<List<MaterialDto>> ObtenerMaterialesAsync();
+        Task<IEnumerable<MaterialDto>> ObtenerMaterialesAsync();
         // para mostrar todas las solicitudes de material de un proyecto
-        Task<List<SolicitudMaterialDto>> MostrarSolicitudesPorProyectoAsync(int proyectoId);
+        Task<IEnumerable<SolicitudMaterialDto>> MostrarSolicitudesPorProyectoAsync(int proyectoId);
 
         //Método para eliminar solicitud de material enviada a bodega central
         Task EliminarSolicitudMaterialAsync(int idSolicitud);

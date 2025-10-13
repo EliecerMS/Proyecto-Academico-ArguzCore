@@ -180,7 +180,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Descripcion = t.Descripcion,
                 FechaInicio = t.FechaInicioEsperada,
                 FechaFin = t.FechaFinalEsperada,
-                ProyectoId = proyecto.IdProyecto 
+                ProyectoId = proyecto.IdProyecto
             }).ToList(); // Devolver la lista de TareaDto
         }
 
@@ -199,7 +199,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 FechaInicioEsperada = dto.FechaInicio,
                 FechaFinalEsperada = dto.FechaFin,
                 ProyectoId = proyecto.IdProyecto
-            }; 
+            };
 
             _context.Tareas.Add(nuevaTarea); // Agregar la nueva tarea al contexto
             await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
@@ -467,7 +467,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         }
 
         //Obtener Materiales 
-        public async Task<List<MaterialDto>> ObtenerMaterialesAsync()
+        public async Task<IEnumerable<MaterialDto>> ObtenerMaterialesAsync()
         {
             return await _context.Materiales
                 .Select(m => new MaterialDto
@@ -483,7 +483,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
 
         //Mostrar solicitud por proyecto
-        public async Task<List<SolicitudMaterialDto>> MostrarSolicitudesPorProyectoAsync(int proyectoId)
+        public async Task<IEnumerable<SolicitudMaterialDto>> MostrarSolicitudesPorProyectoAsync(int proyectoId)
         {
             var solicitudes = await _context.SolicitudesMaterial
                 .Include(s => s.MaterialesSolicitados)
@@ -530,12 +530,12 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
     }
 }
-    
 
 
-        
-    
-        
 
-        
+
+
+
+
+
 
