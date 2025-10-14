@@ -34,8 +34,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }
         }
 
-        public async Task CreateUserAsync(string email, string password, string role, string Nombre)
+        public async Task<bool> CreateUserAsync(string email, string password, string role, string Nombre)
         {
+            bool usuarioCreado = false;
             //objeto de tipo ApplicatioUser asignando valores a sus atributos
             var user = new ApplicationUser { UserName = email, Email = email, NombreCompleto = Nombre };
             // espera la creacion del usuario en la table de usuarios
@@ -46,9 +47,14 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 if (await _roleManager.RoleExistsAsync(role))
                 { // verifica si el rol existe, de ser exitoso la creacion del usuario y existencia del del rol lo asigna
                     await _userManager.AddToRoleAsync(user, role);
-
+                    usuarioCreado = true;
                 }
             }
+            else
+            {
+                usuarioCreado = false; // si no se cumple alguna de las condiciones retorna false
+            }
+            return usuarioCreado;
         }
 
         public async Task DeleteUserAsync(string userId)

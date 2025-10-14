@@ -1,9 +1,13 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Domain.Entities;
+using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Security.Claims;
+
 
 namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 {
@@ -12,11 +16,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
     {
         private readonly IProyectoService _proyectoService;
         private readonly IUserService _userService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public DetallesProyectoModel(IProyectoService proyectoService, IUserService userService)
+
+        public DetallesProyectoModel(IProyectoService proyectoService, IUserService userService, UserManager<ApplicationUser> userManager)
         {
             _proyectoService = proyectoService;
             _userService = userService;
+            _userManager = userManager;
         }
 
         public Proyecto DetalleProyecto { get; set; }
@@ -40,7 +47,6 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         [BindProperty]
         public string CodigoProyectoNuevo { get; set; }
 
-
         public List<ProyectoDto> ProyectosDisponibles { get; set; } = new();
 
         //lista de usuarios para asignar a un proyecto
@@ -49,6 +55,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public List<UserDto> UsuariosDisponibles { get; set; } = new();
 
         public List<UserDto> UsuariosEmpleado { get; set; } = new List<UserDto>();
+
+        // ---------- VARIABLES PARA TAREAS
         public List<TareaDto> Tareas { get; private set; } // Este es el elemento donde se guardan las tareas
 
         [BindProperty]
@@ -62,6 +70,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public List<SolicitudMaterialDto> SolicitudesMaterial { get; set; } = new();
         public List<MaterialDto> MaterialesDisponibles { get; set; } = new();
 
+        //Incidente
+        public List<Incidente> Incidentes { get; set; } = new();
         [BindProperty]
         public SolicitudMaterialDto NuevaSolicitud { get; set; } = new SolicitudMaterialDto
         {
@@ -77,17 +87,33 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             new NuevoMaterialInput()
         };
 
+        // ---------- VARIABLES PARA NOTAS DE AVANCE
+        [BindProperty]
+        public NotaAvanceDto NuevaNota { get; set; }
+        public List<NotaAvanceDto> Notas { get; set; } = new();
+        [BindProperty]
+        public Incidente NuevoIncidente { get; set; } = new Incidente();
+
+        [BindProperty]
+        public NotaAvanceDto EditarNota { get; set; } = new();
 
 
 
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
         {
-            await _proyectoService.CambiarEstadoAsync(CodigoProyecto, NuevoEstado);
+            try
+            {
+                await _proyectoService.CambiarEstadoAsync(CodigoProyecto, NuevoEstado);
 
-            // Recargar el proyecto para reflejar cambios
-            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+                // Recargar el proyecto para reflejar cambios
+                DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
 
-            MensajeExito = "El estado del proyecto se actualizó correctamente ";
+                TempData["SuccessMessage"] = "El estado del proyecto se actualizó correctamente ";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al cambiar el estado del proyecto. Intente de nuevo.";
+            }
 
 
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
@@ -112,19 +138,30 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             ProyectosDisponibles = (await _proyectoService.MostrarProyectosListaReasignacionAsync(CodigoProyecto)).ToList();
 
-            // Traer proyecto completo usando el CódigoProyecto
-            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto) ?? new Proyecto();
 
             // Traer las tareas relacionadas usando el IdProyecto con el metodo que ya tienes en el servicio
             if (DetalleProyecto != null)
             {
                 Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+
+                // Traer las notas relacionadas usando el IdProyecto
+                Notas = (await _proyectoService.MostrarNotasAsync(DetalleProyecto.IdProyecto)).ToList();
+                //Cargar Incidentes
+                Incidentes = (await _proyectoService.MostrarIncidentesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+            }
+            else
+            {
+                // Inicializar listas vacías si no se encontró el proyecto
+                Tareas = new List<TareaDto>();
+                Notas = new List<NotaAvanceDto>();
             }
             //Cargar solicitudes de material del proyecto
             SolicitudesMaterial = (await _proyectoService.MostrarSolicitudesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
 
             //Cargar materiales disponibles para mostrar en el combo
             MaterialesDisponibles = (await _proyectoService.ObtenerMaterialesAsync()).ToList();
+
+
 
         }
         //UsuariosEmpleado = await _userService.GetAllNormalUsersAsync().ToList();
@@ -134,6 +171,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             try
             {
                 await _proyectoService.AsignarPersonalAProyectoAsync(CodigoProyecto, UsuarioSeleccionado);
+                TempData["SuccessMessage"] = "Personal asignado correctamente.";
             }
             catch (InvalidOperationException ex)
             {
@@ -144,16 +182,10 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         public async Task<IActionResult> OnPostEliminarPersonalAsync(string personalId)
         {
-            await _proyectoService.EliminarPersonalDeProyectoAsync(CodigoProyecto, personalId);
-            return RedirectToPage(new { CodigoProyecto });
-        }
-
-
-        public async Task<IActionResult> OnPostReasignarPersonalAsync()
-        {
             try
             {
-                await _proyectoService.ReasignarPersonalEnProyectoAsync(CodigoProyecto, UsuarioReasignar, CodigoProyectoNuevo);
+                await _proyectoService.EliminarPersonalDeProyectoAsync(CodigoProyecto, personalId);
+                TempData["SuccessMessage"] = "Personal eliminado del proyecto correctamente.";
             }
             catch (InvalidOperationException ex)
             {
@@ -162,6 +194,21 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             return RedirectToPage(new { CodigoProyecto });
         }
 
+        public async Task<IActionResult> OnPostReasignarPersonalAsync()
+        {
+            try
+            {
+                await _proyectoService.ReasignarPersonalEnProyectoAsync(CodigoProyecto, UsuarioReasignar, CodigoProyectoNuevo);
+                TempData["SuccessMessage"] = "Personal reasignado correctamente.";
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorPersonal"] = ex.Message;
+            }
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        // --------- METODOS PARA TAREAS
         public async Task<IActionResult> OnPostCrearTareaAsync()
         {
             // Recargar el proyecto completo antes de usarlo para acceder a IdProyecto
@@ -176,47 +223,248 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             NuevaTarea.ProyectoId = DetalleProyecto.IdProyecto;
 
             // Crear la tarea
-            await _proyectoService.CrearTareaAsync(NuevaTarea);
+            try
+            {
+                await _proyectoService.CrearTareaAsync(NuevaTarea);
 
-            // Redirigir a la misma página con el CódigoProyecto
-            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+
+                // Redirigir a la misma página con el CódigoProyecto
+
+                TempData["SuccessMessage"] = "Tarea creada correctamente.";
+                TempData["TabActiva"] = "Cronograma";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error al crear la tarea";
+            }
+            return RedirectToPage(new { CodigoProyecto });
 
         }
 
-
         public async Task<IActionResult> OnPostEliminarTareaAsync(int IdTarea, string CodigoProyecto)
         {
-            // Eliminar la tarea
-            await _proyectoService.EliminarTareaAsync(IdTarea);
-
-            // Recargar el proyecto completo para ovalidar que no se haya roto
-            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
-
-            /*if (DetalleProyecto == null)
+            try
             {
-                return NotFound("Tarea no encontrada");
-            }*/ //validar con mensaje de error, return NotFound lo que hace es mostrar una pagina de error 404, no es lo ideal, es mas correcto mostrar un mensaje en la misma pagina
+                // Eliminar la tarea
+                await _proyectoService.EliminarTareaAsync(IdTarea);
 
-            // Recargar lista de tareas
-            //Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+                // Recargar el proyecto completo para ovalidar que no se haya roto
+                DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
 
-            // Redirigir a la misma página con el CódigoProyecto
-            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+                // Redirigir a la misma página con el CódigoProyecto
+                TempData["SuccessMessage"] = "Tarea eliminada correctamente.";
+                TempData["TabActiva"] = "Cronograma";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error al eliminar la tarea";
+            }
+
+            return RedirectToPage(new { CodigoProyecto });
         }
 
         public async Task<IActionResult> OnPostEditarTareaAsync()
         {
-            // Actualizar la tarea
-            await _proyectoService.EditarTareaAsync(NuevaTarea);
-            // Recargar el proyecto completo para ovalidar que no se haya roto
+            try
+            {
+                // Actualizar la tarea
+                await _proyectoService.EditarTareaAsync(NuevaTarea);
+                // Recargar el proyecto completo para ovalidar que no se haya roto
+                DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+                if (DetalleProyecto == null)
+                {
+                    return NotFound("Tarea no encontrada");
+                }
+                // Recargar lista de tareas
+                Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+                // Redirigir a la misma página con el CódigoProyecto
+                TempData["SuccessMessage"] = "Tarea editada correctamente.";
+                TempData["TabActiva"] = "Cronograma";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error al editar la tarea";
+            }
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        // --------- METODOS PARA NOTAS DE AVANCE
+        public async Task<IActionResult> OnPostCrearNota()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Traer proyecto y validar que exista
             DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
             if (DetalleProyecto == null)
             {
-                return NotFound("Tarea no encontrada");
+                TempData["Error"] = "No se encontró el proyecto. La nota no pudo crearse.";
+
+                TempData["TabActiva"] = "NotasAvance";
+                return RedirectToPage(new { CodigoProyecto }); // o redirige a un listado general
             }
-            // Recargar lista de tareas
-            Tareas = (await _proyectoService.MostrarTareasPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
-            // Redirigir a la misma página con el CódigoProyecto
+
+            NuevaNota.CreadoPor = userId;
+            NuevaNota.ProyectoId = DetalleProyecto.IdProyecto;
+            NuevaNota.FechaNota = DateTime.Now;
+            try
+            {
+
+                await _proyectoService.CrearNotaAsync(NuevaNota);
+
+                TempData["SuccessMessage"] = "Nota creada correctamente."; // Depuración, se puede borrar
+
+                TempData["TabActiva"] = "NotasAvance";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al crear la nota. Intente de nuevo.";
+            }
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEditarNotaAsync()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+            if (DetalleProyecto == null)
+            {
+                TempData["ErrorMessage"] = "No se encontró el proyecto. La nota no pudo actualizarse.";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+
+            NuevaNota.ProyectoId = DetalleProyecto.IdProyecto;
+            NuevaNota.FechaNota = DateTime.Now;
+            NuevaNota.CreadoPor = userId;
+            try
+            {
+                await _proyectoService.EditarNotaAsync(NuevaNota);
+
+                TempData["SuccessMessage"] = "Nota editada correctamente";
+
+                TempData["TabActiva"] = "NotasAvance";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al editar la nota. Intente de nuevo.";
+            }
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEliminarNotaAsync(int idNota)
+        {
+            try
+            {
+                await _proyectoService.EliminarNotaAsync(idNota);
+                //TempData["MensajeExito"] = "Nota eliminada correctamente.";
+                TempData["SuccessMessage"] = "Nota eliminada correctamente.";
+                TempData["TabActiva"] = "NotasAvance";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al eliminar la nota. Intente de nuevo.";
+            }
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostDestacarNotaAsync(int idNota)
+        {
+            try
+            {
+                bool resultado = await _proyectoService.DestacarNotaAsync(idNota);
+
+                /*if (!resultado)
+                {
+                    TempData["Error"] = "No se encontró la nota seleccionada.";
+                }
+                else
+                {
+                    TempData["MensajeExito"] = resultado
+                        ? "La nota ha sido destacada correctamente."
+                        : "La nota ya no está destacada.";
+                }
+                */
+                TempData["SuccessMessage"] = "La nota ha sido marcada o desmarcada como importante correctamente.";
+                TempData["TabActiva"] = "NotasAvance";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al destacar la nota. Intente de nuevo.";
+            }
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        //Agregar Incidente
+        public async Task<IActionResult> OnPostCrearIncidenteAsync()
+        {
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+            if (DetalleProyecto == null)
+            {
+                return NotFound("Proyecto no encontrado");
+            }
+
+            NuevoIncidente.ProyectoId = DetalleProyecto.IdProyecto;
+            NuevoIncidente.FechaRegistro = DateTime.Now;
+            NuevoIncidente.Estado = "Abierto";
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                NuevoIncidente.CreadoPor = user.Id;
+            }
+            try
+            {
+                await _proyectoService.CrearIncidenteAsync(NuevoIncidente);
+                TempData["SuccessMessage"] = "Incidente creado correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al crear el incidente. Intente de nuevo.";
+            }
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+        public async Task<IActionResult> OnPostCerrarIncidenteAsync(int IdIncidente, string CodigoProyecto)
+        {
+            var incidente = await _proyectoService.ObtenerIncidentePorIdAsync(IdIncidente);
+            if (incidente == null)
+            {
+                return NotFound("Incidente no encontrado");
+            }
+
+            incidente.Estado = "Cerrado";
+            try
+            {
+                await _proyectoService.ActualizarIncidenteAsync(incidente);
+                TempData["SuccessMessage"] = "Incidente cerrado correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al cerrar el incidente. Intente de nuevo.";
+            }
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+        public async Task<IActionResult> OnPostEditarIncidenteAsync(int IdIncidente, string Descripcion, string CodigoProyecto)
+        {
+            var incidente = await _proyectoService.ObtenerIncidentePorIdAsync(IdIncidente);
+            if (incidente == null || incidente.Estado != "Abierto")
+            {
+                return NotFound("Incidente no encontrado o ya cerrado");
+            }
+
+            // Actualizar solo la descripción
+            incidente.Descripcion = Descripcion;
+            try
+            {
+                await _proyectoService.ActualizarIncidenteAsync(incidente);
+                TempData["SuccessMessage"] = "Incidente editado correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al editar el incidente. Intente de nuevo.";
+            }
+
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
 

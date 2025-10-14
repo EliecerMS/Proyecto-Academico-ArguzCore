@@ -4,8 +4,10 @@ using CleanArchIdentityDemo.Infrastructure.Services;
 using CleanArchIdentityDemo.WebUI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 using IdentityDbContext = CleanArchIdentityDemo.Infrastructure.Identity.ApplicationDbContext;
 
+QuestPDF.Settings.License = LicenseType.Community;
 var builder = WebApplication.CreateBuilder(args);
 
 // Conexión a SQL Server local
@@ -15,6 +17,9 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 //Registar los servicios al iniciar el programa
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProyectoService, ProyectoService>();
+builder.Services.AddScoped<IEquipoService, EquipoService>();
+builder.Services.AddScoped<IFinanzasService, FinanzasService>();
+builder.Services.AddScoped<IMaterialesService, MaterialesService>();
 
 
 // Configurar Identity

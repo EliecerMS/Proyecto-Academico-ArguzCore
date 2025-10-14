@@ -19,34 +19,42 @@
     <style>
         .sidebar {
             min-height: 100vh; /* ocupa toda la altura */
-            background-color: #f8f9fa;
+            background-color: rgb(30,64,175);
             border-right: 1px solid #dee2e6;
             width: 250px;
+        }
+
+        .sidebar .nav-link {
+            color: white;
         }
 
     </style>
 
 </head>
 <body>
-    <header class="navbar bg-light border-bottom mb-3 sticky-lg-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" asp-area="" asp-page="/Index">CleanArchIdentityDemo.WebUI</a>
+    <header class="navbar bg-light border-bottom sticky-lg-top" style="padding:0;">
+        <div class="container-fluid col-4" style="width:249px; background-color: rgb(30,64,175);">
+            <a class="navbar-brand" asp-area="" asp-page="/Index" style="color:white;"><i class="fa-solid fa-helmet-safety"></i> ArguzCore</a>
+        </div>
+        <div class="col">
+            <!-- Contenido para el restante -->
         </div>
     </header>
 
     <div class="container-fluid">
         <div class="row flex-nowrap">
             <!-- Sidebar -->
-            <aside class="col-4 sidebar bg-white border-end d-flex flex-column">
+            <aside class="col-4 sidebar border-end d-flex flex-column">
                 <nav class="sticky-top pt-5">
+                    <!--
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
-                    </ul>
+                    </ul>-->
                         @if (SignInManager.IsSignedIn(User))
                         {
                             var currentUser = await UserManager.GetUserAsync(User);
@@ -56,7 +64,7 @@
                             {
                             <ul class="nav flex-column">
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-page="/Admin/Admin">Seguridad</a>
+                                    <a class="nav-link" asp-page="/Admin/Admin"><i class="fa-solid fa-shield-halved"></i> Seguridad</a>
                                 </li>
                             </ul>
                             }
@@ -64,13 +72,37 @@
                              {
                                 <ul class="nav flex-column">
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-page="/SupervisorProyectos/ListaProyectos">Proyectos</a>
+                                    <a class="nav-link" asp-page="/SupervisorProyectos/ListaProyectos"><i class="fa-solid fa-diagram-project"></i> Proyectos</a>
                                     </li>
                                 </ul>
                              }
+                            if (roles.Contains("Bodeguero"))
+                            {
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                    <a class="nav-link" asp-page="/Bodeguero/Materiales"><i class="fa-solid fa-cubes"></i> Materiales</a>
+                                    </li>
+                                </ul>
+                            }
+                            if (roles.Contains("Contador"))
+                            {
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                    <a class="nav-link" asp-page="/Contador/Finanzas"><i class="fa-solid fa-dollar-sign"></i> Finanzas</a>
+                                    </li>
+                                </ul>
+                            }
+                            if (roles.Contains("JefeMaquinaria"))
+                            {
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                    <a class="nav-link" asp-page="/JefeMaquinaria/ListaMaquinaria"><i class="fa-solid fa-screwdriver-wrench"></i> Equipos</a>
+                                    </li>
+                                </ul>
+                            }
                              <ul class="nav flex-column">
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index">
                                         Hola @currentUser.NombreCompleto!
                                     </a>
                                 </li>
@@ -80,7 +112,7 @@
                         {
                             <ul class="nav flex-column">
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
                                 </li>
                             </ul>
                         }
@@ -92,7 +124,7 @@
                 {
                     <div class="mt-auto p-3">
                         <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" method="post">
-                            <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+                            <button type="submit" class="nav-link btn btn-link">Cerrar Sesión</button>
                         </form>
                     </div>
                 }
@@ -100,7 +132,7 @@
             </aside>
 
             <!-- Main content -->
-            <main role="main" class="col-8">
+            <main role="main" class="col" style="margin-top:25px;">
                 @RenderBody()
             </main>
         </div>
@@ -109,7 +141,7 @@
     <!-- Footer -->
     <footer class="border-top footer text-muted mt-3">
         <div class="container">
-            &copy; 2025 - CleanArchIdentityDemo.WebUI -
+            &copy; 2025 - ArguzCore -
             <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
     </footer>

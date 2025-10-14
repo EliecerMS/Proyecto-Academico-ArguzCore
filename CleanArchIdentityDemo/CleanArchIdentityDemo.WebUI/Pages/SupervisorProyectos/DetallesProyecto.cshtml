@@ -2,8 +2,68 @@
 @model CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos.DetallesProyectoModel
 @{
 }
-<h2>Detalles del Proyecto - @Model.DetalleProyecto.Nombre</h2>
-<a asp-page="./ListaProyectos">Volver a lista de proyectos </a>
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11; margin-top: 25px;">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" id="successToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" id="errorToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" id="warningToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @TempData["WarningMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-info-circle me-2"></i>
+                    @TempData["InfoMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+</div>
+<!--Solamente a manera de prueba muestra el nombre y estado de proyecto  -->
+@if (Model.DetalleProyecto != null)
+{
+    //<h1>@Model.DetalleProyecto.Nombre</h1>
+    //<h1>@Model.DetalleProyecto.EstadoProyectoId</h1>
+    <h2>Detalles del Proyecto - @Model.DetalleProyecto.Nombre</h2>
+    <a asp-page="./ListaProyectos"><i class="fa-solid fa-arrow-left"></i> Volver a lista de proyectos </a>
+
+}
 
 
 <!--Boton para cambiar de estado el proyecto  -->
@@ -28,7 +88,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Error</h5>
+                <h5 class="modal-title">Aviso</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
@@ -48,38 +108,34 @@
 </script>
 }
 
-<!--Solamente a manera de prueba muestra el nombre y estado de proyecto  -->
-@if (Model.DetalleProyecto != null)
-{
-<h1>@Model.DetalleProyecto.Nombre</h1>
-<h1>@Model.DetalleProyecto.EstadoProyectoId</h1>
-}
+
 
 <nav>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
-
-        <button class="nav-link" id="nav-marcaEntradaSalida" data-bs-toggle="tab" data-bs-target="#nav-Marca-tab"
-            type="button" role="tab" aria-controls="nav-Marca-tab" aria-selected="false">Guardar/Marcar
-            Salida/Entrada</button>
-
-        <button class="nav-link" id="nav-Cronograma" data-bs-toggle="tab" data-bs-target="#nav-Cronograma-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Cronograma</button>
-        <button class="nav-link" id="nav-NotasAvance" data-bs-toggle="tab" data-bs-target="#nav-NotaAvance-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Notas de avance</button>
+        <button class="nav-link" id="nav-marcaEntradaSalida" data-bs-toggle="tab" data-bs-target="#nav-Marca-tab" type="button" role="tab" aria-controls="nav-Marca-tab" aria-selected="false">
+            Guardar/MarcarSalida/Entrada
+        </button>
+        <button class="nav-link" id="nav-Cronograma" data-bs-toggle="tab" data-bs-target="#nav-Cronograma-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Cronograma
+        </button>
+        <button class="nav-link" id="nav-NotasAvance" data-bs-toggle="tab" data-bs-target="#nav-NotaAvance-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Notas de avance
+        </button>
         <button class="nav-link" id="nav-PersonalProyecto" data-bs-toggle="tab"
             data-bs-target="#nav-PersonalProyecto-tab" type="button" role="tab" aria-controls="nav-contact"
             aria-selected="false">Personal del proyecto</button>
-        <button class="nav-link" id="nav-Incidentes" data-bs-toggle="tab" data-bs-target="#nav-Incidentes-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Incidentes</button>
-        <button class="nav-link" id="nav-Documentos" data-bs-toggle="tab" data-bs-target="#nav-Documentos-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+        <button class="nav-link" id="nav-Incidentes" data-bs-toggle="tab" data-bs-target="#nav-Incidentes-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Incidentes
+        </button>
+        <button class="nav-link" id="nav-Documentos" data-bs-toggle="tab" data-bs-target="#nav-Documentos-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
             Documentos
         </button>
-        <button class="nav-link" id="nav-Materiales" data-bs-toggle="tab" data-bs-target="#nav-Materiales-tab"
-            type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Materiales</button>
-        <button class="nav-link active" id="nav-ReporteFinanciero" data-bs-toggle="tab"
-            data-bs-target="#nav-ReporteFinanciero-tab" type="button" role="tab" aria-controls="nav-home"
-            aria-selected="true">Ver reporte financiero</button>
+        <button class="nav-link" id="nav-Materiales" data-bs-toggle="tab" data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Materiales
+        </button>
+        <button class="nav-link" id="nav-ReporteFinanciero" data-bs-toggle="tab" data-bs-target="#nav-ReporteFinanciero-tab" type="button" role="tab" aria-controls="nav-home" aria-selected="true">
+            Ver reporte financiero
+        </button>
     </div>
 </nav>
 
@@ -89,26 +145,21 @@
         Contenido del tab Guardar/Marcar Salida/Entrada.
     </div>
 
-
-
-
-    <div class="tab-pane fade show active" id="nav-Cronograma-tab" role="tabpanel" aria-labelledby="nav-Cronograma">
+    <div class="tab-pane fade " id="nav-Cronograma-tab" role="tabpanel" aria-labelledby="nav-Cronograma">
 
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearTareaModal">
             Nueva Tarea
         </button>
 
-
         <!-- Tabla de tareas del proyecto -->
-        <table class="table table-bordered">
-            <thead>
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
                 <tr>
                     <th>Nombre de la Tarea</th>
                     <th>Fecha Esperada de Inicio</th>
                     <th>Fecha Esperada de Fin</th>
                     <th>Descripción</th>
-                    <th>Editar</th>
-                    <th>Eliminar</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
 
@@ -116,36 +167,45 @@
             <tbody>
                 @if (Model.Tareas != null && Model.Tareas.Any()) // Validamos que sí haya tareas
                 {
-                @foreach (var tarea in Model.Tareas) // Recorremos la lista de tareas que creamos en
-                {
-                <tr>
-                    <td>@tarea.Nombre</td>
-                    <td>@tarea.FechaInicio.ToShortDateString()</td>
-                    <td>@tarea.FechaFin.ToShortDateString()</td>
-                    <td>@tarea.Descripcion</td>
-                    <td>
-                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarTareaModal"
-                            data-id="@tarea.Id" data-nombre="@tarea.Nombre" data-descripcion="@tarea.Descripcion"
-                            data-fechainicio="@tarea.FechaInicio.ToString(" yyyy-MM-dd")"
-                            data-fechafin="@tarea.FechaFin.ToString(" yyyy-MM-dd")">
-                            Editar
-                        </button>
-                    </td>
-                    <td>
-                                <form method="post" asp-page-handler="EliminarTarea" asp-route-IdTarea="@tarea.Id" asp-route-CodigoProyecto="@Model.CodigoProyecto"
-                            style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea eliminar esta tarea?')">
-                                Eliminar
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                }
+                    @foreach (var tarea in Model.Tareas) // Recorremos la lista de tareas que creamos en
+                    {
+                        <tr>
+                            <td>@tarea.Nombre</td>
+                            <td>@tarea.FechaInicio.ToShortDateString()</td>
+                            <td>@tarea.FechaFin.ToShortDateString()</td>
+                            <td>@tarea.Descripcion</td>
+                            <td>
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col">
+                                                <!-- Content for column 1 --> 
+                                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarTareaModal"
+                                                     data-id="@tarea.Id"
+                                                     data-nombre="@tarea.Nombre"
+                                                     data-descripcion="@tarea.Descripcion"
+                                                     data-fechainicio="@tarea.FechaInicio.ToString(" yyyy-MM-dd")"
+                                                     data-fechafin="@tarea.FechaFin.ToString(" yyyy-MM-dd")">
+                                                <i class="fas fa-edit"></i> Editar
+                                                </button>
+                                            </div>
+                                            <div class="col">
+                                                <!-- Content for column 2 -->
+                                                <form method="post" asp-page-handler="EliminarTarea" asp-route-IdTarea="@tarea.Id" asp-route-CodigoProyecto="@Model.CodigoProyecto" style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Desea eliminar esta tarea?')">
+                                                    <i class="fas fa-trash"></i>  Eliminar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                            </td>
+                        </tr>
+                    }
                 }
                 else // Si no hay tareas, mostramos un mensaje
                 {
                 <tr>
-                    <td colspan="6" class="text-center">El proyecto no cuenta con tareas.</td>
+                    <td colspan="8" class="text-center">El proyecto no cuenta con tareas.</td>
                 </tr>
                 }
             </tbody>
@@ -153,7 +213,80 @@
     </div>
 
     <div class="tab-pane fade" id="nav-NotaAvance-tab" role="tabpanel" aria-labelledby="nav-NotasAvance">
-        Contenido del tab notas de avance.
+         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearNotaAvanceModal">
+            Crear Nota
+        </button>
+
+        <!-- Tabla de notas de avance del proyecto -->
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Descripcion</th>
+                    <th>Fecha Subida</th>
+                    <th>Acciones</th> <!-- Columna para los botones de Editar, Eliminar -->
+                </tr>
+            </thead>
+
+            <!-- Cuerpo de la tabla -->
+            <tbody>
+                @if (Model.Notas != null && Model.Notas.Any()) // Validamos que sí haya notas
+                {
+                    @foreach (var nota in Model.Notas.OrderByDescending(n => n.FechaNota))
+                    {
+                        // Definimos el tipo de fila según si queremos destacarla o no
+                        var filaClase = nota.Destacada ? "table-success" : ""; // table-success para verde claro
+
+                        <tr class="@filaClase">
+                            <td>@nota.Descripcion</td>
+                            <td>@nota.FechaNota.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col">
+                                            <!-- Content for column 1 -->
+                                            <form method="post" asp-page-handler="DestacarNota" class="d-inline">
+                                                <input type="hidden" name="idNota" value="@nota.IdNota" />
+                                                <input type="hidden" name="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+                                                <button type="submit" class="btn btn-success">
+                                                    Destacar
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="col">
+                                            <!-- Content for column 2 -->
+                                            <button class="btn btn-warning"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editarNotaModal"
+                                                    data-id="@nota.IdNota"
+                                                    data-descripcion="@nota.Descripcion">
+                                                <i class="fas fa-edit"></i>  Editar
+                                            </button>
+                                        </div>
+                                        <div class="col">
+                                            <!-- Content for column 3 -->
+                                            <form method="post" asp-page-handler="EliminarNota" class="d-inline">
+                                                <input type="hidden" name="idNota" value="@nota.IdNota" />
+                                                <input type="hidden" name="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+                                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Desea eliminar esta Nota?')">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else // Si no hay notas, mostrar fila con mensaje
+                {
+                    <tr>
+                        <td colspan="4" class="text-center">El proyecto no cuenta con notas de avance.</td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
     </div>
 
     <div class="tab-pane fade" id="nav-PersonalProyecto-tab" role="tabpanel" aria-labelledby="nav-PersonalProyecto">
@@ -162,8 +295,8 @@
             Agregar Personal
         </button>
 
-        <table class="table table-striped">
-            <thead>
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
                 <tr>
                     <th>Nombre</th>
                     <th>Acciones</th>
@@ -172,28 +305,37 @@
             <tbody>
                 @if (Model.PersonalAsignado != null && Model.PersonalAsignado.Any()) // Validamos que sí haya tareas
                 {
-                @foreach (var p in Model.PersonalAsignado)
-                {
-                <tr>
-                    <td>@p.Nombre</td>
-                    <td>
-                        <form method="post" asp-page-handler="EliminarPersonal"
-                            asp-route-CodigoProyecto="@Model.CodigoProyecto" asp-route-personalId="@p.PersonalId"
-                            style="display:inline">
-                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                        </form>
-
-                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#modalReasignarPersonal" data-antiguo="@p.PersonalId">
-                            Reasignar
-                        </button>
-                    </td>
-                </tr>
-                }
+                    @foreach (var p in Model.PersonalAsignado)
+                    {
+                    <tr>
+                        <td>@p.Nombre</td>
+                        <td>
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col">
+                                                <!-- Content for column 1 -->
+                                                <form method="post" asp-page-handler="EliminarPersonal"
+                                                      asp-route-CodigoProyecto="@Model.CodigoProyecto" asp-route-personalId="@p.PersonalId"
+                                                      style="display:inline">
+                                                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Eliminar</button>
+                                                </form>
+                                            </div>
+                                            <div class="col">
+                                                <!-- Content for column 2 -->
+                                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#modalReasignarPersonal" data-antiguo="@p.PersonalId">
+                                                <i class="fas fa-arrows-alt-h"></i> Reasignar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                        </td>
+                    </tr>
+                    }
                 }
                 else
                 {   <tr>
-                        <td colspan="6" class="text-center">No hay personal asignado a este proyecto.</td>
+                        <td colspan="4" class="text-center">No hay personal asignado a este proyecto.</td>
                     </tr>
                 }
             </tbody>
@@ -201,7 +343,75 @@
     </div>
 
     <div class="tab-pane fade" id="nav-Incidentes-tab" role="tabpanel" aria-labelledby="nav-Incidentes">
-        Contenido del tab incidentes.
+
+        <!-- Botón para abrir modal -->
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearIncidenteModal">
+            Nuevo Incidente
+        </button>
+
+        <!-- Tabla de incidentes -->
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Incidentes != null && Model.Incidentes.Any())
+                {
+                    foreach (var incidente in Model.Incidentes)
+                    {
+                        <tr>
+                            <td>@incidente.Descripcion</td>
+                            <td>@incidente.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@incidente.Estado</td>
+                            <td>
+                                @if (incidente.Estado == "Abierto")
+                                {
+                                    <form method="post" asp-page-handler="CerrarIncidente"
+                                          asp-route-idIncidente="@incidente.IdIncidente"
+                                          asp-route-CodigoProyecto="@Model.CodigoProyecto"
+                                          style="display:inline;">
+
+                                        <button type="button" class="btn btn-sm btn-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEditarIncidente"
+                                                data-id="@incidente.IdIncidente"
+                                                data-descripcion="@incidente.Descripcion">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalCerrarIncidente"
+                                                data-id="@incidente.IdIncidente"
+                                                data-descripcion="@incidente.Descripcion">
+                                            <i class="fa-solid fa-circle-xmark"></i> Cerrar
+                                        </button>
+
+
+                                    </form> 
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Incidente cerrado</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center">No hay incidentes registrados.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
     </div>
 
     <div class="tab-pane fade" id="nav-Documentos-tab" role="tabpanel" aria-labelledby="nav-Documentos">
@@ -240,8 +450,8 @@
                 </button>
 
 
-                <table class="table table-bordered">
-                    <thead>
+                <table class="table table-striped align-middle">
+                    <thead class="table-light">
                         <tr>
                             <th>Material</th>
                             <th>Cantidad</th>
@@ -298,7 +508,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="6" class="text-center">No hay solicitudes registradas.</td>
+                                <td colspan="8" class="text-center">No hay solicitudes registradas.</td>
                             </tr>
                         }
                     </tbody>
@@ -505,6 +715,138 @@
         </div>
     </div>
 </div>
+<!-- Modal: Crear Incidente -->
+<div class="modal fade" id="crearIncidenteModal" tabindex="-1" aria-labelledby="crearIncidenteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CrearIncidente">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crearIncidenteModalLabel">Nuevo Incidente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" asp-for="NuevoIncidente.Descripcion" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
+<!-- Modal: Cerrar Incidente -->
+<div class="modal fade" id="modalCerrarIncidente" tabindex="-1" aria-labelledby="modalCerrarIncidenteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CerrarIncidente">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCerrarIncidenteLabel">Confirmar Cierre</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Seguro que quieres cerrar este incidente?</p>
+                    <p><strong id="descripcionIncidente"></strong></p>
+
+                    <!-- valores ocultos -->
+                    <input type="hidden" name="IdIncidente" id="incidenteId" />
+                    <input type="hidden" name="CodigoProyecto" value="@Model.CodigoProyecto" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar Cierre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
+<!-- Modal: Editar Incidente -->
+<div class="modal fade" id="modalEditarIncidente" tabindex="-1" aria-labelledby="modalEditarIncidenteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EditarIncidente">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarIncidenteLabel">Editar Incidente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="IdIncidente" id="editIncidenteId" />
+                    <input type="hidden" name="CodigoProyecto" value="@Model.CodigoProyecto" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" name="Descripcion" id="editIncidenteDescripcion" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Aplicar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
+
+<!-- Modal: Crear Nueva Nota Avance -->
+<div class="modal fade" id="crearNotaAvanceModal" tabindex="-1" aria-labelledby="crearNotaAvanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CrearNota">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crearNotaAvanceModalLabel">Nueva Nota</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Descripción -->
+                    <div class="mb-3">
+                        <label for="Descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" asp-for="NuevaNota.Descripcion" rows="3" required></textarea>
+
+                        <input type="hidden" asp-for="CodigoProyecto" value="@Model.DetalleProyecto.CodigoProyecto" />
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Nota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Nota Avance -->
+<div class="modal fade" id="editarNotaModal" tabindex="-1" aria-labelledby="editarNotaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EditarNota">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarNotaModalLabel">Editar Nota</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit-Descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" asp-for="NuevaNota.Descripcion" id="edit-Descripcion" rows="3" required></textarea>
+                    </div>
+                    <!-- Hidden para Id de la nota -->
+                    <input type="hidden" asp-for="NuevaNota.IdNota" id="edit-IdNota" />
+                    <!-- Hidden para CodigoProyecto -->
+                    <input type="hidden" asp-for="CodigoProyecto" value="@Model.CodigoProyecto" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <!-- Modal: Crear Solicitud de Material -->
 <div class="modal fade" id="crearSolicitudModal" tabindex="-1" aria-labelledby="crearSolicitudModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -601,35 +943,53 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    <script>
+        //script que hace funcionar las alertas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar todos los toasts que existan
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function(toastEl) {
+                return new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 3000  // 3 segundos
+                });
+            });
 
-<script>
-    var editarTareaModal = document.getElementById('editarTareaModal');
-    editarTareaModal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget;
+            // Activar cada toast
+            toastList.forEach(toast => toast.show());
+        });
+    </script>
+    <!-- Script de Modal Editar Tarea -->
 
-        // Extraer valores de los atributos data-*
-        var id = button.getAttribute('data-id');
-        var nombre = button.getAttribute('data-nombre');
-        var descripcion = button.getAttribute('data-descripcion');
-        var fechainicio = button.getAttribute('data-fechainicio');
-        var fechafin = button.getAttribute('data-fechafin');
+    <script>
+        var editarTareaModal = document.getElementById('editarTareaModal');
+        editarTareaModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
 
-        // Asignar los valores a los inputs del modal
-        editarTareaModal.querySelector('#edit-id').value = id;
-        editarTareaModal.querySelector('#edit-nombre').value = nombre;
-        editarTareaModal.querySelector('#edit-descripcion').value = descripcion;
-        editarTareaModal.querySelector('#edit-fechainicio').value = fechainicio ? new Date(fechainicio).toISOString().slice(0, 10) : '';
-        editarTareaModal.querySelector('#edit-fechafin').value = fechafin ? new Date(fechafin).toISOString().slice(0, 10) : '';
-        
-    });
-    // Pasar el ID del usuario antiguo al modal de reasignación
-    var modalReasignar = document.getElementById('modalReasignarPersonal');
-    modalReasignar.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget;
-        var antiguoId = button.getAttribute('data-antiguo');
-        document.getElementById('UsuarioReasignar').value = antiguoId;
-    });
-    // Editar solicitud de material
+            // Extraer valores de los atributos data-*
+            var id = button.getAttribute('data-id');
+            var nombre = button.getAttribute('data-nombre');
+            var descripcion = button.getAttribute('data-descripcion');
+            var fechainicio = button.getAttribute('data-fechainicio');
+            var fechafin = button.getAttribute('data-fechafin');
+
+            // Asignar los valores a los inputs del modal
+            editarTareaModal.querySelector('#edit-id').value = id;
+            editarTareaModal.querySelector('#edit-nombre').value = nombre;
+            editarTareaModal.querySelector('#edit-descripcion').value = descripcion;
+            editarTareaModal.querySelector('#edit-fechainicio').value = fechainicio ? new Date(fechainicio).toISOString().slice(0, 10) : '';
+            editarTareaModal.querySelector('#edit-fechafin').value = fechafin ? new Date(fechafin).toISOString().slice(0, 10) : '';
+
+        });
+        // Pasar el ID del usuario antiguo al modal de reasignación
+        var modalReasignar = document.getElementById('modalReasignarPersonal');
+        modalReasignar.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var antiguoId = button.getAttribute('data-antiguo');
+            document.getElementById('UsuarioReasignar').value = antiguoId;
+        });
+        // Editar solicitud de material
     var modalEditarSolicitud = document.getElementById('editarSolicitudModal');
     modalEditarSolicitud.addEventListener('show.bs.modal', function (event) {
         var button = event.relatedTarget;
@@ -644,4 +1004,61 @@
         document.getElementById('editCantidad').value = cantidad;
         document.getElementById('editPrioridad').value = prioridad;
     });
-</script>
+    </script>
+
+    <!-- Script de Modal Editar Nota -->
+    <script>
+        var editarNotaModal = document.getElementById('editarNotaModal');
+        editarNotaModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+
+            // Extraer valores de los atributos data-*
+            var idNota = button.getAttribute('data-id');
+            var descripcion = button.getAttribute('data-descripcion');
+
+            // Presentar el valores actuales en el textbox
+            editarNotaModal.querySelector('#edit-IdNota').value = idNota;
+            editarNotaModal.querySelector('#edit-Descripcion').value = descripcion;
+        });
+    </script>
+
+    <!-- Script para Guardar Ultimo Tab -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tabActiva = '@TempData["TabActiva"]';
+            if(tabActiva) {
+                var triggerEl = document.querySelector(`#nav-${tabActiva}`);
+                if(triggerEl){
+                    var tab = new bootstrap.Tab(triggerEl);
+                    tab.show();
+                }
+            }
+        });
+    </script>
+
+
+    <script>
+        var modalCerrarIncidente = document.getElementById('modalCerrarIncidente');
+        modalCerrarIncidente.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var descripcion = button.getAttribute('data-descripcion');
+
+            // asignar al hidden input y al texto
+            modalCerrarIncidente.querySelector('#incidenteId').value = id;
+            modalCerrarIncidente.querySelector('#descripcionIncidente').textContent = descripcion;
+        });
+    </script>
+    <script>
+        var modalEditarIncidente = document.getElementById('modalEditarIncidente');
+        modalEditarIncidente.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var descripcion = button.getAttribute('data-descripcion');
+
+            document.getElementById('editIncidenteId').value = id;
+            document.getElementById('editIncidenteDescripcion').value = descripcion;
+        });
+    </script>
+
+}
