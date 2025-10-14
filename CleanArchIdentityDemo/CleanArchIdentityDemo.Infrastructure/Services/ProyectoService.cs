@@ -177,7 +177,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Descripcion = t.Descripcion,
                 FechaInicio = t.FechaInicioEsperada,
                 FechaFin = t.FechaFinalEsperada,
-                ProyectoId = proyecto.IdProyecto 
+                ProyectoId = proyecto.IdProyecto
             }).ToList(); // Devolver la lista de TareaDto
         }
 
@@ -194,7 +194,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 FechaInicioEsperada = dto.FechaInicio,
                 FechaFinalEsperada = dto.FechaFin,
                 ProyectoId = proyecto.IdProyecto
-            }; 
+            };
 
             _context.Tareas.Add(nuevaTarea); // Agregar la nueva tarea al contexto
             await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
@@ -381,9 +381,149 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return listaProyectos;
         }
+        //Materiales
+
+        //Crear solicitud de Material
+        public async Task CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto)
+        {
+            var solicitud = new SolicitudMaterial
+            {
+                ProyectoId = solicitudDto.ProyectoId,
+                FechaSolicitud = solicitudDto.FechaSolicitud,
+                EstadoSolicitud = solicitudDto.EstadoSolicitud,
+                ObservacionesBodeguero = "Sin observaciones aún",
+                MaterialesSolicitados = solicitudDto.MaterialesSolicitados.Select(ms => new MaterialSolicitado
+                {
+                    MaterialId = ms.MaterialId,
+                    Cantidad = ms.Cantidad,
+                    Prioridad = ms.Prioridad
+                }).ToList()
+            };
+
+            _context.SolicitudesMaterial.Add(solicitud);
+            await _context.SaveChangesAsync();
+        }
+
+
+        //Obtener solicitud por ID
+        public async Task<SolicitudMaterialDto?> ObtenerSolicitudPorIdAsync(int idSolicitud)
+        {
+            var solicitud = await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .ThenInclude(ms => ms.Material)
+                .FirstOrDefaultAsync(s => s.IdSolicitud == idSolicitud);
+
+            if (solicitud == null)
+                return null;
+
+            return new SolicitudMaterialDto
+            {
+                IdSolicitud = solicitud.IdSolicitud,
+                ProyectoId = solicitud.ProyectoId,
+                FechaSolicitud = solicitud.FechaSolicitud,
+                EstadoSolicitud = solicitud.EstadoSolicitud,
+                ObservacionesBodeguero = solicitud.ObservacionesBodeguero,
+                MaterialesSolicitados = solicitud.MaterialesSolicitados.Select(ms => new MaterialSolicitadoDto
+                {
+                    IdMaterialSolicitado = ms.IdMaterialSolicitado,
+                    MaterialId = ms.MaterialId,
+                    NombreMaterial = ms.Material?.NombreMaterial ?? "",
+                    Cantidad = ms.Cantidad,
+                    Prioridad = ms.Prioridad
+                }).ToList()
+            };
+        }
+
+        //Actualizar Solicitud Material
+        public async Task ActualizarSolicitudAsync(SolicitudMaterialDto solicitudDto)
+        {
+            var solicitud = await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .FirstOrDefaultAsync(s => s.IdSolicitud == solicitudDto.IdSolicitud);
+
+            if (solicitud != null)
+            {
+                solicitud.ObservacionesBodeguero = solicitudDto.ObservacionesBodeguero;
+                solicitud.EstadoSolicitud = solicitudDto.EstadoSolicitud;
+
+                var materialSolicitado = solicitud.MaterialesSolicitados.FirstOrDefault();
+                if (materialSolicitado != null && solicitudDto.MaterialesSolicitados.Any())
+                {
+                    var dtoMat = solicitudDto.MaterialesSolicitados.First();
+                    materialSolicitado.MaterialId = dtoMat.MaterialId;
+                    materialSolicitado.Cantidad = dtoMat.Cantidad;
+                    materialSolicitado.Prioridad = dtoMat.Prioridad;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        //Obtener Materiales 
+        public async Task<IEnumerable<MaterialDto>> ObtenerMaterialesAsync()
+        {
+            return await _context.Materiales
+                .Select(m => new MaterialDto
+                {
+                    IdMaterial = m.IdMaterial,
+                    NombreMaterial = m.NombreMaterial,
+                    Tipo = m.Tipo,
+                    Descripcion = m.Descripcion,
+                    CantidadDisponible = m.CantidadDisponible
+                })
+                .ToListAsync();
+        }
+
+
+        //Mostrar solicitud por proyecto
+        public async Task<IEnumerable<SolicitudMaterialDto>> MostrarSolicitudesPorProyectoAsync(int proyectoId)
+        {
+            var solicitudes = await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .ThenInclude(ms => ms.Material)
+                .Where(s => s.ProyectoId == proyectoId)
+                .ToListAsync();
+
+            return solicitudes.Select(s => new SolicitudMaterialDto
+            {
+                IdSolicitud = s.IdSolicitud,
+                ProyectoId = s.ProyectoId,
+                FechaSolicitud = s.FechaSolicitud,
+                EstadoSolicitud = s.EstadoSolicitud,
+                ObservacionesBodeguero = s.ObservacionesBodeguero,
+                MaterialesSolicitados = s.MaterialesSolicitados.Select(ms => new MaterialSolicitadoDto
+                {
+                    IdMaterialSolicitado = ms.IdMaterialSolicitado,
+                    MaterialId = ms.MaterialId,
+                    NombreMaterial = ms.Material?.NombreMaterial ?? "",
+                    Cantidad = ms.Cantidad,
+                    Prioridad = ms.Prioridad
+                }).ToList()
+            }).ToList();
+        }
+
+        //Elimar solicitud proyecto
+        public async Task EliminarSolicitudMaterialAsync(int idSolicitud)
+        {
+            var solicitud = await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .FirstOrDefaultAsync(s => s.IdSolicitud == idSolicitud);
+
+            if (solicitud != null)
+            {
+                _context.MaterialesSolicitados.RemoveRange(solicitud.MaterialesSolicitados);
+                _context.SolicitudesMaterial.Remove(solicitud);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+
+
+
+
 
         // ====================== MÉTODOS PARA NOTAS (Checho)======================
-        public async Task<List<NotaAvanceDto>> MostrarNotasAsync(int idProyecto)
+        public async Task<IEnumerable<NotaAvanceDto>> MostrarNotasAsync(int idProyecto)
         {
             return await _context.NotasAvance
                 .Where(n => n.ProyectoId == idProyecto)
@@ -419,7 +559,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         {
             var notaExistente = await _context.NotasAvance
                 .FirstOrDefaultAsync(n => n.IdNota == notaDto.IdNota);
-           
+
             notaExistente.Descripcion = notaDto.Descripcion;
             notaExistente.FechaNota = notaDto.FechaNota;
             notaExistente.CreadoPor = notaDto.CreadoPor;
@@ -454,7 +594,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         }
 
 
-    
+
 
         //Mostrar incidente 
         public async Task<IEnumerable<Incidente>> MostrarIncidentesPorProyectoAsync(int proyectoId)
@@ -487,12 +627,12 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
     }
 }
-    
 
 
-        
-    
-        
 
-        
+
+
+
+
+
 

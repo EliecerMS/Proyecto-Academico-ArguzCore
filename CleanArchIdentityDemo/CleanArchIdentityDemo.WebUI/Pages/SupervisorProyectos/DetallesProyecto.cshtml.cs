@@ -61,9 +61,31 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         [BindProperty]
         public TareaDto NuevaTarea { get; set; } = new TareaDto(); // Propiedad para enlazar el formulario de nueva tarea y poder crearla
+                                                                   // Solicitud Material
+        public class NuevoMaterialInput
+        {
+            public int MaterialId { get; set; }
+            public int Cantidad { get; set; }
+        }
+        public List<SolicitudMaterialDto> SolicitudesMaterial { get; set; } = new();
+        public List<MaterialDto> MaterialesDisponibles { get; set; } = new();
 
         //Incidente
         public List<Incidente> Incidentes { get; set; } = new();
+        [BindProperty]
+        public SolicitudMaterialDto NuevaSolicitud { get; set; } = new SolicitudMaterialDto
+        {
+            MaterialesSolicitados = new List<MaterialSolicitadoDto>
+            {
+                new MaterialSolicitadoDto()
+            }
+        };
+
+        [BindProperty]
+        public List<NuevoMaterialInput> NuevosMateriales { get; set; } = new()
+        {
+            new NuevoMaterialInput()
+        };
 
         // ---------- VARIABLES PARA NOTAS DE AVANCE
         [BindProperty]
@@ -133,6 +155,11 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 Tareas = new List<TareaDto>();
                 Notas = new List<NotaAvanceDto>();
             }
+            //Cargar solicitudes de material del proyecto
+            SolicitudesMaterial = (await _proyectoService.MostrarSolicitudesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+
+            //Cargar materiales disponibles para mostrar en el combo
+            MaterialesDisponibles = (await _proyectoService.ObtenerMaterialesAsync()).ToList();
 
 
 
@@ -440,6 +467,82 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
+
+        //Solicitud de Materiales  
+        public async Task<IActionResult> OnPostCrearSolicitudAsync()
+        {
+            DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+            if (DetalleProyecto == null)
+            {
+                return NotFound("Proyecto no encontrado");
+            }
+            try
+            {
+                NuevaSolicitud.ProyectoId = DetalleProyecto.IdProyecto;
+                NuevaSolicitud.FechaSolicitud = DateTime.Now;
+                NuevaSolicitud.EstadoSolicitud = "Abierta";
+
+                await _proyectoService.CrearSolicitudMaterialAsync(NuevaSolicitud);
+                TempData["SuccessMessage"] = "Solicitud de material creada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al crear la solicitud de material. Intente de nuevo.";
+            }
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEditarSolicitudAsync(int IdSolicitud, int MaterialId, int Cantidad, string Prioridad, string CodigoProyecto)
+        {
+            var solicitud = await _proyectoService.ObtenerSolicitudPorIdAsync(IdSolicitud);
+            if (solicitud == null || solicitud.EstadoSolicitud != "Abierta")
+            {
+                return NotFound("Solicitud no encontrada o ya cerrada");
+            }
+
+            var materialSolicitado = solicitud.MaterialesSolicitados.FirstOrDefault();
+            if (materialSolicitado != null)
+            {
+                materialSolicitado.MaterialId = MaterialId;
+                materialSolicitado.Cantidad = Cantidad;
+                materialSolicitado.Prioridad = Prioridad;
+            }
+            try
+            {
+                await _proyectoService.ActualizarSolicitudAsync(solicitud);
+                TempData["SuccessMessage"] = "Solicitud de material editada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al editar la solicitud de material. Intente de nuevo.";
+            }
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEliminarSolicitudAsync(int idSolicitud, string CodigoProyecto)
+        {
+            var solicitud = await _proyectoService.ObtenerSolicitudPorIdAsync(idSolicitud);
+            if (solicitud == null)
+            {
+                TempData["ErrorMessage"] = "La solicitud no fue encontrada o ya fue eliminada.";
+                return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+            }
+            try
+            {
+                await _proyectoService.EliminarSolicitudMaterialAsync(idSolicitud);
+
+                TempData["SuccessMessage"] = "La solicitud de material fue eliminada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al eliminar la solicitud de material. Intente de nuevo.";
+            }
+
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+
     }
 }
 
