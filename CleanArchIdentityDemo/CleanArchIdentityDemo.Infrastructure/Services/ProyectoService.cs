@@ -523,7 +523,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
 
         // ====================== MÉTODOS PARA NOTAS (Checho)======================
-        public async Task<List<NotaAvanceDto>> MostrarNotasAsync(int idProyecto)
+        public async Task<IEnumerable<NotaAvanceDto>> MostrarNotasAsync(int idProyecto)
         {
             return await _context.NotasAvance
                 .Where(n => n.ProyectoId == idProyecto)

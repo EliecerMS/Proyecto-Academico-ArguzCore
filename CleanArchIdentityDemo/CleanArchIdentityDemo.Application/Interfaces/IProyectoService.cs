@@ -49,7 +49,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
         // ====================== MÉTODOS PARA NOTAS (Checho)======================
         //metodo para mostrar notas de avance de un proyecto
-        Task<List<NotaAvanceDto>> MostrarNotasAsync(int idProyecto);
+        Task<IEnumerable<NotaAvanceDto>> MostrarNotasAsync(int idProyecto);
 
         //metodo para crear nota de avance de un proyecto
         Task CrearNotaAsync(NotaAvanceDto notaAvance);
@@ -61,7 +61,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task EliminarNotaAsync(int IdNota);
 
         //metodo para destacar nota de avance de un proyecto
-        Task <bool> DestacarNotaAsync(int IdNota);
+        Task<bool> DestacarNotaAsync(int IdNota);
 
 
 

@@ -476,12 +476,19 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             {
                 return NotFound("Proyecto no encontrado");
             }
+            try
+            {
+                NuevaSolicitud.ProyectoId = DetalleProyecto.IdProyecto;
+                NuevaSolicitud.FechaSolicitud = DateTime.Now;
+                NuevaSolicitud.EstadoSolicitud = "Abierta";
 
-            NuevaSolicitud.ProyectoId = DetalleProyecto.IdProyecto;
-            NuevaSolicitud.FechaSolicitud = DateTime.Now;
-            NuevaSolicitud.EstadoSolicitud = "Abierta";
-
-            await _proyectoService.CrearSolicitudMaterialAsync(NuevaSolicitud);
+                await _proyectoService.CrearSolicitudMaterialAsync(NuevaSolicitud);
+                TempData["SuccessMessage"] = "Solicitud de material creada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al crear la solicitud de material. Intente de nuevo.";
+            }
 
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
@@ -501,8 +508,15 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 materialSolicitado.Cantidad = Cantidad;
                 materialSolicitado.Prioridad = Prioridad;
             }
-
-            await _proyectoService.ActualizarSolicitudAsync(solicitud);
+            try
+            {
+                await _proyectoService.ActualizarSolicitudAsync(solicitud);
+                TempData["SuccessMessage"] = "Solicitud de material editada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al editar la solicitud de material. Intente de nuevo.";
+            }
 
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
@@ -512,13 +526,19 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             var solicitud = await _proyectoService.ObtenerSolicitudPorIdAsync(idSolicitud);
             if (solicitud == null)
             {
-                TempData["ErrorPersonal"] = "La solicitud no fue encontrada o ya fue eliminada.";
+                TempData["ErrorMessage"] = "La solicitud no fue encontrada o ya fue eliminada.";
                 return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
             }
+            try
+            {
+                await _proyectoService.EliminarSolicitudMaterialAsync(idSolicitud);
 
-            await _proyectoService.EliminarSolicitudMaterialAsync(idSolicitud);
-
-            TempData["MensajeExito"] = "La solicitud de material fue eliminada correctamente.";
+                TempData["SuccessMessage"] = "La solicitud de material fue eliminada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al eliminar la solicitud de material. Intente de nuevo.";
+            }
 
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
