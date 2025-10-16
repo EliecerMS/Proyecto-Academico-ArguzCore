@@ -136,7 +136,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             }
             else
             {
-                TempData["ErrorMessage"] = "Error al editar proveedor";
+                TempData["InfoMessage"] = "No hubo datos que editar para el proveedor";
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();

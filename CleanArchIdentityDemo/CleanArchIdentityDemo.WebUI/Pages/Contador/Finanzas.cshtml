@@ -46,7 +46,7 @@
 
     @if (TempData["InfoMessage"] != null)
     {
-        <div class="toast align-items-center text-white bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
+        <div class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
             <div class="d-flex">
                 <div class="toast-body">
                     <i class="fas fa-info-circle me-2"></i>
@@ -85,7 +85,7 @@
             </button>
         </div>
         <div class="table-responsive">
-            <!-- Tabla de Usuarios -->
+            <!-- Tabla de proveedores -->
             <table class="table table-striped align-middle">
                 <thead class="table-light">
                     <tr>
@@ -118,12 +118,13 @@
                                             </div>
                                             <div class="col">
                                                 <!-- Contenido para columna accion 2 -->
-                                                <form method="post" asp-page-handler="EliminarProveedor">
-                                                    <input type="hidden" name="IdProveedor" value="@proveedor.IdProveedor" />
-                                                    <button class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-trash"></i> Eliminar
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-sm btn-danger"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalEliminacionProveedor"
+                                                        data-id="@proveedor.IdProveedor"
+                                                        data-nombreProveedor="@proveedor.NombreProveedor">
+                                                    <i class="fa-solid fa-trash"></i> Eliminar
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -207,7 +208,7 @@
         <div class="modal-content">
             <form method="post" asp-page-handler="RegistrarProveedor">
                 <div class="modal-header">
-                    <h5 class="modal-title">Crear Proveedor</h5>
+                    <h5 class="modal-title">Registrar proveedor</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -224,7 +225,7 @@
 
                     <div class="mb-3">
                         <label asp-for="Proveedor.Contacto" class="form-label">Contacto</label>
-                        <input asp-for="Proveedor.Contacto"
+                        <input asp-for="Proveedor.Contacto" required
                                class="form-control @(ViewData.ModelState["Proveedor.Contacto"]?.Errors.Count > 0 ? "is-invalid" : "")" />
                         <span asp-validation-for="Proveedor.Contacto" class="text-danger small"></span>
                     </div>
@@ -244,13 +245,13 @@
         <div class="modal-content">
             <form method="post" asp-page-handler="EditarProveedor">
                 <div class="modal-header">
-                    <h5 class="modal-title">Editar Proveedor</h5>
+                    <h5 class="modal-title">Editar proveedor</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" asp-for="ProveedorEditado.IdProveedor" />
                     <div class="mb-3">
-                        <label>Nombre</label>
+                        <label asp-for="ProveedorEditado.NombreProveedor" class="form-label">Nombre</label>
                         <input asp-for="ProveedorEditado.NombreProveedor" required
                                minlength="3"
                                maxlength="100" 
@@ -258,10 +259,8 @@
                         <span asp-validation-for="ProveedorEditado.NombreProveedor" class="text-danger small"></span>
                     </div>
                     <div class="mb-3">
-                        <label>Contacto</label>
-                        <input asp-for="ProveedorEditado.Contacto" required
-                               minlength="3"
-                               maxlength="100" 
+                        <label asp-for="ProveedorEditado.Contacto" class="form-label">Contacto</label>
+                        <input asp-for="ProveedorEditado.Contacto" required 
                                class="form-control @(ViewData.ModelState["ProveedorEditado.Contacto"]?.Errors.Count > 0 ? "is-invalid" : "")" />
                         <span asp-validation-for="ProveedorEditado.Contacto" class="text-danger small"></span>
                     </div>
@@ -269,6 +268,31 @@
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success">Guardar</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Confirmar eliminación proveedor -->
+<div class="modal fade" id="modalEliminacionProveedor" tabindex="-1" aria-labelledby="modalEliminacionProveedorLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EliminarProveedor">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEliminarProveedor">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Seguro que desea eliminar este proveedor, todos los registros asociados a el se perderán?</p>
+                    <p><strong id="nombreProveedor"></strong></p>
+
+                    <!-- valores ocultos -->
+                    <input type="hidden" asp-for="IdProveedor" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
                 </div>
             </form>
         </div>
@@ -360,6 +384,17 @@
                 tabla.style.display = 'block';
             }
         }
+    </script>
+    <script>
+        var modalEliminacionProveedor = document.getElementById('modalEliminacionProveedor');
+        modalEliminacionProveedor.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var nombreProveedor = button.getAttribute('data-nombreProveedor');
+
+            document.getElementById('IdProveedor').value = id;
+            document.getElementById('nombreProveedor').innerText = nombreProveedor;
+        });
     </script>
 
 }
