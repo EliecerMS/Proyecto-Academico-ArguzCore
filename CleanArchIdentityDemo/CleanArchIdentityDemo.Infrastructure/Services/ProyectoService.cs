@@ -86,25 +86,21 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
         public async Task<IEnumerable<ProyectoDto>> MostrarProyectosAsync()
         {
-            var proyectos = _context.Proyectos.Include(p => p.EstadoProyecto).ToList();
-            var ListaProyectos = new List<ProyectoDto>();
+            var proyectos = await _context.Proyectos
+            .Include(p => p.EstadoProyecto)
+            .Include(p => p.Tareas)
+            .ToListAsync();
 
-            foreach (var proyecto in proyectos)
+            return proyectos.Select(p => new ProyectoDto
             {
-                var PorcentajeAvance = await RecalculoPorcentajeAvance(proyecto.CodigoProyecto); // recalcula el porcentaje de avance antes de mostrar la lista
-                ListaProyectos.Add(new ProyectoDto
-                {
-                    Descripcion = proyecto.Descripcion,
-                    CodigoProyecto = proyecto.CodigoProyecto,
-                    Nombre = proyecto.Nombre,
-                    FechaFinalPropuesta = proyecto.FechaFinalPropuesta.Date,
-                    Presupuesto = proyecto.Presupuesto,
-                    EstadoProyecto = proyecto.EstadoProyecto.NombreEstado,
-                    PorcentajeAvance = PorcentajeAvance
-                });
-            }
-
-            return ListaProyectos;
+                Descripcion = p.Descripcion,
+                CodigoProyecto = p.CodigoProyecto,
+                Nombre = p.Nombre,
+                FechaFinalPropuesta = p.FechaFinalPropuesta.Date,
+                Presupuesto = p.Presupuesto,
+                EstadoProyecto = p.EstadoProyecto.NombreEstado,
+                PorcentajeAvance = RecalculoPorcentajeAvance(p.Tareas.ToList())
+            });
         }
 
         //Metodo para cambiar el estado de un proyecto
@@ -118,12 +114,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }
         }
 
-        public async Task<int> RecalculoPorcentajeAvance(string CodigoProyecto)
+        public int RecalculoPorcentajeAvance(List<Tarea> tareas)
         {
-            Proyecto? ProyectoEncontrado = await BuscarProyectoPorCodigo(CodigoProyecto);
-            if (ProyectoEncontrado == null) return 0;
-
-            var tareas = ProyectoEncontrado.Tareas;
             if (tareas == null || tareas.Count == 0) return 0;
 
             var ahora = DateTime.Now;
@@ -131,33 +123,20 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             foreach (var tarea in tareas)
             {
-                // Tarea aún no ha iniciado
                 if (ahora < tarea.FechaInicioEsperada)
-                {
                     sumaPorcentajes += 0;
-                }
-                // Tarea ya debería estar completada
                 else if (ahora >= tarea.FechaFinalEsperada)
-                {
                     sumaPorcentajes += 100;
-                }
-                // Tarea en progreso - calcular porcentaje proporcional
                 else
                 {
-                    var duracionTarea = (tarea.FechaFinalEsperada - tarea.FechaInicioEsperada).TotalSeconds;
-                    var transcurridoTarea = (ahora - tarea.FechaInicioEsperada).TotalSeconds;
-
-                    if (duracionTarea > 0)
-                    {
-                        double porcentajeTarea = (transcurridoTarea / duracionTarea) * 100.0;
-                        sumaPorcentajes += Math.Clamp(porcentajeTarea, 0, 100);
-                    }
+                    var duracion = (tarea.FechaFinalEsperada - tarea.FechaInicioEsperada).TotalSeconds;
+                    var transcurrido = (ahora - tarea.FechaInicioEsperada).TotalSeconds;
+                    if (duracion > 0)
+                        sumaPorcentajes += (transcurrido / duracion) * 100.0;
                 }
             }
 
-            // Promedio de todas las tareas
-            int porcentajeProyecto = (int)Math.Round(sumaPorcentajes / tareas.Count);
-            return Math.Clamp(porcentajeProyecto, 0, 100);
+            return (int)Math.Round(sumaPorcentajes / tareas.Count);
 
         }
 
@@ -366,7 +345,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             foreach (var proyecto in proyectos)
             {
-                var porcentajeAvance = await RecalculoPorcentajeAvance(proyecto.CodigoProyecto);
+                //var porcentajeAvance = await RecalculoPorcentajeAvance(proyecto.CodigoProyecto);
                 listaProyectos.Add(new ProyectoDto
                 {
                     Descripcion = proyecto.Descripcion,
@@ -375,7 +354,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                     FechaFinalPropuesta = proyecto.FechaFinalPropuesta.Date,
                     Presupuesto = proyecto.Presupuesto,
                     EstadoProyecto = proyecto.EstadoProyecto?.NombreEstado,
-                    PorcentajeAvance = porcentajeAvance
+                    //PorcentajeAvance = porcentajeAvance
                 });
             }
 

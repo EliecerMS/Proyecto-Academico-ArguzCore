@@ -1,10 +1,12 @@
 ﻿using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
+using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using System.Data;
 
 namespace CleanArchIdentityDemo.Infrastructure.Services
 {
@@ -194,9 +196,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         public async Task<IEnumerable<PagoProveedorDto>> ListarPagosProveedoresAsync()
         {
             var pagosProveedores = await _context.PagosProveedores
-           .Include(p => p.Proveedor)     // Carga relaciones en una sola consulta
+           .Include(p => p.Proveedor)     // Carga relaciones en una sola consulta para navegar y obtener datos de las tablas relacionadas como lo son Proveedor y Proyecto en este caso
            .Include(p => p.Proyecto)
-           .Select(p => new PagoProveedorDto  // Mapea el resultado al Dto
+           .Select(p => new PagoProveedorDto  // Crear una instancia del Dto para mapear o pasarle el resultado al Dto
            {
                IdPago = p.IdPago,
                Monto = p.Monto,
@@ -207,9 +209,68 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                ProyectoId = p.ProyectoId,
                NombreProyecto = p.Proyecto.Nombre
            })
-           .ToListAsync();  // es Async realmente
+           .ToListAsync();  // es Async realmente y es List
 
             return pagosProveedores;//retorna la lista de pagos a proveedores
+        }
+
+        public async Task<IEnumerable<ProveedorDto>> ListarProveedoresAsync()
+        {
+            var Proveedores = await _context.Proveedores
+           .Select(p => new ProveedorDto  // Mapea todos los registros de la tabla Proveedores al Dto
+           {
+               IdProveedor = p.IdProveedor,
+               NombreProveedor = p.NombreProveedor,
+               Contacto = p.Contacto
+           })
+           .ToListAsync();  // es Async realmente y list
+
+            return Proveedores;//retorna la lista de proveedores
+        }
+        public async Task<bool> CrearProveedorAsync(ProveedorDto DatosProveedor)
+        {
+            bool ProveedorCreado = false;
+
+            if (DatosProveedor != null)
+            {
+                _context.Proveedores.Add(new Proveedor
+                {
+                    NombreProveedor = DatosProveedor.NombreProveedor,
+                    Contacto = DatosProveedor.Contacto
+                });
+
+                ProveedorCreado = await _context.SaveChangesAsync() > 0;
+            }
+
+            return ProveedorCreado;
+        }
+
+        public async Task<bool> EditarProveedorAsync(ProveedorDto DatosProveedor)
+        {
+            bool ProveedorEditado = false;
+            if (DatosProveedor != null)
+            {
+                var proveedor = await _context.Proveedores.FindAsync(DatosProveedor.IdProveedor);
+                if (proveedor != null)
+                {
+                    proveedor.NombreProveedor = DatosProveedor.NombreProveedor;
+                    proveedor.Contacto = DatosProveedor.Contacto;
+                    ProveedorEditado = await _context.SaveChangesAsync() > 0;
+                }
+            }
+            return ProveedorEditado;
+        }
+
+        public async Task<bool> EliminarProveedorAsync(int IdProveedor)
+        {
+            bool ProveedorEliminado = false;
+            var proveedor = await _context.Proveedores.FindAsync(IdProveedor);
+            if (proveedor != null)
+            {
+                _context.Proveedores.Remove(proveedor);
+                ProveedorEliminado = await _context.SaveChangesAsync() > 0;
+            }
+            return ProveedorEliminado;
         }
     }
 }
