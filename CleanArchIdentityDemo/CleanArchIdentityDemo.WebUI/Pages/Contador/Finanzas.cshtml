@@ -46,7 +46,7 @@
 
     @if (TempData["InfoMessage"] != null)
     {
-        <div class="toast align-items-center text-white bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
+        <div class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
             <div class="d-flex">
                 <div class="toast-body">
                     <i class="fas fa-info-circle me-2"></i>
@@ -62,6 +62,9 @@
 
 <nav>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <button class="nav-link" id="nav-GestionProveedor" data-bs-toggle="tab" data-bs-target="#nav-GestionProveedor-tab" type="button" role="tab" aria-controls="nav-GestionProveedor-tab" aria-selected="false">
+            Gestion de proveedores
+        </button>
         <button class="nav-link" id="nav-PagosProveedor" data-bs-toggle="tab" data-bs-target="#nav-PagosProveedor-tab" type="button" role="tab" aria-controls="nav-PagosProveedor-tab" aria-selected="false">
             Pagos por proveedor
         </button>
@@ -71,16 +74,230 @@
     </div>
 </nav>
 
+
+
 <div class="tab-content" id="nav-tabContent">
-    <div class="tab-pane fade" id="nav-PagosProveedor-tab" role="tabpanel" aria-labelledby="nav-PagosProveedor">
-        Contenido del tab pagos por proveedor
+
+    <div class="tab-pane fade" id="nav-GestionProveedor-tab" role="tabpanel" aria-labelledby="nav-GestionProveedor">
+        <div class="d-flex justify-content-end my-4">
+            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#registrarProveedor">
+                <i class="fas fa-plus"></i> Registrar proveedor
+            </button>
+        </div>
+        <div class="table-responsive">
+            <!-- Tabla de proveedores -->
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Contacto</th>
+                        <th class="align-content-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Proveedores != null && Model.Proveedores.Any())
+                    {
+                        @foreach (var proveedor in Model.Proveedores)
+                        {
+                            <tr>
+                                <td>@proveedor.NombreProveedor</td>
+                                <td>@proveedor.Contacto</td>
+                                <td>
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col">
+                                                <!-- Contenido para columna accion 1 -->
+                                                <button class="btn btn-sm btn-warning"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editarProveedorModal"
+                                                        data-id="@proveedor.IdProveedor"
+                                                        data-nombre="@proveedor.NombreProveedor"
+                                                        data-contacto="@proveedor.Contacto">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </button>
+                                            </div>
+                                            <div class="col">
+                                                <!-- Contenido para columna accion 2 -->
+                                                <button type="button" class="btn btn-sm btn-danger"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalEliminacionProveedor"
+                                                        data-id="@proveedor.IdProveedor"
+                                                        data-nombreProveedor="@proveedor.NombreProveedor">
+                                                    <i class="fa-solid fa-trash"></i> Eliminar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center">No hay proveedores registrados.</td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
     </div>
+
+
+    <div class="tab-pane fade" id="nav-PagosProveedor-tab" role="tabpanel" aria-labelledby="nav-PagosProveedor">
+        <!--- Ajustar el siguiente botón con lo necesario para abrir un modal y registrar un nuevo pago a proveedor, luego borrar este comentario -->
+        <div class="d-flex justify-content-end my-4">
+            <button class="btn btn-success" id="registrarPagoBtn">
+                <i class="fas fa-plus"></i> Registrar pago
+            </button>
+        </div>
+
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <label class="form-label">Filtrar por proveedor</label>
+                <select id="filtroProveedor" class="form-control">
+                    <option value="">Todos</option>
+                    @foreach (var proveedor in Model.Proveedores)
+                    {
+                        <option value="@proveedor.IdProveedor">@proveedor.NombreProveedor</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="fechaInicio" class="form-label">Fecha inicio</label>
+                <input type="date" class="form-control" id="fechaInicio">
+            </div>
+            <div class="col-md-3">
+                <label for="fechaFin" class="form-label">Fecha fin</label>
+                <input type="date" class="form-control" id="fechaFin">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary w-100" onclick="filtrarPagos()">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+            </div>
+        </div>
+
+
+        <!--- Tabla de pagos a proveedores --->
+        <div class="position-relative">
+            <div class="table-responsive" id="tablaPagosContainer">
+                <partial name="_TablaPagosPartial" model="Model.PagosProveedores" />
+            </div>
+
+            <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted">Cargando resultados...</p>
+            </div>
+        </div>
+    </div>
+
     <div class="tab-pane fade" id="nav-GastosEjecutados-tab" role="tabpanel" aria-labelledby="nav-GastosEjecutados">
         Contenido del tab Gastos Ejecutados
     </div>
+
 </div>
 
+<!--- Modal registrar proveedor --->
+<div class="modal fade" id="registrarProveedor" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="RegistrarProveedor">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Errores generales -->
+                    
+                    <div class="mb-3">
+                        <label asp-for="Proveedor.NombreProveedor" class="form-label">Nombre</label>
+                        <input asp-for="Proveedor.NombreProveedor" required
+                               minlength="3"
+                               maxlength="100"
+                               class="form-control @(ViewData.ModelState["Proveedor.NombreProveedor"]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                        <span asp-validation-for="Proveedor.NombreProveedor" class="text-danger small"></span>
+                    </div>
 
+                    <div class="mb-3">
+                        <label asp-for="Proveedor.Contacto" class="form-label">Contacto</label>
+                        <input asp-for="Proveedor.Contacto" required
+                               class="form-control @(ViewData.ModelState["Proveedor.Contacto"]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                        <span asp-validation-for="Proveedor.Contacto" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Registrar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar proveedor -->
+<div class="modal fade" id="editarProveedorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EditarProveedor">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="ProveedorEditado.IdProveedor" />
+                    <div class="mb-3">
+                        <label asp-for="ProveedorEditado.NombreProveedor" class="form-label">Nombre</label>
+                        <input asp-for="ProveedorEditado.NombreProveedor" required
+                               minlength="3"
+                               maxlength="100" 
+                               class="form-control @(ViewData.ModelState["ProveedorEditado.NombreProveedor"]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                        <span asp-validation-for="ProveedorEditado.NombreProveedor" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ProveedorEditado.Contacto" class="form-label">Contacto</label>
+                        <input asp-for="ProveedorEditado.Contacto" required 
+                               class="form-control @(ViewData.ModelState["ProveedorEditado.Contacto"]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                        <span asp-validation-for="ProveedorEditado.Contacto" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Confirmar eliminación proveedor -->
+<div class="modal fade" id="modalEliminacionProveedor" tabindex="-1" aria-labelledby="modalEliminacionProveedorLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EliminarProveedor">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEliminarProveedor">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Seguro que desea eliminar este proveedor, todos los registros asociados a el se perderán?</p>
+                    <p><strong id="nombreProveedor"></strong></p>
+
+                    <!-- valores ocultos -->
+                    <input type="hidden" asp-for="IdProveedor" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 
 
@@ -100,6 +317,18 @@
             // Activar cada toast
             toastList.forEach(toast => toast.show());
         });
+        // Llenar modal Editar proveedor con datos del botón pulsado
+        var editUserModal = document.getElementById('editarProveedorModal');
+        editUserModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var nombre = button.getAttribute('data-nombre');
+            var contacto = button.getAttribute('data-contacto');
+
+            document.getElementById('ProveedorEditado_IdProveedor').value = id;
+            document.getElementById('ProveedorEditado_NombreProveedor').value = nombre;
+            document.getElementById('ProveedorEditado_Contacto').value = contacto;
+        });
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -111,6 +340,60 @@
                     tab.show();
                 }
             }
+        });
+    </script>
+    <!-- JavaScript -->
+    <script>
+        async function filtrarPagos() {
+            const idProveedor = document.getElementById('filtroProveedor').value;
+            const fechaInicio = document.getElementById('fechaInicio').value;
+            const fechaFin = document.getElementById('fechaFin').value;
+
+            const params = new URLSearchParams({
+                handler: 'FiltrarPagos',
+                idProveedor,
+                fechaInicio,
+                fechaFin
+            });
+
+            const tabla = document.getElementById('tablaPagosContainer');
+            const spinner = document.getElementById('loadingSpinner');
+
+            try {
+                // Mostrar loading
+                tabla.style.display = 'none';
+                spinner.style.display = 'block';
+
+                // Fetch data
+                const response = await fetch(`?${params.toString()}`, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error('Error en la petición');
+
+                // Actualizar tabla
+                tabla.innerHTML = await response.text();
+
+            } catch (error) {
+                console.error('Error:', error);
+                tabla.innerHTML = '<div class="alert alert-danger">Error al filtrar pagos</div>';
+            } finally {
+                // Siempre ocultar spinner y mostrar tabla
+                spinner.style.display = 'none';
+                tabla.style.display = 'block';
+            }
+        }
+    </script>
+    <script>
+        var modalEliminacionProveedor = document.getElementById('modalEliminacionProveedor');
+        modalEliminacionProveedor.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var nombreProveedor = button.getAttribute('data-nombreProveedor');
+
+            document.getElementById('IdProveedor').value = id;
+            document.getElementById('nombreProveedor').innerText = nombreProveedor;
         });
     </script>
 

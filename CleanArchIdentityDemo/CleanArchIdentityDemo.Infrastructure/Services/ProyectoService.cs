@@ -86,25 +86,21 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
         public async Task<IEnumerable<ProyectoDto>> MostrarProyectosAsync()
         {
-            var proyectos = _context.Proyectos.Include(p => p.EstadoProyecto).ToList();
-            var ListaProyectos = new List<ProyectoDto>();
+            var proyectos = await _context.Proyectos
+            .Include(p => p.EstadoProyecto)
+            .Include(p => p.Tareas)
+            .ToListAsync();
 
-            foreach (var proyecto in proyectos)
+            return proyectos.Select(p => new ProyectoDto
             {
-                var PorcentajeAvance = await RecalculoPorcentajeAvance(proyecto.CodigoProyecto); // recalcula el porcentaje de avance antes de mostrar la lista
-                ListaProyectos.Add(new ProyectoDto
-                {
-                    Descripcion = proyecto.Descripcion,
-                    CodigoProyecto = proyecto.CodigoProyecto,
-                    Nombre = proyecto.Nombre,
-                    FechaFinalPropuesta = proyecto.FechaFinalPropuesta.Date,
-                    Presupuesto = proyecto.Presupuesto,
-                    EstadoProyecto = proyecto.EstadoProyecto.NombreEstado,
-                    PorcentajeAvance = PorcentajeAvance
-                });
-            }
-
-            return ListaProyectos;
+                Descripcion = p.Descripcion,
+                CodigoProyecto = p.CodigoProyecto,
+                Nombre = p.Nombre,
+                FechaFinalPropuesta = p.FechaFinalPropuesta.Date,
+                Presupuesto = p.Presupuesto,
+                EstadoProyecto = p.EstadoProyecto.NombreEstado,
+                PorcentajeAvance = RecalculoPorcentajeAvance(p.Tareas.ToList())
+            });
         }
 
         //Metodo para cambiar el estado de un proyecto
@@ -118,12 +114,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }
         }
 
-        public async Task<int> RecalculoPorcentajeAvance(string CodigoProyecto)
+        public int RecalculoPorcentajeAvance(List<Tarea> tareas)
         {
-            Proyecto? ProyectoEncontrado = await BuscarProyectoPorCodigo(CodigoProyecto);
-            if (ProyectoEncontrado == null) return 0;
-
-            var tareas = ProyectoEncontrado.Tareas;
             if (tareas == null || tareas.Count == 0) return 0;
 
             var ahora = DateTime.Now;
@@ -131,33 +123,20 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             foreach (var tarea in tareas)
             {
-                // Tarea aún no ha iniciado
                 if (ahora < tarea.FechaInicioEsperada)
-                {
                     sumaPorcentajes += 0;
-                }
-                // Tarea ya debería estar completada
                 else if (ahora >= tarea.FechaFinalEsperada)
-                {
                     sumaPorcentajes += 100;
-                }
-                // Tarea en progreso - calcular porcentaje proporcional
                 else
                 {
-                    var duracionTarea = (tarea.FechaFinalEsperada - tarea.FechaInicioEsperada).TotalSeconds;
-                    var transcurridoTarea = (ahora - tarea.FechaInicioEsperada).TotalSeconds;
-
-                    if (duracionTarea > 0)
-                    {
-                        double porcentajeTarea = (transcurridoTarea / duracionTarea) * 100.0;
-                        sumaPorcentajes += Math.Clamp(porcentajeTarea, 0, 100);
-                    }
+                    var duracion = (tarea.FechaFinalEsperada - tarea.FechaInicioEsperada).TotalSeconds;
+                    var transcurrido = (ahora - tarea.FechaInicioEsperada).TotalSeconds;
+                    if (duracion > 0)
+                        sumaPorcentajes += (transcurrido / duracion) * 100.0;
                 }
             }
 
-            // Promedio de todas las tareas
-            int porcentajeProyecto = (int)Math.Round(sumaPorcentajes / tareas.Count);
-            return Math.Clamp(porcentajeProyecto, 0, 100);
+            return (int)Math.Round(sumaPorcentajes / tareas.Count);
 
         }
 
@@ -177,7 +156,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Descripcion = t.Descripcion,
                 FechaInicio = t.FechaInicioEsperada,
                 FechaFin = t.FechaFinalEsperada,
-                ProyectoId = proyecto.IdProyecto 
+                ProyectoId = proyecto.IdProyecto
             }).ToList(); // Devolver la lista de TareaDto
         }
 
@@ -194,7 +173,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 FechaInicioEsperada = dto.FechaInicio,
                 FechaFinalEsperada = dto.FechaFin,
                 ProyectoId = proyecto.IdProyecto
-            }; 
+            };
 
             _context.Tareas.Add(nuevaTarea); // Agregar la nueva tarea al contexto
             await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
@@ -366,7 +345,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             foreach (var proyecto in proyectos)
             {
-                var porcentajeAvance = await RecalculoPorcentajeAvance(proyecto.CodigoProyecto);
+                //var porcentajeAvance = await RecalculoPorcentajeAvance(proyecto.CodigoProyecto);
                 listaProyectos.Add(new ProyectoDto
                 {
                     Descripcion = proyecto.Descripcion,
@@ -375,15 +354,155 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                     FechaFinalPropuesta = proyecto.FechaFinalPropuesta.Date,
                     Presupuesto = proyecto.Presupuesto,
                     EstadoProyecto = proyecto.EstadoProyecto?.NombreEstado,
-                    PorcentajeAvance = porcentajeAvance
+                    //PorcentajeAvance = porcentajeAvance
                 });
             }
 
             return listaProyectos;
         }
+        //Materiales
+
+        //Crear solicitud de Material
+        public async Task CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto)
+        {
+            var solicitud = new SolicitudMaterial
+            {
+                ProyectoId = solicitudDto.ProyectoId,
+                FechaSolicitud = solicitudDto.FechaSolicitud,
+                EstadoSolicitud = solicitudDto.EstadoSolicitud,
+                ObservacionesBodeguero = "Sin observaciones aún",
+                MaterialesSolicitados = solicitudDto.MaterialesSolicitados.Select(ms => new MaterialSolicitado
+                {
+                    MaterialId = ms.MaterialId,
+                    Cantidad = ms.Cantidad,
+                    Prioridad = ms.Prioridad
+                }).ToList()
+            };
+
+            _context.SolicitudesMaterial.Add(solicitud);
+            await _context.SaveChangesAsync();
+        }
+
+
+        //Obtener solicitud por ID
+        public async Task<SolicitudMaterialDto?> ObtenerSolicitudPorIdAsync(int idSolicitud)
+        {
+            var solicitud = await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .ThenInclude(ms => ms.Material)
+                .FirstOrDefaultAsync(s => s.IdSolicitud == idSolicitud);
+
+            if (solicitud == null)
+                return null;
+
+            return new SolicitudMaterialDto
+            {
+                IdSolicitud = solicitud.IdSolicitud,
+                ProyectoId = solicitud.ProyectoId,
+                FechaSolicitud = solicitud.FechaSolicitud,
+                EstadoSolicitud = solicitud.EstadoSolicitud,
+                ObservacionesBodeguero = solicitud.ObservacionesBodeguero,
+                MaterialesSolicitados = solicitud.MaterialesSolicitados.Select(ms => new MaterialSolicitadoDto
+                {
+                    IdMaterialSolicitado = ms.IdMaterialSolicitado,
+                    MaterialId = ms.MaterialId,
+                    NombreMaterial = ms.Material?.NombreMaterial ?? "",
+                    Cantidad = ms.Cantidad,
+                    Prioridad = ms.Prioridad
+                }).ToList()
+            };
+        }
+
+        //Actualizar Solicitud Material
+        public async Task ActualizarSolicitudAsync(SolicitudMaterialDto solicitudDto)
+        {
+            var solicitud = await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .FirstOrDefaultAsync(s => s.IdSolicitud == solicitudDto.IdSolicitud);
+
+            if (solicitud != null)
+            {
+                solicitud.ObservacionesBodeguero = solicitudDto.ObservacionesBodeguero;
+                solicitud.EstadoSolicitud = solicitudDto.EstadoSolicitud;
+
+                var materialSolicitado = solicitud.MaterialesSolicitados.FirstOrDefault();
+                if (materialSolicitado != null && solicitudDto.MaterialesSolicitados.Any())
+                {
+                    var dtoMat = solicitudDto.MaterialesSolicitados.First();
+                    materialSolicitado.MaterialId = dtoMat.MaterialId;
+                    materialSolicitado.Cantidad = dtoMat.Cantidad;
+                    materialSolicitado.Prioridad = dtoMat.Prioridad;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        //Obtener Materiales 
+        public async Task<IEnumerable<MaterialDto>> ObtenerMaterialesAsync()
+        {
+            return await _context.Materiales
+                .Select(m => new MaterialDto
+                {
+                    IdMaterial = m.IdMaterial,
+                    NombreMaterial = m.NombreMaterial,
+                    Tipo = m.Tipo,
+                    Descripcion = m.Descripcion,
+                    CantidadDisponible = m.CantidadDisponible
+                })
+                .ToListAsync();
+        }
+
+
+        //Mostrar solicitud por proyecto
+        public async Task<IEnumerable<SolicitudMaterialDto>> MostrarSolicitudesPorProyectoAsync(int proyectoId)
+        {
+            var solicitudes = await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .ThenInclude(ms => ms.Material)
+                .Where(s => s.ProyectoId == proyectoId)
+                .ToListAsync();
+
+            return solicitudes.Select(s => new SolicitudMaterialDto
+            {
+                IdSolicitud = s.IdSolicitud,
+                ProyectoId = s.ProyectoId,
+                FechaSolicitud = s.FechaSolicitud,
+                EstadoSolicitud = s.EstadoSolicitud,
+                ObservacionesBodeguero = s.ObservacionesBodeguero,
+                MaterialesSolicitados = s.MaterialesSolicitados.Select(ms => new MaterialSolicitadoDto
+                {
+                    IdMaterialSolicitado = ms.IdMaterialSolicitado,
+                    MaterialId = ms.MaterialId,
+                    NombreMaterial = ms.Material?.NombreMaterial ?? "",
+                    Cantidad = ms.Cantidad,
+                    Prioridad = ms.Prioridad
+                }).ToList()
+            }).ToList();
+        }
+
+        //Elimar solicitud proyecto
+        public async Task EliminarSolicitudMaterialAsync(int idSolicitud)
+        {
+            var solicitud = await _context.SolicitudesMaterial
+                .Include(s => s.MaterialesSolicitados)
+                .FirstOrDefaultAsync(s => s.IdSolicitud == idSolicitud);
+
+            if (solicitud != null)
+            {
+                _context.MaterialesSolicitados.RemoveRange(solicitud.MaterialesSolicitados);
+                _context.SolicitudesMaterial.Remove(solicitud);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+
+
+
+
 
         // ====================== MÉTODOS PARA NOTAS (Checho)======================
-        public async Task<List<NotaAvanceDto>> MostrarNotasAsync(int idProyecto)
+        public async Task<IEnumerable<NotaAvanceDto>> MostrarNotasAsync(int idProyecto)
         {
             return await _context.NotasAvance
                 .Where(n => n.ProyectoId == idProyecto)
@@ -419,7 +538,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         {
             var notaExistente = await _context.NotasAvance
                 .FirstOrDefaultAsync(n => n.IdNota == notaDto.IdNota);
-           
+
             notaExistente.Descripcion = notaDto.Descripcion;
             notaExistente.FechaNota = notaDto.FechaNota;
             notaExistente.CreadoPor = notaDto.CreadoPor;
@@ -454,7 +573,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         }
 
 
-    
+
 
         //Mostrar incidente 
         public async Task<IEnumerable<Incidente>> MostrarIncidentesPorProyectoAsync(int proyectoId)
@@ -487,12 +606,12 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
     }
 }
-    
 
 
-        
-    
-        
 
-        
+
+
+
+
+
 
