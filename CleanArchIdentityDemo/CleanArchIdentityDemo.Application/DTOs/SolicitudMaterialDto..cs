@@ -12,14 +12,13 @@ namespace CleanArchIdentityDemo.Application.DTOs
         public string? ObservacionesBodeguero { get; set; }
 
         public List<MaterialSolicitadoDto> MaterialesSolicitados { get; set; } = new();
-    }
 
-    public class MaterialSolicitadoDto
-    {
         public int IdMaterialSolicitado { get; set; }
         public int MaterialId { get; set; }
         public string NombreMaterial { get; set; } = string.Empty;
         public int Cantidad { get; set; }
         public string Prioridad { get; set; } = "Media";
     }
+
+   
 }
