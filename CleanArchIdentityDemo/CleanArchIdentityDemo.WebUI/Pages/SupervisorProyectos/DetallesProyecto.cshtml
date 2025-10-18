@@ -204,7 +204,7 @@
                 else // Si no hay tareas, mostramos un mensaje
                 {
                 <tr>
-                    <td colspan="4" class="text-center">El proyecto no cuenta con tareas.</td>
+                    <td colspan="8" class="text-center">El proyecto no cuenta con tareas.</td>
                 </tr>
                 }
             </tbody>
@@ -426,23 +426,95 @@
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
 
                 <button class="nav-link" id="nav-MaterialesProyecto" data-bs-toggle="tab"
-                    data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact"
-                    aria-selected="false">Materiales en proyecto</button>
+                        data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact"
+                        aria-selected="false">
+                    Materiales en proyecto
+                </button>
                 <button class="nav-link" id="nav-SolicitudesMaterial" data-bs-toggle="tab"
-                    data-bs-target="#nav-SolicitudMateriales-tab" type="button" role="tab" aria-controls="nav-contact"
-                    aria-selected="false">Solicitudes de material</button>
+                        data-bs-target="#nav-SolicitudMateriales-tab" type="button" role="tab" aria-controls="nav-contact"
+                        aria-selected="false">
+                    Solicitudes de material
+                </button>
 
             </div>
         </nav>
         <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel"
-                aria-labelledby="nav-MaterialesProyecto">
+            <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-MaterialesProyecto">
                 Contenido del sub tab Materiales en proyecto.
             </div>
-            <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel"
-                aria-labelledby="nav-SolicitudesMaterial">
-                Contenido del sub tab Solicitudes de material.
+            <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel" aria-labelledby="nav-SolicitudesMaterial">
+
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearSolicitudModal">
+                    Solicitar Material
+                </button>
+
+
+                <table class="table table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Material</th>
+                            <th>Cantidad</th>
+                            <th>Prioridad</th>
+                            <th>Fecha Solicitud</th>
+                            <th>Estado</th>
+                            <th>Observaciones bodeguero</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.SolicitudesMaterial != null && Model.SolicitudesMaterial.Any())
+                        {
+                            foreach (var solicitud in Model.SolicitudesMaterial)
+                            {
+                                foreach (var mat in solicitud.MaterialesSolicitados)
+                                {
+                                    <tr>
+                                        <td>@mat.NombreMaterial</td>
+                                        <td>@mat.Cantidad</td>
+                                        <td>@mat.Prioridad</td>
+                                        <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@solicitud.EstadoSolicitud</td>
+                                        <td>@solicitud.ObservacionesBodeguero</td>
+                                        <td>
+                                            @if (solicitud.EstadoSolicitud == "Abierta")
+                                            {
+                                                <button type="button" class="btn btn-sm btn-warning"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editarSolicitudModal"
+                                                        data-id="@solicitud.IdSolicitud"
+                                                        data-material="@mat.MaterialId"
+                                                        data-cantidad="@mat.Cantidad"
+                                                        data-prioridad="@mat.Prioridad">
+                                                    Editar
+                                                </button>
+
+                                                <form method="post" asp-page-handler="EliminarSolicitud"
+                                                      asp-route-idSolicitud="@solicitud.IdSolicitud"
+                                                      asp-route-CodigoProyecto="@Model.CodigoProyecto"
+                                                      style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No editable</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center">No hay solicitudes registradas.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
             </div>
+
         </div>
     </div>
 </div>
@@ -777,7 +849,6 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <!-- Script para Alertas -->
     <script>
@@ -825,6 +896,21 @@
             var antiguoId = button.getAttribute('data-antiguo');
             document.getElementById('UsuarioReasignar').value = antiguoId;
         });
+        // Editar solicitud de material
+    var modalEditarSolicitud = document.getElementById('editarSolicitudModal');
+    modalEditarSolicitud.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+
+        var id = button.getAttribute('data-id');
+        var material = button.getAttribute('data-material');
+        var cantidad = button.getAttribute('data-cantidad');
+        var prioridad = button.getAttribute('data-prioridad');
+
+        document.getElementById('editSolicitudId').value = id;
+        document.getElementById('editMaterialId').value = material;
+        document.getElementById('editCantidad').value = cantidad;
+        document.getElementById('editPrioridad').value = prioridad;
+    });
     </script>
 
     <!-- Script de Modal Editar Nota -->

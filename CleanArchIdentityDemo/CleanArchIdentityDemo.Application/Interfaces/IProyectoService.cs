@@ -11,7 +11,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task ActualizarProyectoAsync(ProyectoDto Proyecto);
         Task EliminarProyectoAsync(string CodigoProyecto);
         Task<Proyecto?> DetallesProyecto(string CodigoProyecto);
-        Task<int> RecalculoPorcentajeAvance(string CodigoProyecto);//metodo para recalcular el porcentaje de avance del proyecto
+        int RecalculoPorcentajeAvance(List<Tarea> tareas);//metodo para recalcular el porcentaje de avance del proyecto
 
         //metodo para cambiar el estado de un proyecto
         Task CambiarEstadoAsync(string CodigoProyecto, int IdEstadoProyecto);
@@ -19,9 +19,9 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<IEnumerable<ProyectoDto>> MostrarProyectosListaReasignacionAsync(string codigoProyecto);
         //metodo para mostrar personal asignado del proyecto
         Task<IEnumerable<PersonalAsignadoDto>> ObtenerPersonalPorProyectoAsync(string codigoProyecto);
-        
-        
-        
+
+
+
 
         //metodo para asignar nuevo personal a un proyecto
         Task AsignarPersonalAProyectoAsync(string codigoProyecto, string personalId);
@@ -49,7 +49,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
         // ====================== MÉTODOS PARA NOTAS (Checho)======================
         //metodo para mostrar notas de avance de un proyecto
-        Task<List<NotaAvanceDto>> MostrarNotasAsync(int idProyecto);
+        Task<IEnumerable<NotaAvanceDto>> MostrarNotasAsync(int idProyecto);
 
         //metodo para crear nota de avance de un proyecto
         Task CrearNotaAsync(NotaAvanceDto notaAvance);
@@ -61,7 +61,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task EliminarNotaAsync(int IdNota);
 
         //metodo para destacar nota de avance de un proyecto
-        Task <bool> DestacarNotaAsync(int IdNota);
+        Task<bool> DestacarNotaAsync(int IdNota);
 
 
 
@@ -81,12 +81,20 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
 
 
-        //metodo para mostrar las solicitudes de material del proyecto enviadas a bodega central
+        //Método para mostrar las solicitudes de material del proyecto enviadas a bodega central
+        Task CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto);
 
+        // Método para editar la solicitud de material enviada a bodega central
+        Task ActualizarSolicitudAsync(SolicitudMaterialDto solicitudDto);
+        Task<SolicitudMaterialDto?> ObtenerSolicitudPorIdAsync(int idSolicitud);
 
-        // metotodo para editar la solicitud de material enviada a bodega central
+        //Método para obtener materiales
+        Task<IEnumerable<MaterialDto>> ObtenerMaterialesAsync();
+        // para mostrar todas las solicitudes de material de un proyecto
+        Task<IEnumerable<SolicitudMaterialDto>> MostrarSolicitudesPorProyectoAsync(int proyectoId);
 
+        //Método para eliminar solicitud de material enviada a bodega central
+        Task EliminarSolicitudMaterialAsync(int idSolicitud);
 
-        //metodo para eliminar solicitud de material enviada a bodega central
     }
 }
