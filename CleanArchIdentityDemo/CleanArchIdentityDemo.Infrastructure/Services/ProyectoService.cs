@@ -604,6 +604,32 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
         }
 
+        public async Task<IEnumerable<MaterialProyectoDto>> ObtenerMaterialProyectoAsync(int IdProyecto)
+        {
+            return await _context.MaterialesProyecto
+               .Include(m => m.Material)
+               .Where(m => m.ProyectoId == IdProyecto)
+               .Select(m => new MaterialProyectoDto
+               {
+                   IdMaterialProyecto = m.IdMaterialProyecto,
+                   ProyectoId = m.ProyectoId,
+                   MaterialId = m.MaterialId,
+                   NombreMaterial = m.Material.NombreMaterial,
+                   CantidadEnObra = m.CantidadEnObra
+               })
+               .ToListAsync();
+        }
+
+        public async Task DisminuirMaterialObraAsync(DisminuirMaterialDto DetalleDisminucion)
+        {
+            var materialObra = await _context.MaterialesProyecto.FirstOrDefaultAsync(m => m.IdMaterialProyecto == DetalleDisminucion.IdMaterialProyecto); // buscar por su Id
+
+            if (materialObra != null) //si lo encuentra actualiza la cantidad en obra
+            {
+                materialObra.CantidadEnObra -= DetalleDisminucion.CantidadADisminuir;
+                await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
+            }
+        }
     }
 }
 
