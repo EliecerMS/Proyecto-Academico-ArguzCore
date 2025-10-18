@@ -57,19 +57,140 @@
     }
 </div>
 
-<h2>Equipos</h2>
 
 
-<!-- aca otro codigo html como tabla que muestra todos los equipos existentes y botones de acciones CRUD y detalles segun prototipo-->
+<div class="container-fluid mt-3 px-4"> <!-- Contenedor blanco -->
+    <div class="card shadow-lg border-0 rounded-4 p-3" style="min-height: 400px;"> <!-- Tarjeta blanca con sombra, apariencia -->
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fs-4">Equipos</h4>
+            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#añadirEquipoModal">
+                Añadir Equipo
+            </button>
+        </div>
 
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Número de Serie</th>
+                    <th>Estado Actual</th>
+                    <th>Ubicación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Maquinarias != null && Model.Maquinarias.Any())
+                {
+                    @foreach (var maquina in Model.Maquinarias)
+                    {
+                        <tr>
+                            <td>
+                                <a href="/JefeMaquinaria/DetallesMantenimiento?id=@maquina.IdMaquinaria" class="text-decoration-none text-primary fw-bold">
+                                    @maquina.Nombre
+                                </a>
+                            </td>
+                            <td>@maquina.Tipo</td>
+                            <td>@maquina.Descripcion</td>
+                            <td>@maquina.NumeroSerie</td>
+                            <td>
+                                <span class="badge
+                                    @(maquina.Estado == "Operativo" ? "bg-success" :
+                                    maquina.Estado == "En Reparación" ? "bg-warning" :
+                                    maquina.Estado == "Fuera de Servicio" ? "bg-danger" : "bg-secondary")">
+                                    @maquina.Estado
+                                </span>
+                            </td>
+                            <td>@maquina.Ubicacion</td>
+                            <td>
+                            <button type="button" class="btn btn-warning btn-sm me-1"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editarEquipoModal"
+                                    data-id="@maquina.IdMaquinaria"
+                                    data-nombre="@maquina.Nombre"
+                                    data-tipo="@maquina.Tipo"
+                                    data-descripcion="@maquina.Descripcion"
+                                    data-numeroSerie="@maquina.NumeroSerie">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                                <form method="post" asp-page-handler="Eliminar" asp-route-id="@maquina.IdMaquinaria" style="display:inline"
+                                      onsubmit="return confirm('¿Está seguro que desea eliminar este equipo?');">
+                                    <button type="submit" class="btn btn-danger btn-sm me-1">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            No se encontraron equipos.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
+<!-- Modal de Añadir Equipo -->
+<div class="modal fade" id="añadirEquipoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Crear">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crear Nueva Maquinaria</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" placeholder="Nombre" asp-for="NuevaMaquinaria.Nombre" required />
+                    <input type="text" class="form-control mt-2" placeholder="Tipo" asp-for="NuevaMaquinaria.Tipo" required />
+                    <input type="text" class="form-control mt-2" placeholder="Número de Serie" asp-for="NuevaMaquinaria.NumeroSerie" required />
+                    <textarea class="form-control mt-2" placeholder="Descripción" asp-for="NuevaMaquinaria.Descripcion" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Equipo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-
-
+<!-- Modal de Actualizar Equipo -->
+<div class="modal fade" id="editarEquipoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Editar">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Maquinaria</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="MaquinariaEditar.IdMaquinaria" />
+                    <input type="text" class="form-control" asp-for="MaquinariaEditar.Nombre" required />
+                    <input type="text" class="form-control mt-2" asp-for="MaquinariaEditar.Tipo" required />
+                    <input type="text" class="form-control mt-2" asp-for="MaquinariaEditar.NumeroSerie" required />
+                    <textarea class="form-control mt-2" asp-for="MaquinariaEditar.Descripcion" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
+    
+    <!-- Script: Alertas-->
     <script>
-        //script que hace funcionar las alertas
         document.addEventListener('DOMContentLoaded', function() {
             // Mostrar todos los toasts que existan
             var toastElList = [].slice.call(document.querySelectorAll('.toast'));
@@ -84,4 +205,36 @@
             toastList.forEach(toast => toast.show());
         });
     </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Obtener el modal de edición
+            var editarModal = document.getElementById('editarEquipoModal');
+
+            // Evento que se dispara cuando se abre el modal
+            editarModal.addEventListener('show.bs.modal', function (event) {
+
+                // Botón que abrió el modal
+                var button = event.relatedTarget;
+
+                // Tomar datos del botón
+                var id = button.getAttribute('data-id');
+                var nombre = button.getAttribute('data-nombre');
+                var tipo = button.getAttribute('data-tipo');
+                var numeroSerie = button.getAttribute('data-numeroSerie');
+                var descripcion = button.getAttribute('data-descripcion');
+
+                // Llenar los campos del modal
+                editarModal.querySelector('input[name="MaquinariaEditar.IdMaquinaria"]').value = id;
+                editarModal.querySelector('input[name="MaquinariaEditar.Nombre"]').value = nombre;
+                editarModal.querySelector('input[name="MaquinariaEditar.Tipo"]').value = tipo;
+                editarModal.querySelector('input[name="MaquinariaEditar.NumeroSerie"]').value = numeroSerie;
+                editarModal.querySelector('textarea[name="MaquinariaEditar.Descripcion"]').value = descripcion;
+            });
+        });
+    </script>
+
+
 }
