@@ -18,7 +18,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
 
 
-        public List<ProyectoDto> Proyectos { get; set; } = new(); // almacenara la lista de proyectos
+        public List<ProyectoDto>        Proyectos { get; set; } = new(); // almacenara la lista de proyectos
 
         // [BindProperty] es un atributo de Razor Pages que indica que una propiedad del PageModel debe enlazarse automáticamente a los datos que vienen de la solicitud HTTP, ya sea vía formulario (POST) o query string (GET).permite recibir datos del formulario en tu página sin tener que leerlos manualmente del Request.Form.
 

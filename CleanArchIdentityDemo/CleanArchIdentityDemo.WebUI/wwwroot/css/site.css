@@ -2,10 +2,22 @@ html {
   font-size: 14px;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+@media (max-width: 576px) {
+    h4.m-0 {
+        font-size: 1.1rem;
+    }
+
+    .table th, .table td {
+        font-size: 0.85rem;
+    }
+
+    .btn {
+        font-size: 0.85rem;
+    }
+}
+
+.table td, .table th {
+    vertical-align: middle;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
