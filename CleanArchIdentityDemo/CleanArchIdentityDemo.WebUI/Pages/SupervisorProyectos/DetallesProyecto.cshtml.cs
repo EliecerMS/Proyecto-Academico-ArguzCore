@@ -554,6 +554,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             {
                 await _proyectoService.DisminuirMaterialObraAsync(MaterialDisminuir);
                 TempData["SuccessMessage"] = "Cantidad de material disminuida correctamente.";
+                TempData["TabActiva"] = "Materiales";
             }
             catch (Exception ex)
             {
