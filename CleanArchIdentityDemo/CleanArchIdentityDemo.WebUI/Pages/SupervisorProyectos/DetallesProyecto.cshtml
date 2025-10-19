@@ -71,7 +71,6 @@
     Nuevo Estado
 </button>
 
-
 <!--Muestra un mensaje de exito cuando se cambie el estado  -->
 @if (TempData["MensajeExito"] != null)
 {
@@ -778,6 +777,7 @@
         </div>
     </div>
 </div>
+
 <!-- Modal: Crear Incidente -->
 <div class="modal fade" id="crearIncidenteModal" tabindex="-1" aria-labelledby="crearIncidenteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -803,6 +803,7 @@
         </div>
     </div>
 </div> 
+
 <!-- Modal: Cerrar Incidente -->
 <div class="modal fade" id="modalCerrarIncidente" tabindex="-1" aria-labelledby="modalCerrarIncidenteLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -828,6 +829,7 @@
         </div>
     </div>
 </div> 
+
 <!-- Modal: Editar Incidente -->
 <div class="modal fade" id="modalEditarIncidente" tabindex="-1" aria-labelledby="modalEditarIncidenteLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -1036,6 +1038,7 @@
 </div>
 
 @section Scripts {
+    <!-- Script para Alertas -->
     <script>
         //script que hace funcionar las alertas
         document.addEventListener('DOMContentLoaded', function() {
@@ -1052,8 +1055,8 @@
             toastList.forEach(toast => toast.show());
         });
     </script>
+    
     <!-- Script de Modal Editar Tarea -->
-
     <script>
         var editarTareaModal = document.getElementById('editarTareaModal');
         editarTareaModal.addEventListener('show.bs.modal', function (event) {
@@ -1128,7 +1131,7 @@
         });
     </script>
 
-
+    <!-- Script de Modal Cerrar Incidente -->
     <script>
         var modalCerrarIncidente = document.getElementById('modalCerrarIncidente');
         modalCerrarIncidente.addEventListener('show.bs.modal', function (event) {
@@ -1141,6 +1144,8 @@
             modalCerrarIncidente.querySelector('#descripcionIncidente').textContent = descripcion;
         });
     </script>
+
+    <!-- Script de Modal Editar Incidente -->
     <script>
         var modalEditarIncidente = document.getElementById('modalEditarIncidente');
         modalEditarIncidente.addEventListener('show.bs.modal', function (event) {
