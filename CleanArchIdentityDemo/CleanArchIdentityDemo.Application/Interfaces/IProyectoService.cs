@@ -96,5 +96,9 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         //Método para eliminar solicitud de material enviada a bodega central
         Task EliminarSolicitudMaterialAsync(int idSolicitud);
 
+        Task<IEnumerable<MaterialProyectoDto>> ObtenerMaterialProyectoAsync(int IdProyecto);
+
+        Task DisminuirMaterialObraAsync(DisminuirMaterialDto DetalleDisminucion);
+
     }
 }

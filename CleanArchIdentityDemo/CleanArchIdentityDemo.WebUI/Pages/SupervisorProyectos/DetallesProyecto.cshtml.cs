@@ -97,7 +97,10 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         [BindProperty]
         public NotaAvanceDto EditarNota { get; set; } = new();
 
+        public List<MaterialProyectoDto> MaterialesProyecto { get; set; } = new();
 
+        [BindProperty]
+        public DisminuirMaterialDto MaterialDisminuir { get; set; } = new();
 
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
         {
@@ -138,6 +141,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             ProyectosDisponibles = (await _proyectoService.MostrarProyectosListaReasignacionAsync(CodigoProyecto)).ToList();
 
+            MaterialesProyecto = (await _proyectoService.ObtenerMaterialProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
 
             // Traer las tareas relacionadas usando el IdProyecto con el metodo que ya tienes en el servicio
             if (DetalleProyecto != null)
@@ -148,6 +152,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 Notas = (await _proyectoService.MostrarNotasAsync(DetalleProyecto.IdProyecto)).ToList();
                 //Cargar Incidentes
                 Incidentes = (await _proyectoService.MostrarIncidentesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+                //Cargar solicitudes de material del proyecto
+                SolicitudesMaterial = (await _proyectoService.MostrarSolicitudesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
             }
             else
             {
@@ -155,8 +161,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 Tareas = new List<TareaDto>();
                 Notas = new List<NotaAvanceDto>();
             }
-            //Cargar solicitudes de material del proyecto
-            SolicitudesMaterial = (await _proyectoService.MostrarSolicitudesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+
 
             //Cargar materiales disponibles para mostrar en el combo
             MaterialesDisponibles = (await _proyectoService.ObtenerMaterialesAsync()).ToList();
@@ -543,6 +548,20 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
 
+        public async Task<IActionResult> OnPostDisminuirMaterialObraAsync()
+        {
+            try
+            {
+                await _proyectoService.DisminuirMaterialObraAsync(MaterialDisminuir);
+                TempData["SuccessMessage"] = "Cantidad de material disminuida correctamente.";
+                TempData["TabActiva"] = "Materiales";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al disminuir la cantidad de material. Intente de nuevo.";
+            }
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
     }
 }
 
