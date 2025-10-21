@@ -475,11 +475,10 @@
                                                         <!-- Contenido para columna accion 2 -->
                                                     <button class="btn btn-sm btn-secondary"
                                                                 data-bs-toggle="modal"
-                                                            data-bs-target="#devolverMaterial"
-                                                                data-id=""
-                                                                data-email=""
-                                                                data-nombre=""
-                                                                data-rol="">
+                                                                data-bs-target="#modalDevolverMaterial"
+                                                                data-idMaterialDevolver="@mat.MaterialId"
+                                                                data-nombreMaterialDevolver="@mat.NombreMaterial"
+                                                                data-idMaterialProyectoDevolver="@mat.IdMaterialProyecto">
                                                         <i class="fa-solid fa-arrow-left"></i> Devolver
                                                         </button>
                                                     </div>
@@ -1037,6 +1036,35 @@
     </div>
 </div>
 
+<!-- Modal: Devolver material -->
+<div class="modal fade" id="modalDevolverMaterial" tabindex="-1" aria-labelledby="modalDevolverMaterialLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="DevolverMaterial">
+                <div class="modal-header">
+                    <input type="hidden" name="CodigoProyecto" value="@Model.CodigoProyecto" />
+                    <h5 class="modal-title" id="modalDevolverMaterial">Confirmar devolución</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro que desea devolver cierta cantidad del material seleccionado?</p>
+                    <p><strong id="nombreMaterialDevolverStrong"></strong></p>
+                    <br />
+                    <!-- valor oculto -->
+                    <input type="hidden" asp-for="MaterialDevolver.IdMaterial"/>
+                    <input type="hidden" id="ProyectoMaterialIdDevolver" asp-for="MaterialDisminuir.IdMaterialProyecto" />
+                    <label class="form-label">Cantidad a devolver:</label>
+                    <input type="number" min="0" asp-for="MaterialDevolver.CantidadDisponible" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Devolver</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <!-- Script para Alertas -->
     <script>
@@ -1166,6 +1194,19 @@
 
             document.getElementById('MaterialDisminuir_IdMaterialProyecto').value = idMaterialProyecto;
             document.getElementById('nombreMaterialStrong').innerText = nombreMaterial;
+        });
+    </script>
+    <script>
+        var modalDevolverMaterialObra = document.getElementById('modalDevolverMaterial');
+        modalDevolverMaterialObra.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var idMaterialDevolver = button.getAttribute('data-idMaterialDevolver');
+            var nombreMaterial = button.getAttribute('data-nombreMaterialDevolver');
+            var idMaterialProyecto = button.getAttribute('data-idMaterialProyectoDevolver');
+
+            document.getElementById('MaterialDevolver_IdMaterial').value = idMaterialDevolver;
+            document.getElementById('nombreMaterialDevolverStrong').innerText = nombreMaterial;
+            document.getElementById('ProyectoMaterialIdDevolver').value = idMaterialProyecto;
         });
     </script>
 }
