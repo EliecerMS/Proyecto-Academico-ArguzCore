@@ -105,6 +105,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         [BindProperty]
         public DisminuirMaterialDto MaterialDisminuir { get; set; } = new();
 
+        [BindProperty]
+        public DisminuirMaterialDto MaterialEliminar { get; set; } = new();
+
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
         {
             try
@@ -589,6 +592,31 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = "Ocurrió un error al devolver el material. Intente de nuevo.";
+            }
+            TempData["TabActiva"] = "Materiales";
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostEliminarMaterialProyectoAsync()
+        {
+            try
+            {
+                // Primero, devolver todo el material a bodega central
+                //MaterialDisminuir.CantidadADisminuir = MaterialDevolver.CantidadDisponible;
+                await _proyectoService.DevolverMaterialAsync(MaterialDevolver);
+                var resultado = await _proyectoService.EliminarMaterialObraAsync(MaterialEliminar.IdMaterialProyecto);
+                if (!resultado)
+                {
+                    TempData["ErrorMessage"] = "No se pudo eliminar el material del proyecto. Verifique e intente de nuevo.";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Material eliminado del proyecto correctamente.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al eliminar el material del proyecto. Intente de nuevo.";
             }
             TempData["TabActiva"] = "Materiales";
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });

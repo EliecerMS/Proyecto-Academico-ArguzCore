@@ -484,7 +484,13 @@
                                                     </div>
                                                 <div class="col">
                                                     <!-- Contenido para columna accion 3 -->
-                                                    <button class="btn btn-sm btn-danger">
+                                                    <button class="btn btn-sm btn-danger"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#modalEliminarMaterialProyecto"
+                                                            data-idMaterialEliminacionDevolver="@mat.MaterialId"
+                                                            data-nombreMaterialEliminar="@mat.NombreMaterial"
+                                                            data-idMaterialProyectoEliminar="@mat.IdMaterialProyecto"
+                                                            data-cantidadEliminarMaterial="@mat.CantidadEnObra">
                                                         <i class="fas fa-trash"></i> Eliminar
                                                     </button>
                                                 </div>
@@ -1064,7 +1070,35 @@
         </div>
     </div>
 </div>
-
+<!-- Modal: Eliminar material proyecto-->
+<div class="modal fade" id="modalEliminarMaterialProyecto" tabindex="-1" aria-labelledby="modalEliminarMaterialProyectoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EliminarMaterialProyecto">
+                <div class="modal-header">
+                    <input type="hidden" name="CodigoProyecto" value="@Model.CodigoProyecto" />
+                    <h5 class="modal-title" id="modalDevolverMaterial">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro que desea eliminar este registro de material, se devolveran todas las unidades del mismo y deberá solicitarlo nuevamente?</p>
+                    <p><strong id="nombreMaterialProyectoEliminarStrong"></strong></p>
+                    <br />
+                    <!-- valor oculto -->
+                    <input type="hidden" id="MaterialDevolverEliminar" asp-for="MaterialDevolver.IdMaterial" />
+                    <input type="hidden" id="ProyectoMaterialIdEliminar" asp-for="MaterialEliminar.IdMaterialProyecto" />
+                    <label class="form-label">Cantidad que será devuelta:</label>
+                    <p><strong id="CantidadEliminarMaterialObraStromg"></strong></p>
+                    <input type="hidden" min="0" id="CantidadEliminarMaterialObra" asp-for="MaterialDevolver.CantidadDisponible" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @section Scripts {
     <!-- Script para Alertas -->
     <script>
@@ -1207,6 +1241,22 @@
             document.getElementById('MaterialDevolver_IdMaterial').value = idMaterialDevolver;
             document.getElementById('nombreMaterialDevolverStrong').innerText = nombreMaterial;
             document.getElementById('ProyectoMaterialIdDevolver').value = idMaterialProyecto;
+        });
+    </script>
+    <script>
+        var modalEliminarMaterialProyecto = document.getElementById('modalEliminarMaterialProyecto');
+        modalEliminarMaterialProyecto.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var idMaterialEliminacionDevolver = button.getAttribute('data-idMaterialEliminacionDevolver');
+            var nombreMaterial = button.getAttribute('data-nombreMaterialEliminar');
+            var idMaterialProyecto = button.getAttribute('data-idMaterialProyectoEliminar');
+            var cantidadMaterialEliminar = button.getAttribute('data-cantidadEliminarMaterial');
+
+            document.getElementById('MaterialDevolverEliminar').value = idMaterialEliminacionDevolver;
+            document.getElementById('nombreMaterialProyectoEliminarStrong').innerText = nombreMaterial;
+            document.getElementById('ProyectoMaterialIdEliminar').value = idMaterialProyecto;
+            document.getElementById('CantidadEliminarMaterialObra').value = cantidadMaterialEliminar;
+            document.getElementById('CantidadEliminarMaterialObraStromg').innerText = cantidadMaterialEliminar;
         });
     </script>
 }
