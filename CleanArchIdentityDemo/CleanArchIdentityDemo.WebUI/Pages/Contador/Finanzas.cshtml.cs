@@ -1,5 +1,6 @@
-using CleanArchIdentityDemo.Application.DTOs;
+Ôªøusing CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
+using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -35,17 +36,23 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         public int PagoId { get; set; } //almacenara el Id del pago seleccionado para ver el recibo
 
         [BindProperty]
-        public int IdProveedor { get; set; } //
+        public int IdProveedor { get; set; }
+
+        [BindProperty]
+        public PagoProveedorDto PagoSeleccionado { get; set; } = new();
+
+        public List<ProyectoDto> Proyectos { get; set; } = new();
 
         public async Task OnGetAsync()
         {
             PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
             TempData["TabActiva"] = "GestionProveedor";
+            Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
         }
         public async Task<IActionResult> OnPostVerReciboAsync()
         {
-            // GenerarComprobantePago es un mÈtodo del servicio que genera el comprobante de pago en formato PDF y lo devuelve como un arreglo de bytes
+            // GenerarComprobantePago es un m√©todo del servicio que genera el comprobante de pago en formato PDF y lo devuelve como un arreglo de bytes
             var reciboBytes = _FinanzasService.GenerarComprobante(PagoId);
 
             // Retornar el archivo en PDF
@@ -79,14 +86,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         {
             ModelState.Remove("Contacto");
             ModelState.Remove("NombreProveedor");
-            // Data Annotations valida autom·ticamente
-            if (!ModelState.IsValid)  //AquÌ se valida autom·ticamente
+            // Data Annotations valida autom√°ticamente
+            if (!ModelState.IsValid)  //Aqu√≠ se valida autom√°ticamente
             {
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
                 TempData["TabActiva"] = "GestionProveedor";
-                return Page();  // Retorna la p·gina CON errores
+                return Page();  // Retorna la p√°gina CON errores
             }
 
             if (await _FinanzasService.CrearProveedorAsync(Proveedor))
@@ -95,7 +102,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
 
-                // Retornar la p·gina (NO redirige, solo recarga)
+                // Retornar la p√°gina (NO redirige, solo recarga)
                 TempData["SuccessMessage"] = "Proveedor creado correctamente";
                 TempData["TabActiva"] = "GestionProveedor";
                 return Page();
@@ -115,21 +122,21 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         {
             ModelState.Remove("Contacto");
             ModelState.Remove("NombreProveedor");
-            // Data Annotations valida autom·ticamente
-            if (!ModelState.IsValid)  //AquÌ se valida autom·ticamente
+            // Data Annotations valida autom√°ticamente
+            if (!ModelState.IsValid)  //Aqu√≠ se valida autom√°ticamente
             {
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
                 TempData["TabActiva"] = "GestionProveedor";
-                return Page();  // Retorna la p·gina CON errores
+                return Page();  // Retorna la p√°gina CON errores
             }
             if (await _FinanzasService.EditarProveedorAsync(ProveedorEditado))
             {
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
-                // Retornar la p·gina (NO redirige, solo recarga)
+                // Retornar la p√°gina (NO redirige, solo recarga)
                 TempData["SuccessMessage"] = "Proveedor editado correctamente";
                 TempData["TabActiva"] = "GestionProveedor";
                 return Page();
@@ -152,7 +159,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
-                // Retornar la p·gina (NO redirige, solo recarga)
+                // Retornar la p√°gina (NO redirige, solo recarga)
                 TempData["SuccessMessage"] = "Proveedor eliminado correctamente";
                 TempData["TabActiva"] = "GestionProveedor";
                 return Page();
@@ -166,6 +173,59 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 TempData["TabActiva"] = "GestionProveedor";
                 return Page();
             }
+        }
+        public async Task<IActionResult> OnPostRegistrarPagoAsync()
+        {
+            // Ignorar TODO lo que no sea de PagoSeleccionado
+            var keysToKeep = new[]
+            {
+                "PagoSeleccionado.ProveedorId",
+                "PagoSeleccionado.ProyectoId",
+                "PagoSeleccionado.Monto",
+                "PagoSeleccionado.FechaPago",
+                "PagoSeleccionado.Descripcion"
+            };
+
+            //Borra cualquier otra entrada del ModelState que no pertenezca al formulario de pago
+            foreach (var key in ModelState.Keys.ToList())
+            {
+                if (!keysToKeep.Contains(key))
+                    ModelState.Remove(key);
+            }
+
+            // Ver si sigue siendo inv√°lido 
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Datos inv√°lidos para registrar el pago.";
+                TempData["TabActiva"] = "PagosProveedor";
+                PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+                Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+                return Page();
+            }
+
+            // Registrar el pago
+            var resultado = await _FinanzasService.RegistrarPagoProveedorAsync(PagoSeleccionado);
+
+            if (resultado != null)
+            {
+                TempData["SuccessMessage"] = "Pago registrado correctamente.";
+
+                //Limpia el formulario y el estado del modelo
+                ModelState.Clear();
+                PagoSeleccionado = new PagoProveedorDto();
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Error al registrar el pago.";
+            }
+
+            // Recargar tablas y pesta√±a activa
+            PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+            Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+            TempData["TabActiva"] = "PagosProveedor";
+            Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+            return Page();   
         }
     }
 }
