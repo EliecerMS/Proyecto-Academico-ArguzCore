@@ -1,0 +1,256 @@
+﻿@page
+@model CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria.DetallesMaquinariaModel
+@{
+    ViewData["Title"] = "Detalles de maquinaria";
+}
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11; margin-top: 25px;">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" id="successToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" id="errorToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" id="warningToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @TempData["WarningMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-info-circle me-2"></i>
+                    @TempData["InfoMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Primer Contenedor / Detalles de la maquinaria -->
+<div class="container-fluid mt-3 px-4">
+    <div class="card shadow-lg border-0 rounded-4 p-3" style="min-height: 300px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fs-3 mb-0">Detalles de Maquinaria</h3>
+
+            <!-- Botón Asignar/Desasignar Proyecto -->
+            @if (Model.ProyectoAsignado != null)
+            {
+                <!-- Botón para desasignar proyecto -->
+                <form method="post" asp-page-handler="DesasignarProyecto" class="d-inline">
+                    <input type="hidden" name="MaquinariaId" value="@Model.Maquinaria.IdMaquinaria" />
+                    <button type="submit" class="btn btn-danger">Desasignar Proyecto</button>
+                </form>
+            }
+            else
+            {
+                <!-- Botón para abrir modal y asignar proyecto -->
+                <button type="button"
+                        class="btn @(Model.HayMantenimientoActivo ? "btn-secondary disabled" : "btn-primary")"
+                        @(Model.HayMantenimientoActivo ? "disabled" : "")
+                        data-bs-toggle="modal"
+                        data-bs-target="#proyectoModal">
+                    Asignar Proyecto
+                </button>
+            }
+
+        </div>
+
+        @if (Model.Maquinaria != null)
+        {
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h5 class="fw-bold">Nombre:</h5>
+                    <p class="fs-5">@Model.Maquinaria.Nombre</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="fw-bold">Tipo:</h5>
+                    <p class="fs-5">@Model.Maquinaria.Tipo</p>
+                </div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h5 class="fw-bold">Número de Serie:</h5>
+                    <p class="fs-5">@Model.Maquinaria.NumeroSerie</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="fw-bold">Código:</h5>
+                    <p class="fs-5">@Model.Maquinaria.CodigoMaquinaria</p>
+                </div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-12">
+                    <h5 class="fw-bold">Descripción:</h5>
+                    <p class="fs-5">@Model.Maquinaria.Descripcion</p>
+                </div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h5 class="fw-bold">Estado:</h5>
+                    <span class="badge
+                        @(Model.Maquinaria.Estado == "En Servicio" ? "bg-success" :
+                          Model.Maquinaria.Estado == "Mantenimiento" ? "bg-warning" :
+                          Model.Maquinaria.Estado == "Fuera de Servicio" ? "bg-danger" : "bg-secondary") fs-6">
+                        @Model.Maquinaria.Estado
+                    </span>
+                </div>
+            <div class="col-md-6">
+                <h5 class="fw-bold">Ubicación:</h5>
+                <p class="fs-5">@Model.Maquinaria.Ubicacion</p>
+            </div>
+        </div>
+                }
+        else
+        {
+            <p class="fs-5 text-center">Maquinaria no encontrada.</p>
+        }
+    </div>
+</div>
+
+<!-- Segundo Contenedor, Historial de Mantenimientos -->
+<div class="container-fluid mt-4 px-4">
+    <div class="card shadow-lg border-0 rounded-4 p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fs-3 mb-0">Historial de Mantenimientos</h3>
+
+            <!-- Botón para iniciar mantenimiento -->
+            @{
+                // Verifica si hay un mantenimiento activo (en ejecución o fecha minValue)
+                var mantenimientoActivo = Model.Mantenimientos.Any(m => m.Estado == "Ejecución" || m.FechaCompletado == DateTime.MinValue);
+            }
+
+            <form method="post">
+                <input type="hidden" name="MaquinariaId" value="@Model.Maquinaria.IdMaquinaria" />
+
+                @if (mantenimientoActivo)
+                {
+                    <button type="submit" asp-page-handler="FinalizarMantenimiento" class="btn btn-danger">
+                        Finalizar Mantenimiento
+                    </button>
+                }
+                else
+                {
+                    <button type="submit" asp-page-handler="IniciarMantenimiento" class="btn btn-primary">
+                        Iniciar Mantenimiento
+                    </button>
+                }
+            </form>
+        </div>
+
+        @if (Model.Mantenimientos.Any())
+        {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha Programada</th>
+                        <th>Estado</th>
+                        <th>Fecha Completado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var mantenimiento in Model.Mantenimientos)
+                    {
+                        <tr>
+                            <td>@mantenimiento.FechaProgramada.ToString("dd/MM/yyyy")</td>
+                            <td>@mantenimiento.Estado</td>
+                            <td>@(mantenimiento.FechaCompletado == DateTime.MinValue ? "-" : mantenimiento.FechaCompletado.ToString("dd/MM/yyyy"))</td>
+                        </tr>
+
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="fs-5 text-center">No hay mantenimientos registrados para esta maquinaria.</p>
+        }
+    </div>
+</div>
+
+<!-- Modal para Asignar Proyecto -->
+<div class="modal fade" id="proyectoModal" tabindex="-1" aria-labelledby="proyectoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="proyectoModalLabel">Asignar Proyecto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form method="post" asp-page-handler="AsignarProyecto">
+                    <input type="hidden" name="MaquinariaId" value="@Model.Maquinaria.IdMaquinaria" />
+
+                    <div class="mb-3">
+                        <label for="ProyectoId" class="form-label">Seleccione un proyecto:</label>
+                        <select class="form-select" id="ProyectoId" name="ProyectoId" required>
+                            <option value="">-- Seleccionar proyecto --</option>
+                            @foreach (var proyecto in Model.ProyectosDisponibles)
+                            {
+                                <option value="@proyecto.IdProyecto">@proyecto.Nombre</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Asignar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        //script que hace funcionar las alertas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar todos los toasts que existan
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function(toastEl) {
+                return new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 3000  // 3 segundos
+                });
+            });
+
+            // Activar cada toast
+            toastList.forEach(toast => toast.show());
+        });
+    </script>
+
+}

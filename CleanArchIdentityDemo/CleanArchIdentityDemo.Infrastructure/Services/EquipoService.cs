@@ -11,7 +11,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         //implementacion de los metodos para realizar operaciones en la vista de Equipo
         private readonly ApplicationDbContext _context;
 
-        public EquipoService(ApplicationDbContext context)
+        public EquipoService(
+            ApplicationDbContext context)
         {
             _context = context;
         }
@@ -80,7 +81,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return dto;
         }
 
-
         // Actualizar un equipo existente
         public async Task<bool> UpdateAsync(MaquinariaDto dto)
         {
@@ -98,21 +98,180 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return true;
         }
 
-
-        // Eliminar un equipo por ID
+        // Eliminar un equipo por ID y a su vez eliminar sus relaciones
         public async Task<bool> DeleteAsync(int id)
         {
-            var entity = await _context.Maquinarias.FindAsync(id);
-            if (entity == null) return false;
+            // Traemos la maquinaria
+            var maquinaria = await _context.Maquinarias.FindAsync(id);
+            if (maquinaria == null) return false;
 
-            _context.Maquinarias.Remove(entity);
+            // Eliminamos el proyecto asignado (si existe)
+            var proyecto = await _context.MaquinariaProyecto
+                .FirstOrDefaultAsync(mp => mp.MaquinariaId == id);
+            if (proyecto != null)
+            {
+                _context.MaquinariaProyecto.Remove(proyecto);
+            }
+
+            // Eliminamos todos los mantenimientos relacionados
+            var mantenimientos = await _context.MantenimientosMaquinaria
+                .Where(m => m.MaquinariaId == id)
+                .ToListAsync();
+            if (mantenimientos.Any())
+            {
+                _context.MantenimientosMaquinaria.RemoveRange(mantenimientos);
+            }
+
+            // Finalmente, eliminamos la maquinaria
+            _context.Maquinarias.Remove(maquinaria);
+
             await _context.SaveChangesAsync();
             return true;
         }
 
-        public Task<bool> AsignarProyectoAsync(int idMaquinaria, string nombreProyecto)
+
+
+        // Asignar un proyecto a una maquinaria
+        public async Task<bool> AsignarProyectoAsync(int idMaquinaria, int idProyecto)
         {
-            throw new NotImplementedException();
+            var maquinaria = await _context.Maquinarias.FindAsync(idMaquinaria); // Confirmar la maquinaria
+            if (maquinaria == null) return false; // Evitar errores
+
+            var proyectoExistente = await _context.MaquinariaProyecto // Confirmar que no tenga proyecto asignado
+                .FirstOrDefaultAsync(mp => mp.MaquinariaId == idMaquinaria);
+            if (proyectoExistente != null) return false; //Evitar asignar más de un proyecto a la vez
+
+            var proyecto = await _context.Proyectos.FindAsync(idProyecto); // Trae el proyecto para extrae el nombre/Ubicación
+            if (proyecto == null) return false; // Evitar errores
+
+            maquinaria.Estado = "En Servicio"; // La maquinaria pasa a estar en servicio
+            maquinaria.Ubicacion = proyecto.Nombre; // La ubicación se actualiza al nombre del proyecto asignado
+
+            var nuevoProyecto = new MaquinariaProyecto //Se genera el nuevo registro de asignación
+            {
+                MaquinariaId = idMaquinaria,
+                ProyectoId = idProyecto,
+                FechaAsignacion = DateTime.Now
+            };
+
+            _context.MaquinariaProyecto.Add(nuevoProyecto); // Se añade la nueva asignación
+            await _context.SaveChangesAsync();
+            return true;
         }
+
+        // Desasignar un proyecto de una maquinaria
+        public async Task<bool> DesasignarProyectoAsync(int idMaquinaria)
+        {
+            var proyecto = await _context.MaquinariaProyecto
+                .FirstOrDefaultAsync(mp => mp.MaquinariaId == idMaquinaria);
+            if (proyecto == null) return false;
+
+            var maquinaria = await _context.Maquinarias.FindAsync(idMaquinaria);
+            if (maquinaria != null)
+            {
+                maquinaria.Estado = "Fuera de Servicio";
+                maquinaria.Ubicacion = "Bodega Central";
+            }
+
+            _context.MaquinariaProyecto.Remove(proyecto); // Se borra el registro porque la maquianria ya no está asignada a ningún proyecto, cabe destacar que esto se puede mantener pero hay que añadir otra propiedad al entidad para marcar si está activa o no la asignación
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Devuelve el proyecto al que está asociada una maquinaria
+        public async Task<MaquinariaProyectoDto?> GetProyectoAsignadoAsync(int idMaquinaria)
+        {
+            var proyecto = await _context.MaquinariaProyecto
+                .Include(mp => mp.Proyecto)
+                .FirstOrDefaultAsync(mp => mp.MaquinariaId == idMaquinaria);
+
+            if (proyecto == null) return null;
+
+            return new MaquinariaProyectoDto
+            {
+                IdMaquinariaProyecto = proyecto.IdMaquinariaProyecto,
+                MaquinariaId = proyecto.MaquinariaId,
+                ProyectoId = proyecto.ProyectoId,
+                FechaAsignacion = proyecto.FechaAsignacion,
+            };
+        }
+
+
+        // Iniciar mantenimiento de una maquinaria
+        public async Task<bool> IniciarMantenimientoAsync(int idMaquinaria)
+        {
+            var maquinaria = await _context.Maquinarias //Traemos maquinaria
+                .Include(m => m.ProyectosAsignados) // Junto a su registro de proyecto asignado
+                .FirstOrDefaultAsync(m => m.IdMaquinaria == idMaquinaria);
+
+            if (maquinaria == null) return false; // Confirmamos que exista para evitar errores
+
+            var proyectoActivo = maquinaria.ProyectosAsignados.FirstOrDefault(); // Verificamos si tiene un proyecto asignado
+            if (proyectoActivo != null) // En caso de que tenga
+            {
+                maquinaria.Estado = "Mantenimiento";
+                maquinaria.Ubicacion = "Bodega Central";
+
+                _context.MaquinariaProyecto.Remove(proyectoActivo); 
+                // NOTA: Esto se mantiene en caso de no modificar la BD, si se añade un parametro extra a MaquinariaProyecto, se podría mantener un historial de asignaciones de proyectos
+            }
+            else // En caso de que no tenga
+            {
+                maquinaria.Estado = "Mantenimiento";
+                maquinaria.Ubicacion = "Bodega Central";
+            }
+
+            var mantenimiento = new MantenimientoMaquinaria // Crear registro de mantenimiento
+            {
+                MaquinariaId = idMaquinaria,
+                FechaProgramada = DateTime.Now,
+                Estado = "Ejecución",
+                FechaCompletado = DateTime.MinValue // Se debe hacer modificación en la BD para cambiar esto a NULLABLE
+            };
+
+            _context.MantenimientosMaquinaria.Add(mantenimiento);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Finalizar mantenimiento
+        public async Task<bool> FinalizarMantenimientoAsync(int idMaquinaria)
+        {
+            var mantenimiento = await _context.MantenimientosMaquinaria
+                .Where(m => m.MaquinariaId == idMaquinaria && m.Estado == "Ejecución")
+                .FirstOrDefaultAsync(); // Llamamos específicamente al registro de mantenimiento que pertenezca a la maquinaria dada y que esté activo.
+
+            if (mantenimiento == null) return false; // Para errores
+
+            mantenimiento.Estado = "Finalizado"; // Se finaliza el mantenimiento
+            mantenimiento.FechaCompletado = DateTime.Now;
+
+            var maquinaria = await _context.Maquinarias.FindAsync(idMaquinaria); // Se trae a la maquinaria que dejó al mantenimiento
+            if (maquinaria != null)
+            {
+                maquinaria.Estado = "Fuera de Servicio"; 
+                maquinaria.Ubicacion = "Bodega Central";
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Devuelve el historial de manteniminetos de una maquinaria
+        public async Task<IEnumerable<MantenimientoMaquinariaDto>> GetMantenimientosPorMaquinariaAsync(int idMaquinaria) //Para listar el historico de manteniminetos
+        {
+            return await _context.MantenimientosMaquinaria
+                .Where(m => m.MaquinariaId == idMaquinaria)
+                .Select(m => new MantenimientoMaquinariaDto
+                {
+                    IdMantenimiento = m.IdMantenimiento,
+                    MaquinariaId = m.MaquinariaId,
+                    Estado = m.Estado,
+                    FechaProgramada = m.FechaProgramada,
+                    FechaCompletado = m.FechaCompletado
+                })
+                .ToListAsync();
+        }
+
     }
 }
