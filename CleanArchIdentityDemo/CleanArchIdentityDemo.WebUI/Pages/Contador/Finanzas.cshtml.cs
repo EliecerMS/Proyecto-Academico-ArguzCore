@@ -225,7 +225,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
             TempData["TabActiva"] = "PagosProveedor";
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
-            return Page();
+            return Page();   
         }
     }
 }
