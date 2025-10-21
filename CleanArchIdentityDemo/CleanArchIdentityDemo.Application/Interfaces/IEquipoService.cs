@@ -12,8 +12,14 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<MaquinariaDto> CreateAsync(MaquinariaDto dto);
         Task<bool> UpdateAsync(MaquinariaDto dto);
         Task<bool> DeleteAsync(int id);
-        Task<bool> AsignarProyectoAsync(int idMaquinaria, string nombreProyecto); // Nuevo método para asignar un proyecto a una maquinaria, este está fuera de las HU actuales
 
+        Task<bool> AsignarProyectoAsync(int idMaquinaria, int idProyecto);
+        Task<bool> DesasignarProyectoAsync(int idMaquinaria);
+        Task<MaquinariaProyectoDto?> GetProyectoAsignadoAsync(int idMaquinaria);
+
+        Task<bool> IniciarMantenimientoAsync(int idMaquinaria);
+        Task<bool> FinalizarMantenimientoAsync(int idMaquinaria);
+        Task<IEnumerable<MantenimientoMaquinariaDto>> GetMantenimientosPorMaquinariaAsync(int idMaquinaria);
 
     }
 }
