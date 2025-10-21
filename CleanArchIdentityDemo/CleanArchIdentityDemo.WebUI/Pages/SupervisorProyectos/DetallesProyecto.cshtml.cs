@@ -87,6 +87,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             new NuevoMaterialInput()
         };
 
+        [BindProperty]
+        public MaterialDto MaterialDevolver { get; set; } = new();
+
         // ---------- VARIABLES PARA NOTAS DE AVANCE
         [BindProperty]
         public NotaAvanceDto NuevaNota { get; set; }
@@ -554,12 +557,40 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             {
                 await _proyectoService.DisminuirMaterialObraAsync(MaterialDisminuir);
                 TempData["SuccessMessage"] = "Cantidad de material disminuida correctamente.";
-                TempData["TabActiva"] = "Materiales";
+
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = "Ocurrió un error al disminuir la cantidad de material. Intente de nuevo.";
             }
+            TempData["TabActiva"] = "Materiales";
+            return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+        }
+
+        public async Task<IActionResult> OnPostDevolverMaterialAsync()
+        {
+            try
+            {
+                // Primero, disminuir la cantidad en obra
+                MaterialDisminuir.CantidadADisminuir = MaterialDevolver.CantidadDisponible;
+                await _proyectoService.DisminuirMaterialObraAsync(MaterialDisminuir);
+                // Luego, devolver el material a bodega central
+                var resultado = await _proyectoService.DevolverMaterialAsync(MaterialDevolver);
+                if (!resultado)
+                {
+                    TempData["ErrorMessage"] = "No se pudo devolver el material. Verifique e intente de nuevo.";
+
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Material devuelto correctamente.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al devolver el material. Intente de nuevo.";
+            }
+            TempData["TabActiva"] = "Materiales";
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
     }

@@ -100,5 +100,6 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
         Task DisminuirMaterialObraAsync(DisminuirMaterialDto DetalleDisminucion);
 
+        Task<bool> DevolverMaterialAsync(MaterialDto MaterialDevolver);
     }
 }
