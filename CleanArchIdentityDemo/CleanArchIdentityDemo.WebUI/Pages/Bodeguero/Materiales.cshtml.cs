@@ -2,6 +2,7 @@ using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
+using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -28,22 +29,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
             _UserManager = userManager;
         }
 
-        //public class Material
-        //{
-        //    public int IdMaterial { get; set; }
-        //    [Required(ErrorMessage = "El nombre del material es obligatorio.")]
-        //    public string NombreMaterial { get; set; }
-        //    [Required(ErrorMessage = "El tipo de material es obligatorio.")]
-        //    public string Tipo { get; set; }
-        //    public string Descripcion { get; set; }
-        //    [Required(ErrorMessage = "La cantidad disponible es obligatoria.")]
-        //    public int CantidadDisponible { get; set; }
-
-        //    [Required(ErrorMessage = "Debe seleccionar un proveedor.")]
-        //    [Range(1, int.MaxValue, ErrorMessage = "Seleccione un proveedor válido.")]
-        //    public int ProveedorId { get; set; }
-
-        //}
+       
 
         public List<MaterialDto> Materiales { get; set; } = new();
 
@@ -55,7 +41,12 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
         [BindProperty]
         public MaterialDto NuevoMaterial { get; set; }
 
-        
+        [BindProperty]
+        public MaterialDto EditadoMaterial { get; set; }
+
+        [BindProperty]
+        public MaterialDto materialEditado { get; set; }
+
 
         public async Task OnGetAsync()
         {
@@ -97,6 +88,50 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
             catch
             {
                 TempData["ErrorMessage"] = "Ocurrió un error al registrar el material.";
+                TempData["TabActiva"] = "MaterialesBodega";
+                return RedirectToPage();
+            }
+        }
+
+        public async Task<IActionResult> OnPostEliminarMaterialAsync(int IdMaterial)
+        {
+            try
+            {
+                await _MaterialesService.EliminarMaterialAsync(IdMaterial);
+                TempData["SuccessMessage"] = "Material eliminado correctamente.";
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al eliminar el material.";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostEditAsync(MaterialDto EditadoMaterial)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Hay errores en el formulario de edición. Verifica los campos.";
+                TempData["TabActiva"] = "MaterialesBodega";
+                return RedirectToPage();
+            }
+            try
+            {
+                await _MaterialesService.EditarMaterialAsync(EditadoMaterial);
+                TempData["SuccessMessage"] = "Material editado correctamente.";
+                TempData["TabActiva"] = "MaterialesBodega";
+                return RedirectToPage();
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                TempData["TabActiva"] = "MaterialesBodega";
+                return RedirectToPage();
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al editar el material.";
                 TempData["TabActiva"] = "MaterialesBodega";
                 return RedirectToPage();
             }

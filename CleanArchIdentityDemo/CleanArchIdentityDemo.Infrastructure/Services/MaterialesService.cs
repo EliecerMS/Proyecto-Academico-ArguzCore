@@ -127,6 +127,28 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             // Reducir cantidad disponible del material
             solicitud.Material.CantidadDisponible -= solicitud.Cantidad;
 
+            var proyectoId = solicitud.SolicitudMaterial.ProyectoId;
+
+            var materialExistente = await _context.MaterialesProyecto
+            .FirstOrDefaultAsync(mp => mp.ProyectoId == proyectoId && mp.MaterialId == solicitud.MaterialId);
+
+            if (materialExistente != null)
+            {
+                // Si ya existe, solo aumentar cantidad
+                materialExistente.CantidadEnObra += solicitud.Cantidad;
+            }
+            else
+            {
+                // Si no existe, crear nuevo registro
+                var nuevoMaterialProyecto = new MaterialProyecto
+                {
+                    ProyectoId = proyectoId,
+                    MaterialId = solicitud.MaterialId,
+                    CantidadEnObra = solicitud.Cantidad
+                };
+                _context.MaterialesProyecto.Add(nuevoMaterialProyecto);
+            }
+
             // Guardar cambios en la base de datos
             await _context.SaveChangesAsync();
 
@@ -167,6 +189,31 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Prioridad = solicitud.Prioridad,
                 CantidadDisponible = solicitud.Material.CantidadDisponible
             };
+        }
+
+        public async Task EditarMaterialAsync(MaterialDto materialDto)
+        {
+            var material = await _context.Materiales.FirstOrDefaultAsync(m => m.IdMaterial == materialDto.IdMaterial);
+            if (material != null)
+            {
+                material.NombreMaterial = materialDto.NombreMaterial;
+                material.Tipo = materialDto.Tipo;
+                material.Descripcion = materialDto.Descripcion;
+                material.CantidadDisponible = materialDto.CantidadDisponible;
+
+                await _context.SaveChangesAsync();
+
+            }
+        }
+
+        public async Task EliminarMaterialAsync(int idMateriales)
+        {
+            Material MaterialEncontrado = await _context.Materiales.FirstOrDefaultAsync(m => m.IdMaterial == idMateriales);
+            if (MaterialEncontrado != null)
+            {
+                _context.Materiales.Remove(MaterialEncontrado);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

@@ -621,6 +621,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             TempData["TabActiva"] = "Materiales";
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
+
+
     }
 }
 
