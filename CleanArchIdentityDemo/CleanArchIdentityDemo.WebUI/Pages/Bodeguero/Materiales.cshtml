@@ -102,7 +102,17 @@
                         @foreach (var m in Model.Materiales)
                         {
                             <tr>
-                                <td>@m.NombreMaterial</td>
+                                <td>
+                                    @m.NombreMaterial
+                                     @if (m.CantidadDisponible == 0)
+                                        {
+                                            <span class="badge bg-danger ms-2">Stock agotado</span>
+                                        }
+                                            else if (m.CantidadDisponible <= 5)
+                                            {
+                                                <span class="badge bg-warning text-dark ms-2">Stock bajo</span>
+                                            }                                
+                                </td>
                                 <td>@m.Tipo</td>
                                 <td class="d-none d-md-table-cell">@m.Descripcion</td>
                                 <td class="text-end">@m.CantidadDisponible</td>
@@ -173,11 +183,12 @@
                                            data-bs-toggle="modal"
                                            data-bs-target="#modalAtender">
                                                 Atender Solicitud
-                                        </button>
-                                    }
-                                </td>
-
-                                   
+                                            </button>
+                                        }else
+                                        {
+                                            <span class="badge bg-secondary">Atendido</span>
+                                        }
+                                    </td>                                   
                             </tr>
                         }
                     }
@@ -219,7 +230,7 @@
                     </div>
                         <div class="mb-3">
                             <label for="observaciones" class="form-label">Observaciones</label>
-                            <textarea class="form-control" id="observaciones" name="Observaciones" rows="3" placeholder="Escribe tus observaciones..."></textarea>
+                            <textarea class="form-control" id="observaciones" name="Observaciones" rows="3" placeholder="Escribe tus observaciones..."></textarea required>
                         </div>
 
                     <div id="alertaCantidad" class="alert alert-danger d-none">
@@ -291,6 +302,67 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: Editar Material -->
+<div class="modal fade" id="modalEditarMaterial" tabindex="-1" aria-labelledby="modalEditarMaterialLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm modal-md modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Edit">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarMaterialLabel">Editar Material</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Inputs ocultos -->
+                    <input type="hidden" asp-for="EditadoMaterial.IdMaterial" id="IdMaterial" />
+                    
+
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input class="form-control" asp-for="EditadoMaterial.NombreMaterial" id="NombreMaterial" required />
+                        <span class="text-danger" asp-validation-for="EditadoMaterial.NombreMaterial"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo</label>
+                        <input class="form-control" asp-for="EditadoMaterial.Tipo" id="Tipo" required />
+                        <span class="text-danger" asp-validation-for="EditadoMaterial.Tipo"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" asp-for="EditadoMaterial.Descripcion" id="Descripcion" rows="3"></textarea>
+                        <span class="text-danger" asp-validation-for="EditadoMaterial.Descripcion"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad disponible</label>
+                        <input type="number" min="0" class="form-control" asp-for="EditadoMaterial.CantidadDisponible" id="CantidadDisponible" required />
+                        <span class="text-danger" asp-validation-for="EditadoMaterial.CantidadDisponible"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Proveedor</label>
+                        <select class="form-select" asp-for="EditadoMaterial.ProveedorId" id="ProveedorSelect">
+                            <option value="0">-- Sin proveedor --</option>
+                            @foreach (var p in Model.Proveedores)
+                            {
+                                <option value="@p.idProveedor">@p.NombreProveedor</option>
+                            }
+                        </select>
+                        <span class="text-danger" asp-validation-for="EditadoMaterial.ProveedorId"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+                <div asp-validation-summary="All" class="text-danger"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 </div>
 
@@ -379,6 +451,26 @@
                    $.post("/Bodeguero/Materiales?handler=RechazarSolicitud", { IdSolicitud: id,__RequestVerificationToken: token }, function () {
                 location.reload();
             });
+        });
+
+       // Cargar datos al abrir el modal Editar Material
+        $('#modalEditarMaterial').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Botón que activó el modal
+            // Extraer datos de los atributos data-*
+            var id = button.data('id');
+            var nombre = button.data('nombre');
+            var tipo = button.data('tipo');
+            var descripcion = button.data('descripcion');
+            var cantidad = button.data('cantidad');
+            var proveedor = button.data('proveedor');
+            // Actualizar el contenido del modal
+            var modal = $(this);
+            modal.find('#IdMaterial').val(id);
+            modal.find('#NombreMaterial').val(nombre);
+            modal.find('#Tipo').val(tipo);
+            modal.find('#Descripcion').val(descripcion);
+            modal.find('#CantidadDisponible').val(cantidad);
+            modal.find('#ProveedorSelect').val(proveedor);
         });
     </script>
 }

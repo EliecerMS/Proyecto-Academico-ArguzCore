@@ -562,6 +562,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             }
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
+
+
     }
 }
 

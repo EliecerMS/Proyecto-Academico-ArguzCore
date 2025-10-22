@@ -9,6 +9,8 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<MaterialDto> MostrarProyectoPorId(int IdMaterial);
         Task<IEnumerable<MaterialDto>> MostrarMaterialesAsync();
         Task RegistrarMaterialAsync(MaterialDto material);
+        Task EditarMaterialAsync(MaterialDto material);
+        Task EliminarMaterialAsync(int idMaterial);
 
         //Metodos para solicitudes de materiales
         Task<IEnumerable<MaterialSolicitadoDto>> MostrarMaterialesSolicitadosAsync();
