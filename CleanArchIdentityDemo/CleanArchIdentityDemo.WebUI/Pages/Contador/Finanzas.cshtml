@@ -148,7 +148,7 @@
     <div class="tab-pane fade" id="nav-PagosProveedor-tab" role="tabpanel" aria-labelledby="nav-PagosProveedor">
         <!--- Ajustar el siguiente botón con lo necesario para abrir un modal y registrar un nuevo pago a proveedor, luego borrar este comentario -->
         <div class="d-flex justify-content-end my-4">
-            <button class="btn btn-success" id="registrarPagoBtn">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#registrarPagoModal">
                 <i class="fas fa-plus"></i> Registrar pago
             </button>
         </div>
@@ -293,6 +293,64 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal: Registrar pago -->
+<div class="modal fade" id="registrarPagoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="RegistrarPago">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar pago a proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Proveedor</label>
+                        <select asp-for="PagoSeleccionado.ProveedorId" class="form-select" required>
+                            <option value="">Seleccione un proveedor</option>
+                            @foreach (var proveedor in Model.Proveedores)
+                            {
+                                <option value="@proveedor.IdProveedor">@proveedor.NombreProveedor</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Proyecto</label>
+                        <select asp-for="PagoSeleccionado.ProyectoId" class="form-select" required>
+                            <option value="">Seleccione un proyecto</option>
+                            @foreach (var proyecto in Model.Proyectos)
+                            {
+                                <option value="@proyecto.IdProyecto">@proyecto.Nombre</option>
+                            }
+                        </select>
+
+
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Monto (₡)</label>
+                        <input asp-for="PagoSeleccionado.Monto" type="number" step="0.01" min="1" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de pago</label>
+                        <input asp-for="PagoSeleccionado.FechaPago" type="date" class="form-control" required
+                               value="@DateTime.Today.ToString(" yyyy-MM-dd")" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea asp-for="PagoSeleccionado.Descripcion" class="form-control" rows="2" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Registrar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 </div>
             </form>
         </div>

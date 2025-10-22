@@ -17,5 +17,10 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<bool> EditarProveedorAsync(ProveedorDto DatosProveedor);
 
         Task<bool> EliminarProveedorAsync(int IdProveedor);
+        //Método para registrar pago a proveedor
+        Task<PagoProveedorDto> RegistrarPagoProveedorAsync(PagoProveedorDto dto);
+
+        //Método para listar proyecto
+        Task<IEnumerable<ProyectoDto>> ListarProyectosAsync();
     }
 }

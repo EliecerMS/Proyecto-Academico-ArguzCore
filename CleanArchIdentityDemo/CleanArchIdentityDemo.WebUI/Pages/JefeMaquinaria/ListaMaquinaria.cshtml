@@ -88,7 +88,7 @@
                     {
                         <tr>
                             <td>
-                                <a href="/JefeMaquinaria/DetallesMantenimiento?id=@maquina.IdMaquinaria" class="text-decoration-none text-primary fw-bold">
+                                <a href="/JefeMaquinaria/DetallesMaquinaria?id=@maquina.IdMaquinaria" class="text-decoration-none text-primary fw-bold">
                                     @maquina.Nombre
                                 </a>
                             </td>
@@ -97,8 +97,8 @@
                             <td>@maquina.NumeroSerie</td>
                             <td>
                                 <span class="badge
-                                    @(maquina.Estado == "Operativo" ? "bg-success" :
-                                    maquina.Estado == "En Reparación" ? "bg-warning" :
+                                    @(maquina.Estado == "En Servicio" ? "bg-success" :
+                                    maquina.Estado == "Mantenimiento" ? "bg-warning" :
                                     maquina.Estado == "Fuera de Servicio" ? "bg-danger" : "bg-secondary")">
                                     @maquina.Estado
                                 </span>
@@ -115,12 +115,13 @@
                                     data-numeroSerie="@maquina.NumeroSerie">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                                <form method="post" asp-page-handler="Eliminar" asp-route-id="@maquina.IdMaquinaria" style="display:inline"
-                                      onsubmit="return confirm('¿Está seguro que desea eliminar este equipo?');">
-                                    <button type="submit" class="btn btn-danger btn-sm me-1">
-                                        <i class="fas fa-trash-alt"></i> Eliminar
-                                    </button>
-                                </form>
+                            <button type="button" class="btn btn-danger btn-sm me-1"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#confirmDeleteModal"
+                                    data-id="@maquina.IdMaquinaria"
+                                    data-nombre="@maquina.Nombre">
+                                <i class="fas fa-trash-alt"></i> Eliminar
+                            </button>
                             </td>
                         </tr>
                     }
@@ -187,6 +188,31 @@
     </div>
 </div>
 
+<!-- Modal Confirmar Eliminación -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" id="deleteForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        <strong id="maquinaNombre"></strong> será eliminado junto con todos sus mantenimientos y registros de proyecto.
+                    </p>
+                    <p>¿Está seguro que desea continuar?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     
     <!-- Script: Alertas-->
@@ -236,5 +262,20 @@
         });
     </script>
 
+    <script>
+        var confirmDeleteModal = document.getElementById('confirmDeleteModal');
+        confirmDeleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var nombre = button.getAttribute('data-nombre');
+
+            // Mostrar nombre en el modal
+            confirmDeleteModal.querySelector('#maquinaNombre').textContent = nombre;
+
+            // Cambiar la acción del formulario dinámicamente
+            var form = confirmDeleteModal.querySelector('#deleteForm');
+            form.action = '/JefeMaquinaria/ListaMaquinaria?handler=Eliminar&id=' + id;
+        });
+    </script>
 
 }

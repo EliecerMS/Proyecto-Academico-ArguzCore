@@ -272,5 +272,62 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }
             return ProveedorEliminado;
         }
+        //Método para proyecto 
+        public async Task<IEnumerable<ProyectoDto>> ListarProyectosAsync()
+        {
+            var proyectos = await _context.Proyectos
+                .Include(p => p.EstadoProyecto)
+                .ToListAsync();
+
+            return proyectos.Select(p => new ProyectoDto
+            {
+                IdProyecto = p.IdProyecto,
+                Nombre = p.Nombre,
+                Descripcion = p.Descripcion,
+                CodigoProyecto = p.CodigoProyecto,
+                FechaFinalPropuesta = p.FechaFinalPropuesta,
+                Presupuesto = p.Presupuesto,
+                EstadoProyecto = p.EstadoProyecto.NombreEstado
+            });
+        }
+
+        //Método para registrar pago
+        public async Task<PagoProveedorDto> RegistrarPagoProveedorAsync(PagoProveedorDto dto)
+        {
+            // 1️ Crear el nuevo registro del pago
+            var nuevoPago = new PagoProveedor
+            {
+                ProyectoId = dto.ProyectoId,
+                ProveedorId = dto.ProveedorId,
+                Monto = dto.Monto,
+                FechaPago = dto.FechaPago,
+                Descripcion = dto.Descripcion,
+                RutaComprobante = dto.RutaComprobante
+            };
+
+            _context.PagosProveedores.Add(nuevoPago);
+            await _context.SaveChangesAsync();
+
+            var pago = await _context.PagosProveedores
+                .Include(p => p.Proveedor)
+                .Include(p => p.Proyecto)
+                .FirstOrDefaultAsync(p => p.IdPago == nuevoPago.IdPago);
+
+            var resultado = new PagoProveedorDto
+            {
+                IdPago = pago.IdPago,
+                ProyectoId = pago.ProyectoId,
+                ProveedorId = pago.ProveedorId,
+                NombreProveedor = pago.Proveedor.NombreProveedor,
+                ContactoProveedor = pago.Proveedor.Contacto,
+                NombreProyecto = pago.Proyecto.Nombre,
+                Monto = pago.Monto,
+                FechaPago = pago.FechaPago,
+                Descripcion = pago.Descripcion,
+                RutaComprobante = pago.RutaComprobante
+            };
+
+            return resultado;
+        }
     }
 }

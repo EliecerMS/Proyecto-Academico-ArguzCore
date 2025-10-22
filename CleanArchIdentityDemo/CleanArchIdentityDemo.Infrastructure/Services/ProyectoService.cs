@@ -630,6 +630,30 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
             }
         }
+
+        public async Task<bool> DevolverMaterialAsync(MaterialDto MaterialDevolver)
+        {
+            var material = _context.Materiales.FirstOrDefault(m => m.IdMaterial == MaterialDevolver.IdMaterial);
+            if (material != null) //si lo encuentra actualiza la cantidad disponible
+            {
+                material.CantidadDisponible += MaterialDevolver.CantidadDisponible;
+                await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> EliminarMaterialObraAsync(int IdMaterialProyecto)
+        {
+            var materialObra = await _context.MaterialesProyecto.FirstOrDefaultAsync(m => m.IdMaterialProyecto == IdMaterialProyecto);
+            if (materialObra != null) // si lo encuentra lo elimina
+            {
+                _context.MaterialesProyecto.Remove(materialObra);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
     }
 }
 
