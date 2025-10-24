@@ -1,6 +1,5 @@
 ﻿using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
-using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -47,7 +46,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         {
             PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
-            TempData["TabActiva"] = "GestionProveedor";
+            //TempData["TabActiva"] = "GestionProveedor";
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
         }
         public async Task<IActionResult> OnPostVerReciboAsync()
@@ -225,7 +224,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
             TempData["TabActiva"] = "PagosProveedor";
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
-            return Page();   
+            return Page();
         }
     }
 }

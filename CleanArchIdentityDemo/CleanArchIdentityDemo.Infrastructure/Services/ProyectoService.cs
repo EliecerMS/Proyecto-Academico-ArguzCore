@@ -99,6 +99,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 FechaFinalPropuesta = p.FechaFinalPropuesta.Date,
                 Presupuesto = p.Presupuesto,
                 EstadoProyecto = p.EstadoProyecto.NombreEstado,
+                IdEstadoProyecto = p.EstadoProyectoId,
                 PorcentajeAvance = RecalculoPorcentajeAvance(p.Tareas.ToList())
             });
         }

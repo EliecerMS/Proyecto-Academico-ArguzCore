@@ -67,12 +67,22 @@
                                     <a class="nav-link" asp-page="/Admin/Admin"><i class="fa-solid fa-shield-halved"></i> Seguridad</a>
                                 </li>
                             </ul>
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-page="/Documentos/Documentos"><i class="fa-solid fa-file"></i> Documentos</a>
+                                </li>
+                            </ul>
                             }
                             if (roles.Contains("SupervisorProyectos"))
                              {
                                 <ul class="nav flex-column">
                                     <li class="nav-item">
                                     <a class="nav-link" asp-page="/SupervisorProyectos/ListaProyectos"><i class="fa-solid fa-diagram-project"></i> Proyectos</a>
+                                    </li>
+                                </ul>
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                    <a class="nav-link" asp-page="/Documentos/Documentos"><i class="fa-solid fa-file"></i> Documentos</a>
                                     </li>
                                 </ul>
                              }
@@ -89,6 +99,11 @@
                                 <ul class="nav flex-column">
                                     <li class="nav-item">
                                     <a class="nav-link" asp-page="/Contador/Finanzas"><i class="fa-solid fa-dollar-sign"></i> Finanzas</a>
+                                    </li>
+                                </ul>
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/Documentos/Documentos"><i class="fa-solid fa-file"></i> Documentos</a>
                                     </li>
                                 </ul>
                             }

@@ -60,16 +60,23 @@
 {
     //<h1>@Model.DetalleProyecto.Nombre</h1>
     //<h1>@Model.DetalleProyecto.EstadoProyectoId</h1>
-    <h2>Detalles del Proyecto - @Model.DetalleProyecto.Nombre</h2>
-    <a asp-page="./ListaProyectos"><i class="fa-solid fa-arrow-left"></i> Volver a lista de proyectos </a>
+    <h2 class="text-2xl font-bold text-gray-800">Detalles del Proyecto - @Model.DetalleProyecto.Nombre</h2>
+    <div class="row justify-content-between">
+        <div class="col-4">
+            <a asp-page="./ListaProyectos"><i class="fa-solid fa-arrow-left"></i> Volver a lista de proyectos </a>
+        </div>
+        <div class="col-4">
+            <!--Boton para cambiar de estado el proyecto  -->
+            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#NuevoEstadoProyectoModal">
+                Nuevo Estado
+            </button>
+        </div>
+    </div>
 
 }
 
 
-<!--Boton para cambiar de estado el proyecto  -->
-<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#NuevoEstadoProyectoModal">
-    Nuevo Estado
-</button>
+
 
 <!--Muestra un mensaje de exito cuando se cambie el estado  -->
 @if (TempData["MensajeExito"] != null)
@@ -141,14 +148,34 @@
 <div class="tab-content" id="nav-tabContent">
 
     <div class="tab-pane fade" id="nav-Marca-tab" role="tabpanel" aria-labelledby="nav-marcaEntradaSalida">
-        Contenido del tab Guardar/Marcar Salida/Entrada.
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+               Lista de personal del proyecto
+            </div>
+            <div class="col-4">
+                <button class="btn btn-secondary mb-3" data-bs-toggle="modal" data-bs-target="#">
+                    Ver reporte
+                </button>
+            </div>
+        </div>
+        <!-- Tabla donde se muuestra el personal actualmente en el proyecto -->
+
     </div>
 
     <div class="tab-pane fade " id="nav-Cronograma-tab" role="tabpanel" aria-labelledby="nav-Cronograma">
-
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearTareaModal">
-            Nueva Tarea
-        </button>
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Tareas del proyecto
+            </div>
+            <div class="col-4">
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearTareaModal">
+                    Nueva Tarea
+                </button>
+            </div>
+        </div>
+        
 
         <!-- Tabla de tareas del proyecto -->
         <table class="table table-striped align-middle">
@@ -212,9 +239,18 @@
     </div>
 
     <div class="tab-pane fade" id="nav-NotaAvance-tab" role="tabpanel" aria-labelledby="nav-NotasAvance">
-         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearNotaAvanceModal">
-            Crear Nota
-        </button>
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Notas de avance del proyecto
+            </div>
+            <div class="col-4">
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearNotaAvanceModal">
+                    Crear Nota
+                </button>
+            </div>
+        </div>
+        
 
         <!-- Tabla de notas de avance del proyecto -->
         <table class="table table-striped align-middle">
@@ -289,10 +325,19 @@
     </div>
 
     <div class="tab-pane fade" id="nav-PersonalProyecto-tab" role="tabpanel" aria-labelledby="nav-PersonalProyecto">
-        <h4>Personal Asignado</h4>
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalAgregarPersonal">
-            Agregar Personal
-        </button>
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Personal Asignado
+            </div>
+            <div class="col-4">
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalAgregarPersonal">
+                    Agregar Personal
+                </button>
+            </div>
+        </div>
+       
+       
 
         <table class="table table-striped align-middle">
             <thead class="table-light">
@@ -342,11 +387,19 @@
     </div>
 
     <div class="tab-pane fade" id="nav-Incidentes-tab" role="tabpanel" aria-labelledby="nav-Incidentes">
-
-        <!-- Botón para abrir modal -->
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearIncidenteModal">
-            Nuevo Incidente
-        </button>
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Incidentes del proyecto
+            </div>
+            <div class="col-4">
+                <!-- Botón para abrir modal -->
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearIncidenteModal">
+                    Nuevo Incidente
+                </button>
+            </div>
+        </div>
+       
 
         <!-- Tabla de incidentes -->
         <table class="table table-striped align-middle">
@@ -414,10 +467,12 @@
     </div>
 
     <div class="tab-pane fade" id="nav-Documentos-tab" role="tabpanel" aria-labelledby="nav-Documentos">
+        <br />
         Contenido del tab Documentos.
     </div>
 
     <div class="tab-pane fade" id="nav-ReporteFinanciero-tab" role="tabpanel" aria-labelledby="nav-ReporteFinanciero">
+        <br />
         Contenido del tab Reporte financiero.
     </div>
 
@@ -440,6 +495,7 @@
         </nav>
         <div class="tab-content" id="nav-tabContent">
             <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-MaterialesProyecto">
+                <br />
                 Contenido del sub tab Materiales en proyecto.
                 <table class="table table-striped align-middle">
                     <thead class="table-light">
@@ -511,10 +567,18 @@
             </div>
 
             <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel" aria-labelledby="nav-SolicitudesMaterial">
-
-                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearSolicitudModal">
-                    Solicitar Material
-                </button>
+                <br />
+                <div class="row justify-content-between">
+                    <div class="col-4">
+                        Solicitudes de material para el proyecto
+                    </div>
+                    <div class="col-4">
+                        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearSolicitudModal">
+                            Solicitar Material
+                        </button>
+                    </div>
+                </div>
+                
 
 
                 <table class="table table-striped align-middle">
@@ -553,14 +617,14 @@
                                                         data-material="@mat.MaterialId"
                                                         data-cantidad="@mat.Cantidad"
                                                         data-prioridad="@mat.Prioridad">
-                                                    Editar
+                                                    <i class="fas fa-edit"></i> Editar
                                                 </button>
 
                                                 <form method="post" asp-page-handler="EliminarSolicitud"
                                                       asp-route-idSolicitud="@solicitud.IdSolicitud"
                                                       asp-route-CodigoProyecto="@Model.CodigoProyecto"
                                                       style="display:inline;">
-                                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
                                                 </form>
                                             }
                                             else

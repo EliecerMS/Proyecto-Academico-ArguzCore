@@ -47,7 +47,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
                 //carga la lista de roles
                 Roles = (List<UserRolesDto>)await _userService.GetRoles();
             }
-
+            //TempData["TabActiva"] = "Usuarios";
 
         }
 

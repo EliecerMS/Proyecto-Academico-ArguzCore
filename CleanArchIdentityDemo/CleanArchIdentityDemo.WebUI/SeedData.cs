@@ -38,7 +38,7 @@ namespace CleanArchIdentityDemo.WebUI
                     new EstadoProyecto
                     {
 
-                        NombreEstado = "En ejecuión"
+                        NombreEstado = "En ejecución"
                     },
                     new EstadoProyecto
                     {
