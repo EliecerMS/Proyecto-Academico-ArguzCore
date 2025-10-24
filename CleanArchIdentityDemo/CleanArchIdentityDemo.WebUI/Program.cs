@@ -21,7 +21,7 @@ builder.Services.AddScoped<IEquipoService, EquipoService>();
 builder.Services.AddScoped<IFinanzasService, FinanzasService>();
 builder.Services.AddScoped<IMaterialesService, MaterialesService>();
 builder.Services.AddScoped<IDocumentosService, DocumentosService>();
-
+builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 
 // Configurar Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
