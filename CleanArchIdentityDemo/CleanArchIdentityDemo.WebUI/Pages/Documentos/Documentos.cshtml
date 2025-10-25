@@ -2,3 +2,234 @@
 @model CleanArchIdentityDemo.WebUI.Pages.Documentos.DocumentosModel
 @{
 }
+
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11; margin-top: 25px;">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" id="successToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @TempData["SuccessMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" id="errorToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    @TempData["ErrorMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" id="warningToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @TempData["WarningMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true" id="infoToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-info-circle me-2"></i>
+                    @TempData["InfoMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Documentos</h1>
+</div>
+
+<nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <button class="nav-link" id="nav-DocumentoVersiones" data-bs-toggle="tab" data-bs-target="#nav-DocumentoVersiones-tab" type="button" role="tab" aria-controls="nav-DocumentoVersiones-tab" aria-selected="false">
+            Documentos
+        </button>
+        <button class="nav-link" id="nav-GestionVersiones" data-bs-toggle="tab" data-bs-target="#nav-GestionVersiones-tab" type="button" role="tab" aria-controls="nav-GestionVersiones-tab" aria-selected="false">
+            Subir documento/Gestionar Versiones
+        </button>
+        <button class="nav-link" id="nav-ContratosLaborales" data-bs-toggle="tab" data-bs-target="#nav-ContratosLaborales-tab" type="button" role="tab" aria-controls="nav-ContratosLaborales-tab" aria-selected="false">
+            Contratos laborales
+        </button>
+    </div>
+</nav>
+
+
+<div class="tab-content" id="nav-tabContent">
+    <div class="tab-pane fade" id="nav-DocumentoVersiones-tab" role="tabpanel" aria-labelledby="nav-DocumentoVersiones">
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Buscar documento
+            </div>
+            <div class="col-4">
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" placeholder="Buscar por nombre de documento..." />
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-primary w-100" onclick="">
+                            <i class="fa-solid fa-magnifying-glass"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <select class="form-select w-auto">
+                    <option selected>Filtrar por tipo de documento</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-primary w-100" onclick="">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+            </div>
+        </div>
+         <br />
+        <!-- Aca una base de la tabla que carga los resultados, diseñar como el prototipo -->
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Colum 1</th>
+                    <th>Colum 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        Colum 1
+                    </td>
+                    <td>
+                        Colum 2
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tab-pane fade" id="nav-GestionVersiones-tab" role="tabpanel" aria-labelledby="nav-GestionVersiones">
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Gestionar versiones de documentos
+            </div>
+            <div class="col-4">
+                
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#">
+                    Subir documento general
+                </button>
+            </div>
+        </div>
+        <!-- Aca una base de la tabla que carga los resultados, diseñar como el prototipo -->
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Colum 1</th>
+                    <th>Colum 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        Colum 1
+                    </td>
+                    <td>
+                        Colum 2
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tab-pane fade" id="nav-ContratosLaborales-tab" role="tabpanel" aria-labelledby="nav-ContratosLaborales">
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Contratos laborales
+            </div>
+            <div class="col-4">
+
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#">
+                    Registrar un contrato
+                </button>
+            </div>
+        </div>
+        <br />
+        <!-- Aca una base de la tabla que carga los resultados, diseñar como el prototipo -->
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Colum 1</th>
+                    <th>Colum 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        Colum 1
+                    </td>
+                    <td>
+                        Colum 2
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        //script que hace funcionar las alertas
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar todos los toasts que existan
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function(toastEl) {
+                return new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 3000  // 3 segundos
+                });
+            });
+
+            // Activar cada toast
+            toastList.forEach(toast => toast.show());
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tabActiva = '@TempData["TabActiva"]';
+            if(tabActiva) {
+                var triggerEl = document.querySelector(`#nav-${tabActiva}`);
+                if(triggerEl){
+                    var tab = new bootstrap.Tab(triggerEl);
+                    tab.show();
+                }
+            }
+        });
+    </script>
+ }

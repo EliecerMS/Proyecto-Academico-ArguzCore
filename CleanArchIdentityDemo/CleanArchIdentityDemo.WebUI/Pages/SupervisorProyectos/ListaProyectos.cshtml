@@ -67,6 +67,7 @@
         <tr>
             <th>Código</th>
             <th>Nombre</th>
+            <th>Progreso</th>
             <th>Estado</th>
             <th>Fecha final propuesta</th>
             <th>Acciones</th>
@@ -81,17 +82,30 @@
                         @proyecto.CodigoProyecto
                     </td>
                     <td>
-                        <a asp-page="./DetallesProyecto" asp-route-CodigoProyecto="@proyecto.CodigoProyecto">@proyecto.Nombre <i class="fa-solid fa-eye"></i></a>
-                            <div class="mt-2">
-                                <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: @proyecto.PorcentajeAvance%;" aria-valuenow="@proyecto.PorcentajeAvance" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            <span class="text-xs text-gray-500">@proyecto.PorcentajeAvance%</span>
-                            </div>
-                       
+                        @proyecto.Nombre
                     </td>
                     <td>
-                        @proyecto.EstadoProyecto
+                        <div class="mt-2">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: @proyecto.PorcentajeAvance%;" aria-valuenow="@proyecto.PorcentajeAvance" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <span class="text-xs text-gray-500">@proyecto.PorcentajeAvance%</span>
+                        </div>
+                    </td>
+                    <td>
+                        @if (proyecto.IdEstadoProyecto == 1)
+                        {
+                            <p class="badge bg-primary">@proyecto.EstadoProyecto</p>
+                            
+                        }
+                        @if (proyecto.IdEstadoProyecto == 2)
+                        {
+                            <p class="badge bg-success">@proyecto.EstadoProyecto</p>
+                        }
+                        @if (proyecto.IdEstadoProyecto == 3)
+                        {
+                            <p class="badge bg-secondary">@proyecto.EstadoProyecto</p>
+                        }
                     </td>
                     <td>
                         @proyecto.FechaFinalPropuesta.ToShortDateString()
@@ -122,6 +136,9 @@
                                             </button>
                                         </form>
                                     </div>
+                                <div class="col">
+                                    <a class="btn btn-sm btn-info" asp-page="./DetallesProyecto" asp-route-CodigoProyecto="@proyecto.CodigoProyecto">Ver detalles <i class="fa-solid fa-eye"></i></a>
+                                </div>
                                 </div>
                             </div>
                                 

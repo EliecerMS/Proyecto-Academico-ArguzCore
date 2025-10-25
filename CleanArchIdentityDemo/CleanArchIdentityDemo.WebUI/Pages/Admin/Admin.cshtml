@@ -60,69 +60,133 @@
 
 <h2>Administración de Usuarios</h2>
 
-<!-- Botón para abrir modal Crear Usuario -->
-<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createUserModal">
-    Crear Usuario
-</button>
+<nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <button class="nav-link" id="nav-Usuarios" data-bs-toggle="tab" data-bs-target="#nav-Usuarios-tab" type="button" role="tab" aria-controls="nav-Usuarios-tab" aria-selected="false">
+            Usuarios
+        </button>
+        <button class="nav-link" id="nav-Respaldos" data-bs-toggle="tab" data-bs-target="#nav-Respaldos-tab" type="button" role="tab" aria-controls="nav-Respaldos-tab" aria-selected="false">
+            Respaldos
+        </button>
+    </div>
+</nav>
 
-<!-- Tabla de Usuarios -->
-<table class="table table-striped align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Email</th>
-                <th>Nombre Completo</th>
-                <th>Rol</th>
-                <th class="align-content-center">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Users != null && Model.Users.Any())
-            {
-                @foreach (var user in Model.Users)
-                {
+
+<div class="tab-content" id="nav-tabContent">
+
+    <div class="tab-pane fade show active" id="nav-Usuarios-tab" role="tabpanel" aria-labelledby="nav-Usuarios">
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Lista de usuarios
+            </div>
+            <div class="col-4">
+                <!-- Botón para abrir modal Crear Usuario -->
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                    Crear Usuario
+                </button>
+            </div>
+        </div>
+        <div>
+            <!-- Tabla de Usuarios -->
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
                     <tr>
-                        <td>@user.Email</td>
-                        <td>@user.NombreCompleto</td>
-                        <td>@user.Role</td>
-                        <td>
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col">
-                                        <!-- Contenido para columna accion 1 -->
-                                        <button class="btn btn-sm btn-warning"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editUserModal"
-                                            data-id="@user.Id"
-                                            data-email="@user.Email"
-                                            data-nombre="@user.NombreCompleto"
-                                            data-rol="@user.Role">
-                                            <i class="fas fa-edit"></i> Editar
-                                        </button>
-                                    </div>
-                                    <div class="col">
-                                    <!-- Contenido para columna accion 2 -->
-                                        <form method="post" asp-page-handler="Delete">
-                                            <input type="hidden" name="IdUsuario" value="@user.Id" />
-                                            <button class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i> Eliminar
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
+                        <th>Email</th>
+                        <th>Nombre Completo</th>
+                        <th>Rol</th>
+                        <th class="align-content-center">Acciones</th>
                     </tr>
-                }
-            }
-            else
-            {
+                </thead>
+                <tbody>
+                    @if (Model.Users != null && Model.Users.Any())
+                    {
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td>@user.Email</td>
+                                <td>@user.NombreCompleto</td>
+                                <td>@user.Role</td>
+                                <td>
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col">
+                                                <!-- Contenido para columna accion 1 -->
+                                                <button class="btn btn-sm btn-warning"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editUserModal"
+                                                        data-id="@user.Id"
+                                                        data-email="@user.Email"
+                                                        data-nombre="@user.NombreCompleto"
+                                                        data-rol="@user.Role">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </button>
+                                            </div>
+                                            <div class="col">
+                                                <!-- Contenido para columna accion 2 -->
+                                                <form method="post" asp-page-handler="Delete">
+                                                    <input type="hidden" name="IdUsuario" value="@user.Id" />
+                                                    <button class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash"></i> Eliminar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center">No hay usuarios disponibles.</td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="nav-Respaldos-tab" role="tabpanel" aria-labelledby="nav-Respaldos">
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Respaldos
+            </div>
+            <div class="col-4">
+                <!-- Botón para abrir modal Crear Usuario -->
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#">
+                    Crear respaldo
+                </button>
+            </div>
+        </div>
+        <!-- Aca una base rapida, disenar la tabla donde se listan respaldos como el prototipo -->
+        <table class="table table-striped align-middle">
+            <thead>
                 <tr>
-                    <td colspan="4" class="text-center">No hay usuarios disponibles.</td>
+                    <th>Colum 1</th>
+                    <th>Colum 2</th>
                 </tr>
-            }
-        </tbody>
-        
-    </table>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        Colum 1
+                    </td>
+                    <td>
+                        Colum 2
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+
+
 <!-- Modal Crear Usuario -->
 <div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -234,6 +298,18 @@
             document.getElementById('EditedUser_Email').value = email;
             document.getElementById('EditedUser_NombreCompleto').value = nombre;
             document.getElementById('EditedUser_Role').value = rol;
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tabActiva = '@TempData["TabActiva"]';
+            if(tabActiva) {
+                var triggerEl = document.querySelector(`#nav-${tabActiva}`);
+                if(triggerEl){
+                    var tab = new bootstrap.Tab(triggerEl);
+                    tab.show();
+                }
+            }
         });
     </script>
     

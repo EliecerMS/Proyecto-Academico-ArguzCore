@@ -172,7 +172,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             //Cargar materiales disponibles para mostrar en el combo
             MaterialesDisponibles = (await _proyectoService.ObtenerMaterialesAsync()).ToList();
 
-
+            //TempData["TabActiva"] = "marcaEntradaSalida";
 
         }
         //UsuariosEmpleado = await _userService.GetAllNormalUsersAsync().ToList();
