@@ -1,0 +1,68 @@
+﻿@model IEnumerable<CleanArchIdentityDemo.Application.DTOs.CostoEjecutadoDto>
+
+<table class="table table-striped align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Categoría</th>
+            <th>Monto</th>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Comprobante</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.CategoriaGasto</td>
+                    <td>₡@item.Monto.ToString("N2")</td>
+                    <td>@item.Fecha.ToShortDateString()</td>
+                    <td>@item.Descripcion</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.RutaComprobante))
+                        {
+                            <a href="@item.RutaComprobante" target="_blank" class="btn btn-outline-primary btn-sm">
+                                Ver comprobante
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editarCostoModal"
+                                data-id="@item.IdCosto"
+                                data-proyecto="@item.ProyectoId"
+                                data-categoria="@item.CategoriaGasto"
+                                data-monto="@item.Monto.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                data-fecha="@item.Fecha.ToString("yyyy-MM-dd")"
+                                data-descripcion="@item.Descripcion"
+                                data-ruta="@item.RutaComprobante">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+
+                        <button class="btn btn-sm btn-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#eliminarCostoModal"
+                                data-id="@item.IdCosto"
+                                data-categoria="@item.CategoriaGasto">
+                            <i class="fas fa-trash-alt"></i> Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">No hay costos ejecutados registrados.</td>
+            </tr>
+        }
+    </tbody>
+</table>

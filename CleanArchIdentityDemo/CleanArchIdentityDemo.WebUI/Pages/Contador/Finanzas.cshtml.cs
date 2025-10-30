@@ -14,12 +14,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         private readonly IFinanzasService _FinanzasService;
         private readonly IUserService _UserService;
         private readonly UserManager<ApplicationUser> _UserManager;
+        private readonly IProyectoService _ProyectoService;
 
-        public FinanzasModel(IFinanzasService finanzasService, IUserService userService, UserManager<ApplicationUser> userManager)
+        public FinanzasModel(IFinanzasService finanzasService, IUserService userService, UserManager<ApplicationUser> userManager, IProyectoService proyectoService)
         {
             _FinanzasService = finanzasService;
             _UserService = userService;
             _UserManager = userManager;
+            _ProyectoService = proyectoService;
         }
 
         public List<PagoProveedorDto> PagosProveedores { get; set; } = new(); // almacenara la lista de pagos a proveedores
@@ -41,6 +43,18 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         public PagoProveedorDto PagoSeleccionado { get; set; } = new();
 
         public List<ProyectoDto> Proyectos { get; set; } = new();
+
+        //Costos ejecutados 
+        [BindProperty]
+        public CostoEjecutadoDto CostoSeleccionado { get; set; } = new();
+
+        [BindProperty]
+        public int IdCosto { get; set; }
+
+        public List<CostoEjecutadoDto> CostosEjecutados { get; set; } = new();
+
+        [BindProperty]
+        public IFormFile? ArchivoComprobante { get; set; }
 
         public async Task OnGetAsync()
         {
@@ -231,6 +245,181 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
             TempData["TabActiva"] = "PagosProveedor";
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+            return Page();
+        }
+        //Métodos para costos ejecutados 
+        public async Task<IActionResult> OnPostRegistrarCostoAsync(IFormFile? ArchivoComprobante)
+        {
+            // Validar campos relevantes
+            var keysToKeep = new[]
+            {
+               "CostoSeleccionado.ProyectoId",
+               "CostoSeleccionado.CategoriaGasto",
+               "CostoSeleccionado.Monto",
+               "CostoSeleccionado.Fecha",
+               "CostoSeleccionado.Descripcion"
+           };
+
+            foreach (var key in ModelState.Keys.ToList())
+            {
+                if (!keysToKeep.Contains(key))
+                    ModelState.Remove(key);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Datos inválidos para registrar el costo ejecutado.";
+                TempData["TabActiva"] = "GastosEjecutados";
+                Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+                return Page();
+            }
+
+            // Guardar archivo comprobante si se subió
+            if (ArchivoComprobante != null)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "comprobantes");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{ArchivoComprobante.FileName}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    await ArchivoComprobante.CopyToAsync(fileStream);
+
+                // Asignar ruta relativa
+                CostoSeleccionado.RutaComprobante = $"/comprobantes/{uniqueFileName}";
+            }
+
+            var resultado = await _FinanzasService.CrearCostoEjecutadoAsync(CostoSeleccionado);
+
+            if (resultado)
+            {
+                TempData["SuccessMessage"] = "Costo ejecutado registrado correctamente.";
+                ModelState.Clear();
+                CostoSeleccionado = new CostoEjecutadoDto();
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Error al registrar el costo ejecutado.";
+            }
+
+            CostosEjecutados = (await _FinanzasService.ListarCostosEjecutadosAsync()).ToList();
+            Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+            TempData["TabActiva"] = "GastosEjecutados";
+            PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+            Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+
+            return Page();
+        }
+
+        public async Task<PartialViewResult> OnGetVerGastosPorProyectoAsync(int idProyecto)
+        {
+            try
+            {
+                var lista = await _FinanzasService.ListarCostosPorProyectoAsync(idProyecto);
+
+                // Evitar null (si no hay nada, devolver lista vacía)
+                lista ??= new List<CostoEjecutadoDto>();
+
+                return new PartialViewResult
+                {
+                    ViewName = "_TablaCostosPartial",
+                    ViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<IEnumerable<CostoEjecutadoDto>>(
+                        ViewData,
+                        lista
+                    )
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al cargar gastos del proyecto: {ex.Message}");
+                return new PartialViewResult
+                {
+                    ViewName = "Shared/_TablaCostosPartial",
+                    ViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<IEnumerable<CostoEjecutadoDto>>(
+                        ViewData,
+                        new List<CostoEjecutadoDto>()
+                    )
+                };
+            }
+        }
+        public async Task<IActionResult> OnPostEditarCostoAsync(IFormFile? ArchivoComprobante)
+        {
+            // Validar que exista el Id del costo
+            if (CostoSeleccionado.IdCosto <= 0)
+            {
+                TempData["ErrorMessage"] = "El identificador del costo ejecutado no es válido.";
+                TempData["TabActiva"] = "GastosEjecutados";
+                return Page();
+            }
+
+            // Guardar nuevo comprobante si se subió uno
+            if (ArchivoComprobante != null)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "comprobantes");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{ArchivoComprobante.FileName}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    await ArchivoComprobante.CopyToAsync(fileStream);
+
+                // Actualizar ruta
+                CostoSeleccionado.RutaComprobante = $"/comprobantes/{uniqueFileName}";
+            }
+
+            var resultado = await _FinanzasService.EditarCostoEjecutadoAsync(CostoSeleccionado);
+
+            if (resultado)
+            {
+                TempData["SuccessMessage"] = "Costo ejecutado actualizado correctamente.";
+                ModelState.Clear();
+                CostoSeleccionado = new CostoEjecutadoDto();
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Error al actualizar el costo ejecutado.";
+            }
+
+            // Recargar datos
+            CostosEjecutados = (await _FinanzasService.ListarCostosEjecutadosAsync()).ToList();
+            Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+            PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+            Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+            TempData["TabActiva"] = "GastosEjecutados";
+
+            return Page();
+        }
+        public async Task<IActionResult> OnPostEliminarCostoAsync()
+        {
+            if (CostoSeleccionado.IdCosto <= 0)
+            {
+                TempData["ErrorMessage"] = "Identificador de costo inválido.";
+                TempData["TabActiva"] = "GastosEjecutados";
+                return Page();
+            }
+
+            var resultado = await _FinanzasService.EliminarCostoEjecutadoAsync(CostoSeleccionado.IdCosto);
+
+            if (resultado)
+            {
+                TempData["SuccessMessage"] = "Costo ejecutado eliminado correctamente.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Error al eliminar el costo ejecutado.";
+            }
+
+            // Recargar datos
+            CostosEjecutados = (await _FinanzasService.ListarCostosEjecutadosAsync()).ToList();
+            Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+            PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+            Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+            TempData["TabActiva"] = "GastosEjecutados";
+
             return Page();
         }
     }

@@ -196,8 +196,97 @@
         </div>
     </div>
 
+    <!--Gastos ejecutados -->
     <div class="tab-pane fade" id="nav-GastosEjecutados-tab" role="tabpanel" aria-labelledby="nav-GastosEjecutados">
-        Contenido del tab Gastos Ejecutados
+        <br></br>
+       
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Gastos ejecutados por proyecto
+            </div>
+            <div class="col-4">
+                <!-- Botón para abrir modal -->
+                    <button class="btn btn-primary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#registrarCostoModal">
+                        <i class="fa-solid fa-plus"></i> Agregar gasto ejecutado
+                    </button>
+            </div>
+        </div>
+         <br></br>
+        <!-- Tabla de proyectos -->
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Presupuesto (₡)</th>
+                        <th>Fecha final propuesta</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Proyectos != null && Model.Proyectos.Any())
+                    {
+                        @foreach (var proyecto in Model.Proyectos)
+                        {
+                            <tr>
+                                <td>
+                                        @proyecto.Nombre
+                                </td>
+
+                                <td>@proyecto.Presupuesto.ToString("N2")</td>
+                                <td>@proyecto.FechaFinalPropuesta.ToShortDateString()</td>
+                                <td>
+                                    @if (proyecto.IdEstadoProyecto == 1)
+                                    {
+                                        <p class="badge bg-primary">@proyecto.EstadoProyecto</p>
+
+                                    }
+                                    @if (proyecto.IdEstadoProyecto == 2)
+                                    {
+                                        <p class="badge bg-success">@proyecto.EstadoProyecto</p>
+                                    }
+                                    @if (proyecto.IdEstadoProyecto == 3)
+                                    {
+                                        <p class="badge bg-secondary">@proyecto.EstadoProyecto</p>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col">
+                                                <button class="btn btn-sm btn-info"
+                                                        onclick="mostrarGastosProyecto(@proyecto.IdProyecto, '@proyecto.Nombre')">
+                                                    <i class="fa-solid fa-eye"></i> Ver gastos ejecutados
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center">No hay proyectos registrados.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Contenedor donde se carga la tabla parcial -->
+        <div id="contenedorGastosProyecto" class="card mt-4" style="display:none;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 id="tituloProyecto" class="mb-0 fw-bold text-primary">Gastos ejecutados</h6>
+                <button class="btn btn-sm btn-outline-secondary" onclick="cerrarGastosProyecto()">Cerrar</button>
+            </div>
+            <div id="tablaGastosProyecto" class="card-body p-0">
+            </div>
+        </div>
     </div>
 
 </div>
@@ -356,6 +445,176 @@
         </div>
     </div>
 </div>
+<!-- Modal: Registrar costo ejecutado -->
+<div class="modal fade" id="registrarCostoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="RegistrarCosto" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar gasto ejecutado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Proyecto -->
+                    <div class="mb-3">
+                        <label class="form-label">Proyecto</label>
+                        <select asp-for="CostoSeleccionado.ProyectoId" class="form-select" id="selectProyectoCosto" required>
+                            <option value="">Seleccione un proyecto</option>
+                            @foreach (var proyecto in Model.Proyectos)
+                            {
+                                <option value="@proyecto.IdProyecto">@proyecto.Nombre</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Categoría -->
+                    <div class="mb-3">
+                        <label class="form-label">Categoría de gasto</label>
+                        <select asp-for="CostoSeleccionado.CategoriaGasto" class="form-select" required>
+                            <option value="">Seleccione una categoría</option>
+                            <option value="Materiales">Materiales</option>
+                            <option value="Mano de obra">Mano de obra</option>
+                            <option value="Equipos">Equipos</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Servicios">Servicios</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+
+                    </div>
+
+                    <!-- Monto -->
+                    <div class="mb-3">
+                        <label class="form-label">Monto (₡)</label>
+                        <input asp-for="CostoSeleccionado.Monto" type="number" step="0.01" class="form-control" placeholder="Ingrese el monto del gasto" required />
+                    </div>
+
+                    <!-- Fecha -->
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <input asp-for="CostoSeleccionado.Fecha" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea asp-for="CostoSeleccionado.Descripcion" class="form-control" rows="2" placeholder="Detalles sobre el gasto..." required></textarea>
+                    </div>
+
+                    <!-- Comprobante -->
+                    <div class="mb-3">
+                        <label class="form-label">Comprobante (opcional)</label>
+                        <input asp-for="ArchivoComprobante" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
+                        <small class="text-muted">Formatos permitidos: PDF, JPG, PNG.</small>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Registrar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar gasto ejecutado -->
+<div class="modal fade" id="editarCostoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EditarCosto" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar gasto ejecutado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- ID oculto -->
+                    <input type="hidden" asp-for="CostoSeleccionado.IdCosto" id="editar_IdCosto" />
+
+                    <!-- Proyecto -->
+                    <div class="mb-3">
+                        <label class="form-label">Proyecto</label>
+                        <select asp-for="CostoSeleccionado.ProyectoId" class="form-select" id="editar_ProyectoId" required>
+                            <option value="">Seleccione un proyecto</option>
+                            @foreach (var proyecto in Model.Proyectos)
+                            {
+                                <option value="@proyecto.IdProyecto">@proyecto.Nombre</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Categoría -->
+                    <div class="mb-3">
+                        <label class="form-label">Categoría de gasto</label>
+                        <select asp-for="CostoSeleccionado.CategoriaGasto" id="editar_CategoriaGasto" class="form-select" required>
+                            <option value="">Seleccione una categoría</option>
+                            <option value="Materiales">Materiales</option>
+                            <option value="Mano de obra">Mano de obra</option>
+                            <option value="Equipos">Equipos</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Servicios">Servicios</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+
+                    </div>
+
+                    <!-- Monto -->
+                    <div class="mb-3">
+                        <label class="form-label">Monto (₡)</label>
+                        <input asp-for="CostoSeleccionado.Monto" type="number" step="0.01" id="editar_Monto" class="form-control" required />
+                    </div>
+
+                    <!-- Fecha -->
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <input asp-for="CostoSeleccionado.Fecha" type="date" id="editar_Fecha" class="form-control" required />
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea asp-for="CostoSeleccionado.Descripcion" id="editar_Descripcion" class="form-control" rows="2" required></textarea>
+                    </div>
+
+                    <!-- Comprobante -->
+                    <div class="mb-3">
+                        <label class="form-label">Nuevo comprobante (opcional)</label>
+                        <input name="ArchivoComprobante" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
+                        <small class="text-muted">Si no se selecciona archivo, se conserva el comprobante actual.</small>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Guardar cambios</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Eliminar gasto ejecutado -->
+<div class="modal fade" id="eliminarCostoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EliminarCosto">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Eliminar gasto ejecutado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro de que desea eliminar el gasto ejecutado de la categoría <strong id="nombreCategoria"></strong>?</p>
+                    <input type="hidden" asp-for="CostoSeleccionado.IdCosto" id="eliminar_IdCosto" />
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 
 
@@ -442,6 +701,30 @@
                 tabla.style.display = 'block';
             }
         }
+        //Mostrar costo ejecutado
+        async function mostrarGastosProyecto(idProyecto, nombreProyecto) {
+               try {
+                   const response = await fetch(`?handler=VerGastosPorProyecto&idProyecto=${idProyecto}`, {
+                       method: 'GET',
+                       headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                   });
+
+                   if (!response.ok) throw new Error("Error al obtener los gastos ejecutados.");
+
+                   const html = await response.text();
+                   document.getElementById('tablaGastosProyecto').innerHTML = html;
+                   document.getElementById('tituloProyecto').innerText = `Gastos ejecutados para: ${nombreProyecto}`;
+                   document.getElementById('contenedorGastosProyecto').style.display = 'block';
+               } catch (error) {
+                   console.error(error);
+                   alert("No se pudieron cargar los gastos ejecutados del proyecto.");
+               }
+           }
+
+           function cerrarGastosProyecto() {
+               document.getElementById('contenedorGastosProyecto').style.display = 'none';
+               document.getElementById('tablaGastosProyecto').innerHTML = '';
+           }
     </script>
     <script>
         var modalEliminacionProveedor = document.getElementById('modalEliminacionProveedor');
@@ -452,6 +735,27 @@
 
             document.getElementById('IdProveedor').value = id;
             document.getElementById('nombreProveedor').innerText = nombreProveedor;
+        });
+        //Script para editar costo ejucutado
+        var editarCostoModal = document.getElementById('editarCostoModal');
+        editarCostoModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+
+            document.getElementById('editar_IdCosto').value = button.getAttribute('data-id');
+            document.getElementById('editar_ProyectoId').value = button.getAttribute('data-proyecto');
+            document.getElementById('editar_CategoriaGasto').value = button.getAttribute('data-categoria');
+            document.getElementById('editar_Monto').value = button.getAttribute('data-monto');
+            document.getElementById('editar_Fecha').value = button.getAttribute('data-fecha');
+            document.getElementById('editar_Descripcion').value = button.getAttribute('data-descripcion');
+        });
+
+        //Script para elimar costo ejecutado
+        var eliminarCostoModal = document.getElementById('eliminarCostoModal');
+        eliminarCostoModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+
+            document.getElementById('eliminar_IdCosto').value = button.getAttribute('data-id');
+            document.getElementById('nombreCategoria').innerText = button.getAttribute('data-categoria');
         });
     </script>
 
