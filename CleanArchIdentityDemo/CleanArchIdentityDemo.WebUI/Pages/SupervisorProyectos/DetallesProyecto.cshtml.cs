@@ -18,12 +18,19 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
 
+        // Servicios para manejo de documentos y Blob Storage
+        private readonly IDocumentosService _documentosService;
+        private readonly IBlobStorageService _blobStorageService;
+        private readonly IConfiguration _configuration;
 
-        public DetallesProyectoModel(IProyectoService proyectoService, IUserService userService, UserManager<ApplicationUser> userManager)
+        public DetallesProyectoModel(IProyectoService proyectoService, IUserService userService, UserManager<ApplicationUser> userManager, IDocumentosService documentoService, IBlobStorageService blobStorageService, IConfiguration configuration)
         {
             _proyectoService = proyectoService;
             _userService = userService;
             _userManager = userManager;
+            _documentosService = documentoService;
+            _blobStorageService = blobStorageService;
+            _configuration = configuration;
         }
 
         public Proyecto DetalleProyecto { get; set; }
@@ -108,6 +115,48 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         [BindProperty]
         public DisminuirMaterialDto MaterialEliminar { get; set; } = new();
 
+        // PROPIEDADES PARA MODAL 1: DOCUMENTO VERSIONADO
+        [BindProperty]
+        public string NombreDocumentoVersionado { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string? CategoriaDocumentoVersionado { get; set; }
+
+        [BindProperty]
+        public string? DescripcionDocumentoVersionado { get; set; }
+
+        [BindProperty]
+        public IFormFile ArchivoVersionado { get; set; } = null!;
+
+        [BindProperty]
+        public string? ComentariosVersionInicial { get; set; }
+
+        // PROPIEDADES PARA MODAL 2: NUEVA VERSIÓN
+        [BindProperty]
+        public int DocumentoIdParaVersion { get; set; }
+
+        [BindProperty]
+        public IFormFile ArchivoNuevaVersion { get; set; } = null!;
+
+        [BindProperty]
+        public string? ComentariosNuevaVersion { get; set; }
+
+
+        // PROPIEDADES PARA MODAL 3: DOCUMENTO SIMPLE
+        [BindProperty]
+        public string NombreDocumentoSimple { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string? CategoriaDocumentoSimple { get; set; }
+
+        [BindProperty]
+        public string? DescripcionDocumentoSimple { get; set; }
+
+        [BindProperty]
+        public IFormFile ArchivoSimple { get; set; } = null!;
+
+        public List<DocumentoDto> Documentos { get; set; } = new();
+
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
         {
             try
@@ -137,7 +186,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             //codigo aca abajo de otras cosas que se quieran cargar inmediatamente cargue esta vista
 
-
+            Documentos = (await _documentosService.ObtenerDocumentosPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
             // Personal asignado actualmente
             PersonalAsignado = (await _proyectoService.ObtenerPersonalPorProyectoAsync(CodigoProyecto)).ToList();
 
@@ -622,6 +671,405 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
         }
 
+        // ==========================================
+        //Metodos para documentos
+        // ==========================================
+
+        // HANDLER 1: CREAR DOCUMENTO VERSIONADO
+        public async Task<IActionResult> OnPostCrearDocumentoVersionadoAsync()
+        {
+            // Validar campos requeridos
+            if (ArchivoVersionado == null || string.IsNullOrWhiteSpace(NombreDocumentoVersionado))
+            {
+                TempData["ErrorMessage"] = "Complete todos los campos requeridos.";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+
+            try
+            {
+                // 1. Validar archivo
+                if (!ValidarArchivo(ArchivoVersionado, out string mensajeError))
+                {
+                    TempData["ErrorMessage"] = mensajeError;
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 2. Cargar proyecto para obtener IdProyecto
+                DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+
+                if (DetalleProyecto == null)
+                {
+                    TempData["ErrorMessage"] = "Proyecto no encontrado.";
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 3. Subir archivo a Blob Storage
+                string blobUrl;
+                using (var stream = ArchivoVersionado.OpenReadStream())
+                {
+                    blobUrl = await _blobStorageService.SubirArchivoAsync(
+                        stream,
+                        ArchivoVersionado.FileName,
+                        ArchivoVersionado.ContentType
+                    );
+                }
+
+                // 4. Crear documento versionado en BD
+                var dto = new CrearDocumentoVersionadoDto
+                {
+                    ProyectoId = DetalleProyecto.IdProyecto,
+                    NombreDocumento = NombreDocumentoVersionado,
+                    CategoriaDocumento = CategoriaDocumentoVersionado,
+                    Descripcion = DescripcionDocumentoVersionado,
+                    NombreArchivoOriginal = ArchivoVersionado.FileName,
+                    RutaBlobCompleta = blobUrl,
+                    TipoArchivo = ArchivoVersionado.ContentType,
+                    TamanoBytes = ArchivoVersionado.Length,
+                    CreadoPor = User.FindFirstValue(ClaimTypes.NameIdentifier)!,
+                    ComentariosVersion = ComentariosVersionInicial
+                };
+
+                await _documentosService.CrearDocumentoVersionadoAsync(dto);
+
+                TempData["SuccessMessage"] = $"Documento versionado '{NombreDocumentoVersionado}' creado correctamente.";
+                TempData["TabActiva"] = "Documentos";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al crear documento versionado: {ex.Message}";
+            }
+
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        // HANDLER 2: AGREGAR NUEVA VERSIÓN
+        public async Task<IActionResult> OnPostAgregarVersionAsync()
+        {
+            // Validar campos requeridos
+            if (ArchivoNuevaVersion == null || DocumentoIdParaVersion == 0)
+            {
+                TempData["ErrorMessage"] = "Seleccione un documento y un archivo.";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+
+            if (string.IsNullOrWhiteSpace(ComentariosNuevaVersion))
+            {
+                TempData["ErrorMessage"] = "Los comentarios de la versión son obligatorios.";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+
+            try
+            {
+                // 1. Validar archivo
+                if (!ValidarArchivo(ArchivoNuevaVersion, out string mensajeError))
+                {
+                    TempData["ErrorMessage"] = mensajeError;
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 2. Subir archivo a Blob Storage
+                string blobUrl;
+                using (var stream = ArchivoNuevaVersion.OpenReadStream())
+                {
+                    blobUrl = await _blobStorageService.SubirArchivoAsync(
+                        stream,
+                        ArchivoNuevaVersion.FileName,
+                        ArchivoNuevaVersion.ContentType
+                    );
+                }
+
+                // 3. Agregar versión en BD
+                var dto = new AgregarVersionDto
+                {
+                    DocumentoId = DocumentoIdParaVersion,
+                    NombreArchivoOriginal = ArchivoNuevaVersion.FileName,
+                    RutaBlobCompleta = blobUrl,
+                    TipoArchivo = ArchivoNuevaVersion.ContentType,
+                    TamanoBytes = ArchivoNuevaVersion.Length,
+                    SubidoPor = User.FindFirstValue(ClaimTypes.NameIdentifier)!,
+                    Comentarios = ComentariosNuevaVersion
+                };
+
+                await _documentosService.AgregarVersionAsync(dto);
+
+                TempData["SuccessMessage"] = "Nueva versión agregada correctamente.";
+                TempData["TabActiva"] = "Documentos";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al agregar versión: {ex.Message}";
+            }
+
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        // ==========================================
+        // HANDLER 3: CREAR DOCUMENTO SIMPLE
+        // ==========================================
+        public async Task<IActionResult> OnPostCrearDocumentoSimpleAsync()
+        {
+            // Validar campos requeridos
+            if (ArchivoSimple == null || string.IsNullOrWhiteSpace(NombreDocumentoSimple))
+            {
+                TempData["ErrorMessage"] = "Complete todos los campos requeridos.";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+
+            try
+            {
+                // 1. Validar archivo
+                if (!ValidarArchivo(ArchivoSimple, out string mensajeError))
+                {
+                    TempData["ErrorMessage"] = mensajeError;
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 2. Cargar proyecto
+                DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
+
+                if (DetalleProyecto == null)
+                {
+                    TempData["ErrorMessage"] = "Proyecto no encontrado.";
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 3. Subir archivo a Blob Storage
+                string blobUrl;
+                using (var stream = ArchivoSimple.OpenReadStream())
+                {
+                    blobUrl = await _blobStorageService.SubirArchivoAsync(
+                        stream,
+                        ArchivoSimple.FileName,
+                        ArchivoSimple.ContentType
+                    );
+                }
+
+                // 4. Crear documento simple en BD
+                var dto = new CrearDocumentoSimpleDto
+                {
+                    ProyectoId = DetalleProyecto.IdProyecto,
+                    NombreDocumento = NombreDocumentoSimple,
+                    CategoriaDocumento = CategoriaDocumentoSimple,
+                    Descripcion = DescripcionDocumentoSimple,
+                    NombreArchivoOriginal = ArchivoSimple.FileName,
+                    RutaBlobCompleta = blobUrl,
+                    TipoArchivo = ArchivoSimple.ContentType,
+                    TamanoBytes = ArchivoSimple.Length,
+                    CreadoPor = User.FindFirstValue(ClaimTypes.NameIdentifier)!
+                };
+
+                await _documentosService.CrearDocumentoSimpleAsync(dto);
+
+                TempData["SuccessMessage"] = $"Documento '{NombreDocumentoSimple}' creado correctamente.";
+                TempData["TabActiva"] = "Documentos";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al crear documento: {ex.Message}";
+            }
+
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        // HANDLER: DESCARGAR VERSIÓN ESPECÍFICA
+        public async Task<IActionResult> OnGetDescargarVersionAsync(int idVersion)
+        {
+            try
+            {
+                // 1. Obtener información de la versión desde BD
+                var version = await _documentosService.ObtenerVersionPorIdAsync(idVersion);
+
+                if (version == null)
+                {
+                    TempData["ErrorMessage"] = "Versión no encontrada.";
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 2. Descargar archivo desde Blob Storage
+                var (stream, contentType) = await _blobStorageService.DescargarArchivoAsync(version.RutaBlobCompleta);
+
+                // 3. Retornar archivo al navegador
+                return File(stream, contentType, version.NombreArchivoOriginal);
+            }
+            catch (FileNotFoundException ex)
+            {
+                TempData["ErrorMessage"] = $"Archivo no encontrado: {ex.Message}";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al descargar versión: {ex.Message}";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+        }
+
+        // HANDLER: DESCARGAR DOCUMENTO SIMPLE
+        public async Task<IActionResult> OnGetDescargarDocumentoAsync(int idDocumento)
+        {
+            try
+            {
+                // 1. Obtener información del documento desde BD
+                var documento = await _documentosService.ObtenerDocumentoPorIdAsync(idDocumento);
+
+                if (documento == null || documento.TipoDocumento != "Simple")
+                {
+                    TempData["ErrorMessage"] = "Documento no encontrado.";
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 2. Descargar archivo desde Blob Storage
+                var (stream, contentType) = await _blobStorageService.DescargarArchivoAsync(documento.RutaBlobCompleta!);
+
+                // 3. Retornar archivo al navegador
+                return File(stream, contentType, documento.NombreArchivoOriginal!);
+            }
+            catch (FileNotFoundException ex)
+            {
+                TempData["ErrorMessage"] = $"Archivo no encontrado: {ex.Message}";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al descargar documento: {ex.Message}";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+        }
+
+        // HANDLER: MARCAR VERSIÓN COMO ACTUAL
+        public async Task<IActionResult> OnPostMarcarComoActualAsync(int idVersion)
+        {
+            try
+            {
+                await _documentosService.MarcarVersionComoActualAsync(idVersion);
+                TempData["SuccessMessage"] = "Versión marcada como actual correctamente.";
+                TempData["TabActiva"] = "Documentos";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al marcar versión como actual: {ex.Message}";
+            }
+
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        // HANDLER: ELIMINAR DOCUMENTO (SOFT DELETE)
+        public async Task<IActionResult> OnPostEliminarDocumentoAsync(int idDocumento)
+        {
+            try
+            {
+                // 1. Obtener documento para validar y obtener URL del blob (opcional)
+                var documento = await _documentosService.ObtenerDocumentoPorIdAsync(idDocumento);
+
+                if (documento == null)
+                {
+                    TempData["ErrorMessage"] = "Documento no encontrado.";
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 2. Eliminar documento de BD (soft delete)
+                await _documentosService.EliminarDocumentoAsync(idDocumento);
+
+                // 3. OPCIONAL: Eliminar físicamente de Blob Storage
+
+
+                if (documento.TipoDocumento == "Simple" && !string.IsNullOrEmpty(documento.RutaBlobCompleta))
+                {
+                    await _blobStorageService.EliminarArchivoAsync(documento.RutaBlobCompleta);
+                }
+                else if (documento.TipoDocumento == "Versionado")
+                {
+                    foreach (var version in documento.Versiones)
+                    {
+                        await _blobStorageService.EliminarArchivoAsync(version.RutaBlobCompleta);
+                    }
+                }
+
+
+                TempData["SuccessMessage"] = "Documento eliminado correctamente.";
+                TempData["TabActiva"] = "Documentos";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al eliminar documento: {ex.Message}";
+            }
+
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+
+        // HANDLER: ELIMINAR VERSIÓN ESPECÍFICA
+        public async Task<IActionResult> OnPostEliminarVersionAsync(int idVersion)
+        {
+            try
+            {
+                // 1. Obtener versión para validar
+                var version = await _documentosService.ObtenerVersionPorIdAsync(idVersion);
+
+                if (version == null)
+                {
+                    TempData["ErrorMessage"] = "Versión no encontrada.";
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 2. Eliminar versión de BD (soft delete)
+                await _documentosService.EliminarVersionAsync(idVersion);
+
+                // 3. OPCIONAL: Eliminar físicamente de Blob Storage
+                await _blobStorageService.EliminarArchivoAsync(version.RutaBlobCompleta);
+
+                TempData["SuccessMessage"] = "Versión eliminada correctamente.";
+                TempData["TabActiva"] = "Documentos";
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al eliminar versión: {ex.Message}";
+            }
+
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+        // MÉTODO AUXILIAR: VALIDAR ARCHIVO
+        private bool ValidarArchivo(IFormFile archivo, out string mensajeError)
+        {
+            mensajeError = string.Empty;
+
+            // Validar que el archivo no esté vacío
+            if (archivo == null || archivo.Length == 0)
+            {
+                mensajeError = "Por favor seleccione un archivo válido.";
+                return false;
+            }
+
+            // Validar tamaño máximo
+            var maxSizeMB = _configuration.GetValue<int>("AzureBlobStorage:MaxFileSizeMB");
+            var maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+            if (archivo.Length > maxSizeBytes)
+            {
+                mensajeError = $"El archivo es demasiado grande. Tamaño máximo: {maxSizeMB} MB. Tamaño del archivo: {(archivo.Length / 1024.0 / 1024.0):N2} MB.";
+                return false;
+            }
+
+            // Validar extensión permitida
+            var allowedExtensions = _configuration.GetSection("AzureBlobStorage:AllowedExtensions").Get<string[]>();
+
+            if (allowedExtensions != null && allowedExtensions.Length > 0)
+            {
+                var fileExtension = Path.GetExtension(archivo.FileName).ToLower();
+
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    mensajeError = $"Tipo de archivo no permitido. Extensiones válidas: {string.Join(", ", allowedExtensions)}";
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
     }
 }
