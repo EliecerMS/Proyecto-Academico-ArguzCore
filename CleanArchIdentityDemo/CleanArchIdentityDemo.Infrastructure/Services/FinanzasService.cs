@@ -286,6 +286,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Descripcion = p.Descripcion,
                 CodigoProyecto = p.CodigoProyecto,
                 FechaFinalPropuesta = p.FechaFinalPropuesta,
+                IdEstadoProyecto = p.EstadoProyectoId,
                 Presupuesto = p.Presupuesto,
                 EstadoProyecto = p.EstadoProyecto.NombreEstado
             });

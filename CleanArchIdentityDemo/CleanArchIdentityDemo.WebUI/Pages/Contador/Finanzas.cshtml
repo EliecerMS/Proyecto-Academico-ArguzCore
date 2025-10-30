@@ -219,41 +219,50 @@
                         {
                             <tr>
                                 <td>
-                                    <a href="javascript:void(0);"
+                                    @* <a href="javascript:void(0);"
                                        class="fw-bold text-primary text-decoration-none"
-                                       onclick="mostrarGastosProyecto(@proyecto.IdProyecto, '@proyecto.Nombre')">
+                                       onclick="mostrarGastosProyecto(@proyecto.IdProyecto, '@proyecto.Nombre')"> *@
                                         @proyecto.Nombre
-                                    </a>
+                                    @* </a> *@
                                 </td>
 
                                 <td>@proyecto.Presupuesto.ToString("N2")</td>
                                 <td>@proyecto.FechaFinalPropuesta.ToShortDateString()</td>
                                 <td>
-                                    @if (proyecto.EstadoProyecto == "In Progress")
+                                    @if (proyecto.IdEstadoProyecto == 1)
                                     {
-                                        <span class="badge bg-success">En progreso</span>
+                                        <p class="badge bg-primary">@proyecto.EstadoProyecto</p>
+
                                     }
-                                    else if (proyecto.EstadoProyecto == "Planned")
+                                    @if (proyecto.IdEstadoProyecto == 2)
                                     {
-                                        <span class="badge bg-primary">Planificado</span>
+                                        <p class="badge bg-success">@proyecto.EstadoProyecto</p>
                                     }
-                                    else if (proyecto.EstadoProyecto == "Delayed")
+                                    @if (proyecto.IdEstadoProyecto == 3)
                                     {
-                                        <span class="badge bg-warning text-dark">Atrasado</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">@proyecto.EstadoProyecto</span>
+                                        <p class="badge bg-secondary">@proyecto.EstadoProyecto</p>
                                     }
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-primary btn-sm"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#registrarCostoModal"
-                                            data-proyecto-id="@proyecto.IdProyecto"
-                                            data-proyecto-nombre="@proyecto.Nombre">
-                                        Agregar gasto ejecutado
-                                    </button>
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col">
+                                                <button class="btn btn-primary btn-sm"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#registrarCostoModal"
+                                                        data-proyecto-id="@proyecto.IdProyecto"
+                                                        data-proyecto-nombre="@proyecto.Nombre">
+                                                    <i class="fa-solid fa-plus"></i> Agregar gasto ejecutado
+                                                </button>
+                                            </div>
+                                            <div class="col">
+                                                <button class="btn btn-sm btn-info"
+                                                        onclick="mostrarGastosProyecto(@proyecto.IdProyecto, '@proyecto.Nombre')">
+                                                    <i class="fa-solid fa-eye"></i> Ver gastos ejecutados
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         }

@@ -1,8 +1,6 @@
 ﻿using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
-using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
-using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -309,6 +307,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             CostosEjecutados = (await _FinanzasService.ListarCostosEjecutadosAsync()).ToList();
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
             TempData["TabActiva"] = "GastosEjecutados";
+            PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+            Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
 
             return Page();
         }
@@ -387,6 +387,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             // Recargar datos
             CostosEjecutados = (await _FinanzasService.ListarCostosEjecutadosAsync()).ToList();
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+            PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+            Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
             TempData["TabActiva"] = "GastosEjecutados";
 
             return Page();
@@ -414,6 +416,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             // Recargar datos
             CostosEjecutados = (await _FinanzasService.ListarCostosEjecutadosAsync()).ToList();
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+            PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+            Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
             TempData["TabActiva"] = "GastosEjecutados";
 
             return Page();
