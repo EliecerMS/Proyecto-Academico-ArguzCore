@@ -14,6 +14,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
         public DbSet<Proyecto> Proyectos { get; set; }
         public DbSet<EstadoProyecto> EstadosProyecto { get; set; }
         public DbSet<Documento> Documentos { get; set; }
+        public DbSet<DocumentoVersion> DocumentoVersiones { get; set; }
         public DbSet<Tarea> Tareas { get; set; }
         public DbSet<PersonalProyecto> PersonalProyecto { get; set; }
         public DbSet<HoraLaboral> HorasLaborales { get; set; }
@@ -48,6 +49,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
             modelBuilder.Entity<Proyecto>().ToTable("Proyectos");
             modelBuilder.Entity<EstadoProyecto>().ToTable("EstadosProyecto");
             modelBuilder.Entity<Documento>().ToTable("Documentos");
+            modelBuilder.Entity<DocumentoVersion>().ToTable("DocumentoVersiones");
             modelBuilder.Entity<Tarea>().ToTable("Tareas");
             modelBuilder.Entity<PersonalProyecto>().ToTable("PersonalProyecto");
             modelBuilder.Entity<HoraLaboral>().ToTable("HorasLaborales");
@@ -76,6 +78,18 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
                 .WithMany()                // no se declara colección en ApplicationUser
                 .HasForeignKey(d => d.SubidoPor); // FK string en Documento
 
+            // DocumentoVersion -> ApplicationUser (SubidoPor)
+            modelBuilder.Entity<DocumentoVersion>()
+                .HasOne<ApplicationUser>() // no se usa propiedad de navegación en Domain
+                .WithMany()                // no se declara colección en ApplicationUser
+                .HasForeignKey(d => d.SubidoPor); // FK string en DocumentoVersion
+
+            // DocumentoVersion -> Documento evitar cascada múltiple y cycles con OnDelete.Restrict
+            modelBuilder.Entity<DocumentoVersion>()
+            .HasOne(dv => dv.Documento)
+            .WithMany(d => d.Versiones)
+            .HasForeignKey(dv => dv.DocumentoId)
+            .OnDelete(DeleteBehavior.Restrict); // evitar cascada múltiple y cycles
 
             // Incidente -> ApplicationUser (CreadoPor)
             modelBuilder.Entity<Incidente>()
