@@ -1071,6 +1071,64 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             return true;
         }
 
+        //Ver documentos
+
+        //Ver documento simple en pestaña nueva
+        public async Task<IActionResult> OnGetVerDocumentoAsync(int idDocumento)
+        {
+            try
+            {
+                // 1. Obtener documento desde BD
+                var documento = await _documentosService.ObtenerDocumentoPorIdAsync(idDocumento);
+
+                if (documento == null || string.IsNullOrEmpty(documento.RutaBlobCompleta))
+                {
+                    TempData["ErrorMessage"] = "Documento no encontrado.";
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                // 2. Generar URL temporal con SAS Token (válida por 60 minutos)
+                var urlTemporal = await _blobStorageService.ObtenerUrlTemporalAsync(
+                    documento.RutaBlobCompleta,
+                    duracionMinutos: 60
+                );
+
+                // 3. Redirigir a la URL temporal
+                return Redirect(urlTemporal);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al acceder al documento: {ex.Message}";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+        }
+
+        //ver version en pestaña nueva
+        public async Task<IActionResult> OnGetVerVersionAsync(int idVersion)
+        {
+            try
+            {
+                var version = await _documentosService.ObtenerVersionPorIdAsync(idVersion);
+
+                if (version == null || string.IsNullOrEmpty(version.RutaBlobCompleta))
+                {
+                    TempData["ErrorMessage"] = "Versión no encontrada.";
+                    return RedirectToPage(new { CodigoProyecto });
+                }
+
+                var urlTemporal = await _blobStorageService.ObtenerUrlTemporalAsync(
+                    version.RutaBlobCompleta,
+                    duracionMinutos: 60
+                );
+
+                return Redirect(urlTemporal);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al acceder a la versión: {ex.Message}";
+                return RedirectToPage(new { CodigoProyecto });
+            }
+        }
     }
 }
 

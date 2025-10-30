@@ -680,13 +680,14 @@
                                                             <i class="fas fa-download"></i>
                                                         </a>
                                                     
-                                                        <!-- Ver en nueva pestaña -->
-                                                        <a href="@version.RutaBlobCompleta" 
-                                                           target="_blank" 
-                                                           class="btn btn-outline-secondary"
-                                                           title="Ver en nueva pestaña">
-                                                            <i class="fas fa-eye"></i>
-                                                        </a>
+                                                        <!-- Ver version en nueva pestaña -->
+                                                            <a asp-page-handler="VerVersion"
+                                                               asp-route-idVersion="@version.IdVersion"
+                                                               target="_blank"
+                                                               class="btn btn-outline-secondary"
+                                                               title="Ver versión @version.NumeroVersion">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
                                                     
                                                         <!-- Marcar como actual (solo si NO es la actual) -->
                                                         @if (!version.EsVersionActual)
@@ -775,7 +776,18 @@
                                                                 </small>
                                                             </div>
                                                         }
-                                                    </div>
+                                                        else
+                                                        {
+                                                        <div class="mt-2">
+                                                            <small class="text-muted">
+                                                                <strong>
+                                                                    Descripción:
+                                                                </strong>
+                                                                Sin descripción
+                                                            </small>
+                                                        </div>
+                                                        }
+                                                </div>
                                                 </div>
                                             </div>
 
@@ -790,7 +802,8 @@
                                                     </a>
 
                                                     <!-- Ver en nueva pestaña -->
-                                                    <a href="@doc.RutaBlobCompleta"
+                                                    <a asp-page-handler="VerDocumento"
+                                                       asp-route-idDocumento="@doc.IdDocumento"
                                                        target="_blank"
                                                        class="btn btn-secondary mb-2">
                                                         <i class="fas fa-eye"></i> Ver en Navegador
@@ -865,8 +878,8 @@
                                               onsubmit="return confirm('⚠️ ¿Eliminar COMPLETAMENTE el documento &quot;@doc.NombreDocumento&quot; y TODAS sus versiones (@doc.TotalVersiones)?\n\nEsta acción no se puede deshacer.\n\nTodos los archivos asociados se eliminarán del sistema.');">
                                             <input type="hidden" name="idDocumento" value="@doc.IdDocumento" />
                                             <input type="hidden" asp-for="CodigoProyecto" />
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash-alt"></i> Eliminar Documento Completo
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash-alt"></i> Eliminar documento completo
                                             </button>
                                         </form>
                                     </div>
