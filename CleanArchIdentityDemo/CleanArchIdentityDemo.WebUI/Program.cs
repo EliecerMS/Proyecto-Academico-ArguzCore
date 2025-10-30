@@ -2,7 +2,9 @@ using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using CleanArchIdentityDemo.Infrastructure.Services;
 using CleanArchIdentityDemo.WebUI;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using IdentityDbContext = CleanArchIdentityDemo.Infrastructure.Identity.ApplicationDbContext;
@@ -22,6 +24,7 @@ builder.Services.AddScoped<IFinanzasService, FinanzasService>();
 builder.Services.AddScoped<IMaterialesService, MaterialesService>();
 builder.Services.AddScoped<IDocumentosService, DocumentosService>();
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 // Configurar Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -35,6 +38,29 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddRazorPages(options =>
 {
     //options.Conventions.AuthorizeFolder("/");  // Protege todas las páginas
+});
+
+
+// 4. CONFIGURACIÓN DE LÍMITES DE ARCHIVOS
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    // Límite de 50 MB para archivos subidos
+    options.MultipartBodyLengthLimit = 50 * 1024 * 1024; // 50 MB
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+
+// Configuración de Kestrel para archivos grandes
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
+});
+
+// Si se usa IIS (opcional - solo si despliegas a IIS)
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
 });
 
 var app = builder.Build();
