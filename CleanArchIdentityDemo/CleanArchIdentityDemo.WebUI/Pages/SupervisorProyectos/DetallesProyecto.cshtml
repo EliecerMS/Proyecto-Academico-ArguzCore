@@ -484,7 +484,7 @@
                             <small class="text-muted">
                                 @Model.Documentos.Count documento(s) |
                                 @Model.Documentos.Count(d => d.TipoDocumento == "Versionado") versionado(s) |
-                                @Model.Documentos.Count(d => d.TipoDocumento == "Simple") simple(s)
+                                @Model.Documentos.Count(d => d.TipoDocumento == "Simple") único(s)
                             </small>
                         </div>
                         <div class="col-md-6 text-end">
@@ -494,21 +494,21 @@
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalDocumentoVersionado"
                                         title="Crear documento con control de versiones">
-                                    <i class="fas fa-layer-group"></i> Documento Versionado
+                                    <i class="fas fa-layer-group"></i> Crear documento versionado
                                 </button>
                                 <button type="button"
                                         class="btn btn-info"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalNuevaVersion"
                                         title="Agregar versión a documento existente">
-                                    <i class="fas fa-code-branch"></i> Nueva Versión
+                                    <i class="fas fa-code-branch"></i> Añadir nueva versión
                                 </button>
                                 <button type="button"
                                         class="btn btn-success"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalDocumentoSimple"
                                         title="Subir documento único sin versiones">
-                                    <i class="fas fa-file"></i> Documento Simple
+                                    <i class="fas fa-file"></i> Crear documento único
                                 </button>
                             </div>
                         </div>
@@ -882,7 +882,7 @@
                                         <input type="hidden" name="idDocumento" value="@doc.IdDocumento" />
                                         <input type="hidden" asp-for="CodigoProyecto" />
                                         <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash-alt"></i> Eliminar documento completo
+                                            <i class="fas fa-trash-alt"></i> Eliminar archivo y todas sus versiones
                                         </button>
                                     </form>
                                 </div>
