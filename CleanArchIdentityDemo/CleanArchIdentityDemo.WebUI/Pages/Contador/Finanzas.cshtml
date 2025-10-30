@@ -198,8 +198,22 @@
 
     <!--Gastos ejecutados -->
     <div class="tab-pane fade" id="nav-GastosEjecutados-tab" role="tabpanel" aria-labelledby="nav-GastosEjecutados">
-        <h5 class="mt-4">Gastos ejecutados por proyecto</h5>
-
+        <br></br>
+       
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Gastos ejecutados por proyecto
+            </div>
+            <div class="col-4">
+                <!-- Botón para abrir modal -->
+                    <button class="btn btn-primary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#registrarCostoModal">
+                        <i class="fa-solid fa-plus"></i> Agregar gasto ejecutado
+                    </button>
+            </div>
+        </div>
+         <br></br>
         <!-- Tabla de proyectos -->
         <div class="table-responsive">
             <table class="table table-striped align-middle">
@@ -219,11 +233,7 @@
                         {
                             <tr>
                                 <td>
-                                    @* <a href="javascript:void(0);"
-                                       class="fw-bold text-primary text-decoration-none"
-                                       onclick="mostrarGastosProyecto(@proyecto.IdProyecto, '@proyecto.Nombre')"> *@
                                         @proyecto.Nombre
-                                    @* </a> *@
                                 </td>
 
                                 <td>@proyecto.Presupuesto.ToString("N2")</td>
@@ -246,15 +256,6 @@
                                 <td class="text-center">
                                     <div class="container">
                                         <div class="row">
-                                            <div class="col">
-                                                <button class="btn btn-primary btn-sm"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#registrarCostoModal"
-                                                        data-proyecto-id="@proyecto.IdProyecto"
-                                                        data-proyecto-nombre="@proyecto.Nombre">
-                                                    <i class="fa-solid fa-plus"></i> Agregar gasto ejecutado
-                                                </button>
-                                            </div>
                                             <div class="col">
                                                 <button class="btn btn-sm btn-info"
                                                         onclick="mostrarGastosProyecto(@proyecto.IdProyecto, '@proyecto.Nombre')">
@@ -485,19 +486,19 @@
                     <!-- Monto -->
                     <div class="mb-3">
                         <label class="form-label">Monto (₡)</label>
-                        <input asp-for="CostoSeleccionado.Monto" type="number" step="0.01" class="form-control" placeholder="Ingrese el monto del gasto" />
+                        <input asp-for="CostoSeleccionado.Monto" type="number" step="0.01" class="form-control" placeholder="Ingrese el monto del gasto" required />
                     </div>
 
                     <!-- Fecha -->
                     <div class="mb-3">
                         <label class="form-label">Fecha</label>
-                        <input asp-for="CostoSeleccionado.Fecha" type="date" class="form-control" />
+                        <input asp-for="CostoSeleccionado.Fecha" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
                     </div>
 
                     <!-- Descripción -->
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
-                        <textarea asp-for="CostoSeleccionado.Descripcion" class="form-control" rows="2" placeholder="Detalles sobre el gasto..."></textarea>
+                        <textarea asp-for="CostoSeleccionado.Descripcion" class="form-control" rows="2" placeholder="Detalles sobre el gasto..." required></textarea>
                     </div>
 
                     <!-- Comprobante -->
@@ -561,19 +562,19 @@
                     <!-- Monto -->
                     <div class="mb-3">
                         <label class="form-label">Monto (₡)</label>
-                        <input asp-for="CostoSeleccionado.Monto" type="number" step="0.01" id="editar_Monto" class="form-control" />
+                        <input asp-for="CostoSeleccionado.Monto" type="number" step="0.01" id="editar_Monto" class="form-control" required />
                     </div>
 
                     <!-- Fecha -->
                     <div class="mb-3">
                         <label class="form-label">Fecha</label>
-                        <input asp-for="CostoSeleccionado.Fecha" type="date" id="editar_Fecha" class="form-control" />
+                        <input asp-for="CostoSeleccionado.Fecha" type="date" id="editar_Fecha" class="form-control" required />
                     </div>
 
                     <!-- Descripción -->
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
-                        <textarea asp-for="CostoSeleccionado.Descripcion" id="editar_Descripcion" class="form-control" rows="2"></textarea>
+                        <textarea asp-for="CostoSeleccionado.Descripcion" id="editar_Descripcion" class="form-control" rows="2" required></textarea>
                     </div>
 
                     <!-- Comprobante -->
