@@ -22,5 +22,13 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
         //Método para listar proyecto
         Task<IEnumerable<ProyectoDto>> ListarProyectosAsync();
+
+        // Métodos para costos ejecutados
+        Task<IEnumerable<CostoEjecutadoDto>> ListarCostosEjecutadosAsync();
+        Task<CostoEjecutadoDto?> ObtenerCostoEjecutadoPorIdAsync(int id);
+        Task<bool> CrearCostoEjecutadoAsync(CostoEjecutadoDto costo);
+        Task<IEnumerable<CostoEjecutadoDto>> ListarCostosPorProyectoAsync(int proyectoId);
+        Task<bool> EditarCostoEjecutadoAsync(CostoEjecutadoDto dto);
+        Task<bool> EliminarCostoEjecutadoAsync(int id);
     }
 }

@@ -286,6 +286,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Descripcion = p.Descripcion,
                 CodigoProyecto = p.CodigoProyecto,
                 FechaFinalPropuesta = p.FechaFinalPropuesta,
+                IdEstadoProyecto = p.EstadoProyectoId,
                 Presupuesto = p.Presupuesto,
                 EstadoProyecto = p.EstadoProyecto.NombreEstado
             });
@@ -328,6 +329,138 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             };
 
             return resultado;
+        }
+        //Métodos de costos ejecutados 
+        public async Task<IEnumerable<CostoEjecutadoDto>> ListarCostosEjecutadosAsync()
+        {
+            return await _context.CostosEjecutados
+                .Include(c => c.Proyecto)
+                .Select(c => new CostoEjecutadoDto
+                {
+                    IdCosto = c.IdCosto,
+                    ProyectoId = c.ProyectoId,
+                    NombreProyecto = c.Proyecto.Nombre,
+                    CategoriaGasto = c.CategoriaGasto,
+                    Monto = c.Monto,
+                    Fecha = c.Fecha,
+                    Descripcion = c.Descripcion,
+                    RutaComprobante = c.RutaComprobante
+                })
+                .ToListAsync();
+        }
+
+        public async Task<CostoEjecutadoDto?> ObtenerCostoEjecutadoPorIdAsync(int id)
+        {
+            var c = await _context.CostosEjecutados
+                .Include(p => p.Proyecto)
+                .FirstOrDefaultAsync(p => p.IdCosto == id);
+
+            if (c == null) return null;
+
+            return new CostoEjecutadoDto
+            {
+                IdCosto = c.IdCosto,
+                ProyectoId = c.ProyectoId,
+                NombreProyecto = c.Proyecto?.Nombre ?? string.Empty,
+                CategoriaGasto = c.CategoriaGasto,
+                Monto = c.Monto,
+                Fecha = c.Fecha,
+                Descripcion = c.Descripcion,
+                RutaComprobante = c.RutaComprobante
+            };
+        }
+
+        public async Task<bool> CrearCostoEjecutadoAsync(CostoEjecutadoDto dto)
+        {
+            try
+            {
+                var entity = new CostoEjecutado
+                {
+                    ProyectoId = dto.ProyectoId,
+                    CategoriaGasto = dto.CategoriaGasto,
+                    Monto = dto.Monto,
+                    Fecha = dto.Fecha,
+                    Descripcion = dto.Descripcion,
+                    RutaComprobante = dto.RutaComprobante
+                };
+
+                _context.CostosEjecutados.Add(entity);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public async Task<IEnumerable<CostoEjecutadoDto>> ListarCostosPorProyectoAsync(int proyectoId)
+        {
+            var costos = await _context.CostosEjecutados
+                .Where(c => c.ProyectoId == proyectoId)
+                .Include(c => c.Proyecto)
+                .ToListAsync();
+
+            return costos.Select(c => new CostoEjecutadoDto
+            {
+                IdCosto = c.IdCosto,
+                ProyectoId = c.ProyectoId,
+                NombreProyecto = c.Proyecto.Nombre,
+                CategoriaGasto = c.CategoriaGasto,
+                Monto = c.Monto,
+                Fecha = c.Fecha,
+                Descripcion = c.Descripcion,
+                RutaComprobante = c.RutaComprobante
+            });
+        }
+
+        public async Task<bool> EditarCostoEjecutadoAsync(CostoEjecutadoDto dto)
+        {
+            try
+            {
+                var entity = await _context.CostosEjecutados.FindAsync(dto.IdCosto);
+                if (entity == null)
+                    return false;
+
+                // Actualizar campos editables
+                entity.ProyectoId = dto.ProyectoId;
+                entity.CategoriaGasto = dto.CategoriaGasto;
+                entity.Monto = dto.Monto;
+                entity.Fecha = dto.Fecha;
+                entity.Descripcion = dto.Descripcion;
+
+                // Si se subió un nuevo comprobante, reemplazarlo
+                if (!string.IsNullOrEmpty(dto.RutaComprobante))
+                {
+                    entity.RutaComprobante = dto.RutaComprobante;
+                }
+
+                _context.CostosEjecutados.Update(entity);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al editar costo ejecutado: {ex.Message}");
+                return false;
+            }
+        }
+        public async Task<bool> EliminarCostoEjecutadoAsync(int id)
+        {
+            try
+            {
+                var entity = await _context.CostosEjecutados.FindAsync(id);
+                if (entity == null)
+                    return false;
+
+                _context.CostosEjecutados.Remove(entity);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al eliminar costo ejecutado: {ex.Message}");
+                return false;
+            }
         }
     }
 }
