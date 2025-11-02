@@ -655,6 +655,19 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }
             return false;
         }
+
+        public async Task<IEnumerable<ProyectoDto>> MostrarProyectosGeneralAsync()
+        {
+            var proyectos = await _context.Proyectos
+            .ToListAsync();
+
+            return proyectos.Select(p => new ProyectoDto
+            {
+                CodigoProyecto = p.CodigoProyecto,
+                Nombre = p.Nombre,
+                IdProyecto = p.IdProyecto
+            });
+        }
     }
 }
 
