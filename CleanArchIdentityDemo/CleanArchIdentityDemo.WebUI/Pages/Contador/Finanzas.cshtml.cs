@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.Contador
 {
@@ -15,13 +17,19 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         private readonly IUserService _UserService;
         private readonly UserManager<ApplicationUser> _UserManager;
         private readonly IProyectoService _ProyectoService;
+        private readonly IBlobStorageService _blobStorageService;
+        private readonly IConfiguration _configuration;
+        private readonly IDocumentosService _DocumentosService;
 
-        public FinanzasModel(IFinanzasService finanzasService, IUserService userService, UserManager<ApplicationUser> userManager, IProyectoService proyectoService)
+        public FinanzasModel(IFinanzasService finanzasService, IUserService userService, UserManager<ApplicationUser> userManager, IProyectoService proyectoService, IBlobStorageService blobStorageService, IConfiguration configuration, IDocumentosService documentoService)
         {
             _FinanzasService = finanzasService;
             _UserService = userService;
             _UserManager = userManager;
             _ProyectoService = proyectoService;
+            _blobStorageService = blobStorageService;
+            _configuration = configuration;
+            _DocumentosService = documentoService;
         }
 
         public List<PagoProveedorDto> PagosProveedores { get; set; } = new(); // almacenara la lista de pagos a proveedores
@@ -53,8 +61,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
 
         public List<CostoEjecutadoDto> CostosEjecutados { get; set; } = new();
 
+        // PROPIEDADES PARA SUBIR EL COMPROBANTE (DOCUMENTO SIMPLE)
         [BindProperty]
-        public IFormFile? ArchivoComprobante { get; set; }
+        public string NombreDocumentoSimple { get; set; } = string.Empty;
+
+        [BindProperty]
+        public IFormFile ArchivoSimple { get; set; } = null!;
+
+
 
         public async Task OnGetAsync()
         {
@@ -248,7 +262,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             return Page();
         }
         //Métodos para costos ejecutados 
-        public async Task<IActionResult> OnPostRegistrarCostoAsync(IFormFile? ArchivoComprobante)
+        public async Task<IActionResult> OnPostRegistrarCostoAsync()
         {
             // Validar campos relevantes
             var keysToKeep = new[]
@@ -274,21 +288,17 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 return Page();
             }
 
-            // Guardar archivo comprobante si se subió
-            if (ArchivoComprobante != null)
+            var documentoCreado = await CrearDocumentoSimple();
+
+            // Si la creación del documento falló (incluye excepción capturada), detener flujo y mostrar Page()
+            if (!documentoCreado)
             {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "comprobantes");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                var uniqueFileName = $"{Guid.NewGuid()}_{ArchivoComprobante.FileName}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    await ArchivoComprobante.CopyToAsync(fileStream);
-
-                // Asignar ruta relativa
-                CostoSeleccionado.RutaComprobante = $"/comprobantes/{uniqueFileName}";
+                // Recargar datos necesarios para la vista
+                Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+                PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+                Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                TempData["TabActiva"] = "GastosEjecutados";
+                return Page();
             }
 
             var resultado = await _FinanzasService.CrearCostoEjecutadoAsync(CostoSeleccionado);
@@ -344,7 +354,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 };
             }
         }
-        public async Task<IActionResult> OnPostEditarCostoAsync(IFormFile? ArchivoComprobante)
+        public async Task<IActionResult> OnPostEditarCostoAsync()
         {
             // Validar que exista el Id del costo
             if (CostoSeleccionado.IdCosto <= 0)
@@ -354,22 +364,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 return Page();
             }
 
-            // Guardar nuevo comprobante si se subió uno
-            if (ArchivoComprobante != null)
-            {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "comprobantes");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                var uniqueFileName = $"{Guid.NewGuid()}_{ArchivoComprobante.FileName}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    await ArchivoComprobante.CopyToAsync(fileStream);
-
-                // Actualizar ruta
-                CostoSeleccionado.RutaComprobante = $"/comprobantes/{uniqueFileName}";
-            }
+            //OnPostCrearDocumentoSimpleAsync();
 
             var resultado = await _FinanzasService.EditarCostoEjecutadoAsync(CostoSeleccionado);
 
@@ -421,6 +416,143 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             TempData["TabActiva"] = "GastosEjecutados";
 
             return Page();
+        }
+
+        public async Task<bool> CrearDocumentoSimple()
+        {
+            bool resultado = false;
+            // Validar campos requeridos
+            /*if (ArchivoSimple == null || string.IsNullOrWhiteSpace(NombreDocumentoSimple))
+            {
+                TempData["ErrorMessage"] = "Complete todos los campos requeridos.";
+                return RedirectToPage();
+            }*/
+
+            try
+            {
+                // 1. Validar archivo
+                if (!ValidarArchivo(ArchivoSimple, out string mensajeError))
+                {
+                    TempData["ErrorMessage"] = mensajeError;
+                    resultado = false;
+
+                }
+                else
+                {
+                    // 3. Subir archivo a Blob Storage
+                    string blobUrl;
+                    using (var stream = ArchivoSimple.OpenReadStream())
+                    {
+                        blobUrl = await _blobStorageService.SubirArchivoAsync(
+                            stream,
+                            ArchivoSimple.FileName,
+                            ArchivoSimple.ContentType
+                        );
+                    }
+
+                    // 4. Crear documento simple en BD
+                    var dto = new CrearDocumentoSimpleDto
+                    {
+                        ProyectoId = CostoSeleccionado.ProyectoId,
+                        NombreDocumento = NombreDocumentoSimple,
+                        CategoriaDocumento = CostoSeleccionado.CategoriaGasto,
+                        Descripcion = CostoSeleccionado.Descripcion,
+                        NombreArchivoOriginal = ArchivoSimple.FileName,
+                        RutaBlobCompleta = blobUrl,
+                        TipoArchivo = ArchivoSimple.ContentType,
+                        TamanoBytes = ArchivoSimple.Length,
+                        CreadoPor = User.FindFirstValue(ClaimTypes.NameIdentifier)!
+                    };
+
+                    await _DocumentosService.CrearDocumentoSimpleAsync(dto);
+                    CostoSeleccionado.RutaComprobante = blobUrl;
+
+                    TempData["SuccessMessage"] = $"Documento '{NombreDocumentoSimple}' creado correctamente.";
+                    TempData["TabActiva"] = "Documentos";
+                    resultado = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al crear documento: {ex.Message}";
+                resultado = false;
+            }
+
+            return resultado;
+        }
+
+        private bool ValidarArchivo(IFormFile archivo, out string mensajeError)
+        {
+            mensajeError = string.Empty;
+
+            // Validar que el archivo no esté vacío
+            if (archivo == null || archivo.Length == 0)
+            {
+                mensajeError = "Por favor seleccione un archivo válido.";
+                return false;
+            }
+
+            // Validar tamaño máximo
+            var maxSizeMB = _configuration.GetValue<int>("AzureBlobStorage:MaxFileSizeMB");
+            var maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+            if (archivo.Length > maxSizeBytes)
+            {
+                mensajeError = $"El archivo es demasiado grande. Tamaño máximo: {maxSizeMB} MB. Tamaño del archivo: {(archivo.Length / 1024.0 / 1024.0):N2} MB.";
+                return false;
+            }
+
+            // Validar extensión permitida
+            var allowedExtensions = _configuration.GetSection("AzureBlobStorage:AllowedExtensions").Get<string[]>();
+
+            if (allowedExtensions != null && allowedExtensions.Length > 0)
+            {
+                var fileExtension = Path.GetExtension(archivo.FileName).ToLower();
+
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    mensajeError = $"Tipo de archivo no permitido. Extensiones válidas: {string.Join(", ", allowedExtensions)}";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        //Ver documento simple en pestaña nueva
+        public async Task<IActionResult> OnGetVerDocumentoAsync(string rutaComprobante)
+        {
+            try
+            {
+
+                if (rutaComprobante.IsNullOrEmpty())
+                {
+                    TempData["ErrorMessage"] = "Documento no encontrado.";
+                    // Recargar datos
+                    CostosEjecutados = (await _FinanzasService.ListarCostosEjecutadosAsync()).ToList();
+                    Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+                    PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+                    Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                    TempData["TabActiva"] = "GastosEjecutados";
+
+                    return Page();
+                }
+
+
+                // 2. Generar URL temporal con SAS Token (válida por 60 minutos)
+                var urlTemporal = await _blobStorageService.ObtenerUrlTemporalAsync(
+                    rutaComprobante,
+                    duracionMinutos: 60
+                );
+
+                // 3. Redirigir a la URL temporal
+                return Redirect(urlTemporal);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al acceder al documento: {ex.Message}";
+                return RedirectToPage();
+            }
         }
     }
 }

@@ -468,6 +468,20 @@
                         </select>
                     </div>
 
+                    <!-- Nombre del Documento -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Concepto
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               asp-for="NombreDocumentoSimple"
+                               placeholder="Ej: Factura #001 - Proveedor ABC"
+                               required
+                               maxlength="255" />
+                    </div>
+
                     <!-- Categoría -->
                     <div class="mb-3">
                         <label class="form-label">Categoría de gasto</label>
@@ -501,11 +515,21 @@
                         <textarea asp-for="CostoSeleccionado.Descripcion" class="form-control" rows="2" placeholder="Detalles sobre el gasto..." required></textarea>
                     </div>
 
-                    <!-- Comprobante -->
+                    <!-- Archivo -->
                     <div class="mb-3">
-                        <label class="form-label">Comprobante (opcional)</label>
-                        <input asp-for="ArchivoComprobante" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
-                        <small class="text-muted">Formatos permitidos: PDF, JPG, PNG.</small>
+                        <label class="form-label">
+                            Archivo
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="file"
+                               class="form-control"
+                               asp-for="ArchivoSimple"
+                               required
+                               accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png,.zip" />
+                        <small class="text-muted">
+
+                            Máximo 50 MB. Formatos: PDF, Word, Excel, Imágenes, ZIP
+                        </small>
                     </div>
                 </div>
 
