@@ -621,6 +621,12 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
             if (EditarContrato.FechaFin < EditarContrato.FechaInicio)
                 ModelState.AddModelError(nameof(EditarContrato.FechaFin), "La fecha de fin no puede ser anterior a la fecha de inicio.");
 
+            ModelState.Remove("ArchivoSimple");
+            ModelState.Remove("ArchivoVersionado");
+            ModelState.Remove("ArchivoNuevaVersion");
+            ModelState.Remove("NombreDocumentoSimple");
+            ModelState.Remove("NombreDocumentoVersionado");
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Revise los datos del formulario.";
