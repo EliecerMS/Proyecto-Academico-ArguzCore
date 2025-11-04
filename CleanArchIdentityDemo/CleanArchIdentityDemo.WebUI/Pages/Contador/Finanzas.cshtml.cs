@@ -68,6 +68,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         [BindProperty]
         public IFormFile ArchivoSimple { get; set; } = null!;
 
+        [BindProperty]
+        public IFormFile ArchivoSimplePagoProveedor { get; set; } = null!;
+
 
 
         public async Task OnGetAsync()
@@ -235,6 +238,19 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+                return Page();
+            }
+
+            var documentoCreado = await CrearDocumentoSimplePagoProveedor();
+
+            // Si la creación del documento falló (incluye excepción capturada), detener flujo y mostrar Page()
+            if (!documentoCreado)
+            {
+                // Recargar datos necesarios para la vista
+                Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+                PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+                Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                TempData["TabActiva"] = "PagosProveedor";
                 return Page();
             }
 
@@ -422,60 +438,130 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         {
             bool resultado = false;
             // Validar campos requeridos
-            /*if (ArchivoSimple == null || string.IsNullOrWhiteSpace(NombreDocumentoSimple))
+            if (ArchivoSimple == null || string.IsNullOrWhiteSpace(NombreDocumentoSimple))
             {
                 TempData["ErrorMessage"] = "Complete todos los campos requeridos.";
-                return RedirectToPage();
-            }*/
-
-            try
+                resultado = false;
+            }
+            else
             {
-                // 1. Validar archivo
-                if (!ValidarArchivo(ArchivoSimple, out string mensajeError))
-                {
-                    TempData["ErrorMessage"] = mensajeError;
-                    resultado = false;
 
-                }
-                else
+                try
                 {
-                    // 3. Subir archivo a Blob Storage
-                    string blobUrl;
-                    using (var stream = ArchivoSimple.OpenReadStream())
+                    // 1. Validar archivo
+                    if (!ValidarArchivo(ArchivoSimple, out string mensajeError))
                     {
-                        blobUrl = await _blobStorageService.SubirArchivoAsync(
-                            stream,
-                            ArchivoSimple.FileName,
-                            ArchivoSimple.ContentType
-                        );
+                        TempData["ErrorMessage"] = mensajeError;
+                        resultado = false;
+
                     }
-
-                    // 4. Crear documento simple en BD
-                    var dto = new CrearDocumentoSimpleDto
+                    else
                     {
-                        ProyectoId = CostoSeleccionado.ProyectoId,
-                        NombreDocumento = NombreDocumentoSimple,
-                        CategoriaDocumento = CostoSeleccionado.CategoriaGasto,
-                        Descripcion = CostoSeleccionado.Descripcion,
-                        NombreArchivoOriginal = ArchivoSimple.FileName,
-                        RutaBlobCompleta = blobUrl,
-                        TipoArchivo = ArchivoSimple.ContentType,
-                        TamanoBytes = ArchivoSimple.Length,
-                        CreadoPor = User.FindFirstValue(ClaimTypes.NameIdentifier)!
-                    };
+                        // 3. Subir archivo a Blob Storage
+                        string blobUrl;
+                        using (var stream = ArchivoSimple.OpenReadStream())
+                        {
+                            blobUrl = await _blobStorageService.SubirArchivoAsync(
+                                stream,
+                                ArchivoSimple.FileName,
+                                ArchivoSimple.ContentType
+                            );
+                        }
 
-                    await _DocumentosService.CrearDocumentoSimpleAsync(dto);
-                    CostoSeleccionado.RutaComprobante = blobUrl;
+                        // 4. Crear documento simple en BD
+                        var dto = new CrearDocumentoSimpleDto
+                        {
+                            ProyectoId = CostoSeleccionado.ProyectoId,
+                            NombreDocumento = NombreDocumentoSimple,
+                            CategoriaDocumento = CostoSeleccionado.CategoriaGasto,
+                            Descripcion = CostoSeleccionado.Descripcion,
+                            NombreArchivoOriginal = ArchivoSimple.FileName,
+                            RutaBlobCompleta = blobUrl,
+                            TipoArchivo = ArchivoSimple.ContentType,
+                            TamanoBytes = ArchivoSimple.Length,
+                            CreadoPor = User.FindFirstValue(ClaimTypes.NameIdentifier)!
+                        };
 
-                    TempData["SuccessMessage"] = $"Documento '{NombreDocumentoSimple}' creado correctamente.";
-                    TempData["TabActiva"] = "Documentos";
-                    resultado = true;
+                        await _DocumentosService.CrearDocumentoSimpleAsync(dto);
+                        CostoSeleccionado.RutaComprobante = blobUrl;
+
+
+                        TempData["SuccessMessage"] = $"Documento '{NombreDocumentoSimple}' creado correctamente.";
+                        TempData["TabActiva"] = "Documentos";
+                        resultado = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Error al crear documento: {ex.Message}";
+                    resultado = false;
                 }
             }
-            catch (Exception ex)
+
+            return resultado;
+        }
+
+        public async Task<bool> CrearDocumentoSimplePagoProveedor()
+        {
+            bool resultado = false;
+            // Validar campos requeridos
+            if (ArchivoSimplePagoProveedor == null || string.IsNullOrWhiteSpace(NombreDocumentoSimple))
             {
-                TempData["ErrorMessage"] = $"Error al crear documento: {ex.Message}";
+                TempData["ErrorMessage"] = "Complete todos los campos requeridos.";
                 resultado = false;
+            }
+            else
+            {
+
+                try
+                {
+                    // 1. Validar archivo
+                    if (!ValidarArchivo(ArchivoSimplePagoProveedor, out string mensajeError))
+                    {
+                        TempData["ErrorMessage"] = mensajeError;
+                        resultado = false;
+
+                    }
+                    else
+                    {
+                        // 3. Subir archivo a Blob Storage
+                        string blobUrl;
+                        using (var stream = ArchivoSimplePagoProveedor.OpenReadStream())
+                        {
+                            blobUrl = await _blobStorageService.SubirArchivoAsync(
+                                stream,
+                                ArchivoSimplePagoProveedor.FileName,
+                                ArchivoSimplePagoProveedor.ContentType
+                            );
+                        }
+
+                        // 4. Crear documento simple en BD
+                        var dto = new CrearDocumentoSimpleDto
+                        {
+                            ProyectoId = PagoSeleccionado.ProyectoId,
+                            NombreDocumento = NombreDocumentoSimple,
+                            CategoriaDocumento = "Factura",
+                            Descripcion = PagoSeleccionado.Descripcion,
+                            NombreArchivoOriginal = ArchivoSimplePagoProveedor.FileName,
+                            RutaBlobCompleta = blobUrl,
+                            TipoArchivo = ArchivoSimplePagoProveedor.ContentType,
+                            TamanoBytes = ArchivoSimplePagoProveedor.Length,
+                            CreadoPor = User.FindFirstValue(ClaimTypes.NameIdentifier)!
+                        };
+
+                        await _DocumentosService.CrearDocumentoSimpleAsync(dto);
+                        PagoSeleccionado.RutaComprobante = blobUrl;
+
+                        TempData["SuccessMessage"] = $"Documento '{NombreDocumentoSimple}' creado correctamente.";
+                        TempData["TabActiva"] = "Documentos";
+                        resultado = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Error al crear documento: {ex.Message}";
+                    resultado = false;
+                }
             }
 
             return resultado;

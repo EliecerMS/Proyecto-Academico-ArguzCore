@@ -22,12 +22,34 @@
                     <td>@pago.Monto.ToString("C", new System.Globalization.CultureInfo("es-CR"))</td>
                     <td>@pago.Descripcion</td>
                     <td>
-                        <form method="post" asp-page-handler="VerRecibo" target="_blank" class="d-inline">
-                            <input type="hidden" name="PagoId" value="@pago.IdPago" />
-                            <button class="btn btn-sm btn-info">
-                                <i class="fas fa-eye"></i> Ver comprobante
-                            </button>
-                        </form>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">
+                                    <form method="post" asp-page-handler="VerRecibo" target="_blank" class="d-inline">
+                                        <input type="hidden" name="PagoId" value="@pago.IdPago" />
+                                        <button class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> Ver comprobante generado
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col">
+                                    @if (!string.IsNullOrEmpty(@pago.RutaComprobante))
+                                    {
+                                        <!-- Ver en nueva pestaña -->
+                                        <a asp-page-handler="VerDocumento"
+                                           asp-route-rutaComprobante="@pago.RutaComprobante"
+                                           target="_blank"
+                                           class="btn btn-secondary mb-2">
+                                            <i class="fas fa-eye"></i> Ver factura subida
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No hay factura asociada</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             }

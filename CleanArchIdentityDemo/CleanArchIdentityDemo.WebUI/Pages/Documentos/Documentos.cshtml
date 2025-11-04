@@ -142,10 +142,15 @@
                                 <i class="fas fa-folder-open text-primary"></i>
                                 Documentos del Proyecto
                             </h4>
-                            <small class="text-muted">
-                                @Model.Documentos.Count documento(s) |
-                                @Model.Documentos.Count(d => d.TipoDocumento == "Versionado") versionado(s) |
-                                @Model.Documentos.Count(d => d.TipoDocumento == "Simple") único(s)
+                                <small class="text-muted">
+                                    @Model.Documentos.Count documento(s) |
+                                
+                               
+                                    @Model.Documentos.Count(d => d.TipoDocumento == "Versionado") versionado(s) |
+                                
+                                
+                                    @Model.Documentos.Count(d => d.TipoDocumento == "Simple") único(s)
+                                
                             </small>
                         </div>
                         <div class="col-md-6 text-end">

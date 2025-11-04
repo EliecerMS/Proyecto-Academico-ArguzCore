@@ -207,7 +207,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                ProveedorId = p.ProveedorId,
                NombreProveedor = p.Proveedor.NombreProveedor,
                ProyectoId = p.ProyectoId,
-               NombreProyecto = p.Proyecto.Nombre
+               NombreProyecto = p.Proyecto.Nombre,
+               RutaComprobante = p.RutaComprobante
            })
            .ToListAsync();  // es Async realmente y es List
 
