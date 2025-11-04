@@ -199,18 +199,17 @@
                             <td>
                                 @if (vencido)
                                 {
-                                    <span class="badge bg-danger">Vencido</span>
-                                    <div class="text-muted small">Contrato vencido</div>
+                                    <span class="badge bg-danger">Contrato vencido</span>
+                                   
                                 }
                                 else if (porVencer)
                                 {
-                                    <span class="badge bg-warning text-dark">Por vencer</span>
-                                    <div class="text-muted small">Contrato próximo a vencerse</div>
+                                    <span class="badge bg-warning text-dark">Contrato próximo a vencerse</span>
+                                    
                                 }
                                 else
                                 {
-                                    <span class="badge bg-success">Vigente</span>
-                                    <div class="text-muted small">Contrato activo</div>
+                                    <span class="badge bg-success">Contrato activo</span>
                                 }
                             </td>
                             <td class="text-end">
@@ -286,18 +285,18 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label asp-for="NuevoContrato.FechaInicio" class="form-label">Fecha de inicio</label>
-                            <input asp-for="NuevoContrato.FechaInicio" type="date" class="form-control" required />
+                            <input asp-for="NuevoContrato.FechaInicio" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required  />
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label asp-for="NuevoContrato.FechaFin" class="form-label">Fecha de finalización</label>
-                            <input asp-for="NuevoContrato.FechaFin" type="date" class="form-control" required />
+                            <input asp-for="NuevoContrato.FechaFin" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required  />
                         </div>
                     </div>
                 </div>
 
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Guardar</button>
                 </div>
             </form>
@@ -348,7 +347,7 @@
                 </div>
 
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Guardar cambios</button>
                 </div>
             </form>
