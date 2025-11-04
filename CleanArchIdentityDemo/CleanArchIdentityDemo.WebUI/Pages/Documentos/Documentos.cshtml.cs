@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
@@ -18,8 +19,12 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
         private readonly IBlobStorageService _blobStorageService;
         private readonly IConfiguration _configuration;
         private readonly IProyectoService _proyectoService;
+        private readonly IContratoService _ContratoService;
+        private readonly ApplicationDbContext _context;
 
-        public DocumentosModel(IDocumentosService documentosService, IUserService userService, UserManager<ApplicationUser> userManager, IConfiguration configuration, IProyectoService proyectoService, IBlobStorageService blobStorageService)
+
+        public DocumentosModel(IDocumentosService documentosService, IUserService userService, UserManager<ApplicationUser> userManager, IConfiguration configuration, IProyectoService proyectoService, IBlobStorageService blobStorageService, IContratoService contratoService,
+            ApplicationDbContext context)
         {
             _DocumentosService = documentosService;
             _UserService = userService;
@@ -27,8 +32,16 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
             _configuration = configuration;
             _proyectoService = proyectoService;
             _blobStorageService = blobStorageService;
+            _ContratoService = contratoService;
+            _context = context;
         }
 
+        public List<ContratoDto> Contratos { get; private set; } = new();
+        public List<ProyectoDto> ProyectosDisponibles { get; private set; } = new();
+        [BindProperty]
+        public ContratoDto NuevoContrato { get; set; } = new();
+        [BindProperty]
+        public ContratoDto EditarContrato { get; set; } = new();
 
         // PROPIEDADES PARA MODAL 1: DOCUMENTO VERSIONADO
         [BindProperty]
@@ -85,6 +98,13 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
 
         public async Task OnGet()
         {
+            Contratos = (await _ContratoService.GetAllAsync()).ToList();
+
+            ProyectosDisponibles = await _context.Proyectos
+                .Select(p => new ProyectoDto { IdProyecto = p.IdProyecto, Nombre = p.Nombre })
+                .OrderBy(p => p.Nombre)
+                .ToListAsync();
+
             Documentos = (await _DocumentosService.ObtenerTodosLosDocumentosAsync()).ToList();
             Proyectos = (await _proyectoService.MostrarProyectosGeneralAsync()).ToList();
 
@@ -551,5 +571,96 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
                 return RedirectToPage();
             }
         }
+        public async Task<IActionResult> OnPostRegistrarContratoAsync()
+        {
+            if (string.IsNullOrWhiteSpace(NuevoContrato.Descripcion))
+                ModelState.AddModelError(nameof(NuevoContrato.Descripcion), "El nombre del empleado es requerido.");
+
+            if (NuevoContrato.ProyectoId <= 0)
+                ModelState.AddModelError(nameof(NuevoContrato.ProyectoId), "Debe seleccionar un proyecto.");
+
+            if (NuevoContrato.FechaFin < NuevoContrato.FechaInicio)
+                ModelState.AddModelError(nameof(NuevoContrato.FechaFin), "La fecha de fin no puede ser anterior a la fecha de inicio.");
+
+
+            ModelState.Remove("ArchivoSimple");
+            ModelState.Remove("ArchivoVersionado");
+            ModelState.Remove("ArchivoNuevaVersion");
+            ModelState.Remove("NombreDocumentoSimple");
+            ModelState.Remove("NombreDocumentoVersionado");
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Por favor complete correctamente los campos del formulario.";
+                TempData["TabActiva"] = "ContratosLaborales";
+                return RedirectToPage("/Documentos/Documentos");
+            }
+
+            try
+            {
+                await _ContratoService.CreateAsync(NuevoContrato);
+                TempData["SuccessMessage"] = "Contrato laboral registrado correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al registrar el contrato: {ex.Message}";
+            }
+
+            TempData["TabActiva"] = "ContratosLaborales";
+            return RedirectToPage("/Documentos/Documentos");
+        }
+
+        public async Task<IActionResult> OnPostEditarContratoAsync()
+        {
+            // Validaciones
+            if (string.IsNullOrWhiteSpace(EditarContrato.Descripcion))
+                ModelState.AddModelError(nameof(EditarContrato.Descripcion), "El nombre del empleado es requerido.");
+
+            if (EditarContrato.ProyectoId <= 0)
+                ModelState.AddModelError(nameof(EditarContrato.ProyectoId), "Debe seleccionar un proyecto.");
+
+            if (EditarContrato.FechaFin < EditarContrato.FechaInicio)
+                ModelState.AddModelError(nameof(EditarContrato.FechaFin), "La fecha de fin no puede ser anterior a la fecha de inicio.");
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Revise los datos del formulario.";
+                TempData["TabActiva"] = "ContratosLaborales";
+                return RedirectToPage("/Documentos/Documentos");
+            }
+
+            try
+            {
+                var ok = await _ContratoService.UpdateAsync(EditarContrato);
+                TempData[ok ? "SuccessMessage" : "ErrorMessage"] =
+                    ok ? "Contrato actualizado correctamente." : "No se pudo actualizar el contrato.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al actualizar el contrato: {ex.Message}";
+            }
+
+            TempData["TabActiva"] = "ContratosLaborales";
+            return RedirectToPage("/Documentos/Documentos");
+        }
+
+        public async Task<IActionResult> OnPostEliminarContratoAsync(int IdContrato)
+        {
+            try
+            {
+                var ok = await _ContratoService.DeleteAsync(IdContrato);
+                TempData[ok ? "SuccessMessage" : "ErrorMessage"] =
+                    ok ? "Contrato eliminado correctamente." : "No se pudo eliminar el contrato.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al eliminar el contrato: {ex.Message}";
+            }
+
+            TempData["TabActiva"] = "ContratosLaborales";
+            return RedirectToPage("/Documentos/Documentos");
+        }
+
     }
+
 }
+

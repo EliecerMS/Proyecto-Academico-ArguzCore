@@ -140,7 +140,7 @@
                         <div class="col-md-6">
                             <h4 class="mb-0">
                                 <i class="fas fa-folder-open text-primary"></i>
-                                Documentos del Proyecto
+                                Documentos
                             </h4>
                                 <small class="text-muted">
                                     @Model.Documentos.Count documento(s) |
@@ -367,9 +367,9 @@
                                                             @if (!version.EsVersionActual)
                                                             {
                                                                 @if (!version.SubidoPor.Equals(Model.UsuarioId) && !Model.RolUsuario.Equals("ADMINISTRADOR", StringComparison.OrdinalIgnoreCase)) 
-                                  
+
                                                                 {
-                                                                    
+
                                                                 }
                                                                 else
                                                                 {
@@ -491,7 +491,7 @@
                                                 </a>
                                                 @if (!doc.SubidoPor.Equals(Model.UsuarioId) && !Model.RolUsuario.Equals("ADMINISTRADOR", StringComparison.OrdinalIgnoreCase))
                                                 {
-                                                    
+
                                                 }
                                                 else
                                                 {
@@ -587,36 +587,85 @@
     </div>
 
     <div class="tab-pane fade" id="nav-ContratosLaborales-tab" role="tabpanel" aria-labelledby="nav-ContratosLaborales">
-        <br />
-        <div class="row justify-content-between">
-            <div class="col-4">
-                Contratos laborales
-            </div>
-            <div class="col-4">
-
-                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#">
-                    Registrar un contrato
-                </button>
-            </div>
+        <div class="d-flex justify-content-between align-items-center my-3">
+            <h2 class="h5 mb-0">Contratos laborales</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrarContratoModal">
+                <i class="fa-solid me-1"></i> Registrar un contrato
+            </button>
         </div>
-        <br />
-        <!-- Aca una base de la tabla que carga los resultados, diseñar como el prototipo -->
         <table class="table table-striped align-middle">
-            <thead>
+            <thead class="table-light">
                 <tr>
-                    <th>Colum 1</th>
-                    <th>Colum 2</th>
+                    <th>Empleado</th>
+                    <th>Proyecto asignado</th>
+                    <th>Fecha inicio</th>
+                    <th>Fecha fin</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>
-                        Colum 1
-                    </td>
-                    <td>
-                        Colum 2
-                    </td>
-                </tr>
+                @if (Model.Contratos != null && Model.Contratos.Any())
+                {
+                    @foreach (var contrato in Model.Contratos)
+                    {
+                        var vencido = contrato.FechaFin.Date < DateTime.Today;
+                        var porVencer = contrato.FechaFin.Date >= DateTime.Today && contrato.FechaFin.Date <= DateTime.Today.AddDays(15);
+                        <tr>
+                            <td>@contrato.Descripcion</td>
+                            <td>@(string.IsNullOrEmpty(contrato.ProyectoNombre) ? "Sin proyecto" : contrato.ProyectoNombre)</td>
+                            <td>@contrato.FechaInicio.ToString("yyyy-MM-dd")</td>
+                            <td>@contrato.FechaFin.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @if (vencido)
+                                {
+                                    <span class="badge bg-danger">Contrato vencido</span>
+
+                                }
+                                else if (porVencer)
+                                {
+                                    <span class="badge bg-warning text-dark">Contrato próximo a vencerse</span>
+
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Contrato activo</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <button type="button"
+                                        class="btn btn-sm btn-warning text-dark me-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editarContratoModal"
+                                        data-id="@contrato.IdContrato"
+                                        data-descripcion="@contrato.Descripcion"
+                                        data-proyectoid="@contrato.ProyectoId"
+                                        data-proyectonombre="@contrato.ProyectoNombre"
+                                        data-fechainicio="@contrato.FechaInicio.ToString("yyyy-MM-dd")"
+                                        data-fechafin="@contrato.FechaFin.ToString("yyyy-MM-dd")"
+                                        data-rutadocumento="@contrato.RutaDocumento">
+                                    <i class="fa-solid fa-pen-to-square"></i> Editar
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-danger me-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmDeleteContratoModal"
+                                        data-id="@contrato.IdContrato"
+                                        data-descripcion="@contrato.Descripcion">
+                                    <i class="fa-solid fa-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            No se encontraron contratos laborales registrados.
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
 
@@ -758,7 +807,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    
+
 
                     <!-- Alert Informativo -->
                     <div class="alert alert-success mb-3">
@@ -964,6 +1013,125 @@
     </div>
 </div>
 
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+<!-- Modal: Registrar Contrato Laboral -->
+<div class="modal fade" id="registrarContratoModal" tabindex="-1" aria-labelledby="registrarContratoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <form method="post" asp-page-handler="RegistrarContrato">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-semibold">Registrar Contrato Laboral</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label asp-for="NuevoContrato.Descripcion" class="form-label">Empleado</label>
+                        <input asp-for="NuevoContrato.Descripcion" class="form-control" placeholder="Nombre completo del empleado" required />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="NuevoContrato.ProyectoId" class="form-label">Proyecto asignado</label>
+                        <select asp-for="NuevoContrato.ProyectoId"
+                                asp-items="@(new SelectList(Model.ProyectosDisponibles, "IdProyecto", "Nombre", Model.NuevoContrato?.ProyectoId))"
+                                class="form-select" required>
+                            <option value="">-- Seleccione un proyecto --</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NuevoContrato.FechaInicio" class="form-label">Fecha de inicio</label>
+                            <input asp-for="NuevoContrato.FechaInicio" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required  />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NuevoContrato.FechaFin" class="form-label">Fecha de finalización</label>
+                            <input asp-for="NuevoContrato.FechaFin" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required  />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Contrato Laboral -->
+<div class="modal fade" id="editarContratoModal" tabindex="-1" aria-labelledby="editarContratoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <form method="post" asp-page-handler="EditarContrato">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-semibold">Editar Contrato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input asp-for="EditarContrato.IdContrato" type="hidden" />
+                    <div class="mb-3">
+                        <label asp-for="EditarContrato.Descripcion" class="form-label">Empleado</label>
+                        <input asp-for="EditarContrato.Descripcion" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="EditarContrato.ProyectoId" class="form-label">Proyecto asignado</label>
+                        <select asp-for="EditarContrato.ProyectoId"
+                                asp-items="@(new SelectList(Model.ProyectosDisponibles, "IdProyecto", "Nombre", Model.EditarContrato?.ProyectoId))"
+                                class="form-select" required>
+                            <option value="">-- Seleccione un proyecto --</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="EditarContrato.FechaInicio" class="form-label">Fecha de inicio</label>
+                            <input asp-for="EditarContrato.FechaInicio" type="date" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="EditarContrato.FechaFin" class="form-label">Fecha de finalización</label>
+                            <input asp-for="EditarContrato.FechaFin" type="date" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Confirmar eliminación de contrato -->
+<div class="modal fade" id="confirmDeleteContratoModal" tabindex="-1" aria-labelledby="confirmDeleteContratoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <form method="post" asp-page-handler="EliminarContrato">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-semibold" id="confirmDeleteContratoLabel">Eliminar contrato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="Eliminar_IdContrato" name="IdContrato" />
+                    <p class="mb-0">
+                        ¿Desea eliminar el contrato del empleado
+                        <strong id="Eliminar_Descripcion"></strong>?
+                    </p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     <script>
         //script que hace funcionar las alertas
@@ -993,4 +1161,54 @@
             }
         });
     </script>
- }
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const modal = document.getElementById('editarContratoModal');
+          if (!modal) return;
+
+          modal.addEventListener('show.bs.modal', function (e) {
+            const btn = e.relatedTarget;
+            if (!btn) return;
+
+            // Toma los datos del botón Editar
+            const id          = btn.getAttribute('data-id') || '';
+            const desc        = btn.getAttribute('data-descripcion') || '';
+            const proyId      = btn.getAttribute('data-proyectoid') || '';
+            const fIni        = btn.getAttribute('data-fechainicio') || '';
+            const fFin        = btn.getAttribute('data-fechafin') || '';
+            const ruta        = btn.getAttribute('data-rutadocumento') || '';
+
+            // Mapea a los inputs del modal
+            modal.querySelector('input[name="EditarContrato.IdContrato"]').value = id;
+            modal.querySelector('input[name="EditarContrato.Descripcion"]').value = desc;
+            modal.querySelector('input[name="EditarContrato.FechaInicio"]').value = fIni || new Date().toISOString().slice(0,10);
+            modal.querySelector('input[name="EditarContrato.FechaFin"]').value    = fFin || new Date().toISOString().slice(0,10);
+
+            const sel = modal.querySelector('select[name="EditarContrato.ProyectoId"]');
+            if (sel) sel.value = proyId;
+
+            const rutaInput = modal.querySelector('input[name="EditarContrato.RutaDocumento"]');
+            if (rutaInput) rutaInput.value = ruta || '';
+          });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const delModal = document.getElementById('confirmDeleteContratoModal');
+          if (!delModal) return;
+
+          delModal.addEventListener('show.bs.modal', function (e) {
+            const btn = e.relatedTarget;
+            if (!btn) return;
+
+            const id   = btn.getAttribute('data-id') || '';
+            const desc = btn.getAttribute('data-descripcion') || '';
+
+            delModal.querySelector('#Eliminar_IdContrato').value = id;
+            delModal.querySelector('#Eliminar_Descripcion').textContent = desc;
+          });
+        });
+    </script>
+}
