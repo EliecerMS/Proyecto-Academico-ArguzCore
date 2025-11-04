@@ -391,12 +391,27 @@
 <div class="modal fade" id="registrarPagoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="post" asp-page-handler="RegistrarPago">
+            <form method="post" asp-page-handler="RegistrarPago" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">Registrar pago a proveedor</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+
+                    <!-- Nombre del documento o comprobante-->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Nombre para el comprobante a subir:
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               asp-for="NombreDocumentoSimple"
+                               placeholder="Ej: Factura #001 - Proveedor ABC"
+                               required
+                               maxlength="255" />
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Proveedor</label>
                         <select asp-for="PagoSeleccionado.ProveedorId" class="form-select" required>
@@ -434,8 +449,25 @@
 
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
-                        <textarea asp-for="PagoSeleccionado.Descripcion" class="form-control" rows="2" required></textarea>
+                        <textarea asp-for="PagoSeleccionado.Descripcion" placeholder="Escribe breve el concepto por el cual se hace el pago. Ej: Pago de 150 unidades de block" class="form-control" rows="2" required></textarea>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Archivo o comprobante
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="file"
+                               class="form-control"
+                               asp-for="ArchivoSimplePagoProveedor"
+                               required
+                               accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png,.zip" />
+                        <small class="text-muted">
+
+                            Máximo 50 MB. Formatos: PDF, Word, Excel, Imágenes, ZIP
+                        </small>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success">Registrar</button>
@@ -466,6 +498,20 @@
                                 <option value="@proyecto.IdProyecto">@proyecto.Nombre</option>
                             }
                         </select>
+                    </div>
+
+                    <!-- Nombre del Documento -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Concepto
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               asp-for="NombreDocumentoSimple"
+                               placeholder="Ej: Factura #001 - Proveedor ABC"
+                               required
+                               maxlength="255" />
                     </div>
 
                     <!-- Categoría -->
@@ -501,11 +547,21 @@
                         <textarea asp-for="CostoSeleccionado.Descripcion" class="form-control" rows="2" placeholder="Detalles sobre el gasto..." required></textarea>
                     </div>
 
-                    <!-- Comprobante -->
+                    <!-- Archivo -->
                     <div class="mb-3">
-                        <label class="form-label">Comprobante (opcional)</label>
-                        <input asp-for="ArchivoComprobante" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
-                        <small class="text-muted">Formatos permitidos: PDF, JPG, PNG.</small>
+                        <label class="form-label">
+                            Archivo
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="file"
+                               class="form-control"
+                               asp-for="ArchivoSimple"
+                               required
+                               accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png,.zip" />
+                        <small class="text-muted">
+
+                            Máximo 50 MB. Formatos: PDF, Word, Excel, Imágenes, ZIP
+                        </small>
                     </div>
                 </div>
 

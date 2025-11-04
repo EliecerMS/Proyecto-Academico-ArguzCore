@@ -15,6 +15,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
         // Consultas
         Task<IEnumerable<DocumentoDto>> ObtenerDocumentosPorProyectoAsync(int proyectoId);
+        Task<IEnumerable<DocumentoDto>> ObtenerTodosLosDocumentosAsync();
         Task<DocumentoDto?> ObtenerDocumentoPorIdAsync(int idDocumento);
         Task<IEnumerable<DocumentoVersionDto>> ObtenerVersionesPorDocumentoAsync(int documentoId);
         Task<DocumentoVersionDto?> ObtenerVersionPorIdAsync(int idVersion);

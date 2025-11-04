@@ -7,6 +7,7 @@
         public int ProyectoId { get; set; }
 
         // Atributos
+        public string NombreProyecto { get; set; } = string.Empty;
         public string NombreDocumento { get; set; } = string.Empty;
         public string CategoriaDocumento { get; set; } = string.Empty;
         public string? Descripcion { get; set; }
