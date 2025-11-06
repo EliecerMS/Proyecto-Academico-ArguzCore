@@ -539,32 +539,30 @@
                                     }
                                 </div>
                             </div>
-
-                            <!-- Botón de eliminar documento completo (para versionados) -->
-                            @if (!Model.RolUsuario.Equals("ADMINISTRADOR", StringComparison.OrdinalIgnoreCase))
-                            {
-                                <div class="mt-2 pt-2 border-top">
-                                    <small class="text-muted">No tienes permisos para eliminar todas las versiones</small>
-                                </div>
-                            }
-                            else
-                            {
                                 @if (doc.TipoDocumento == "Versionado")
                                 {
-                                    <div class="mt-2 pt-2 border-top">
-                                        <form method="post"
-                                              asp-page-handler="EliminarDocumento"
-                                              class="d-inline float-end"
-                                              onsubmit="return confirm('⚠️ ¿Eliminar COMPLETAMENTE el documento &quot;@doc.NombreDocumento&quot; y TODAS sus versiones (@doc.TotalVersiones)?\n\nEsta acción no se puede deshacer.\n\nTodos los archivos asociados se eliminarán del sistema.');">
-                                            <input type="hidden" name="idDocumento" value="@doc.IdDocumento" />
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash-alt"></i> Eliminar archivo y todas sus versiones
-                                            </button>
-                                        </form>
-                                    </div>
+                                <!-- Botón de eliminar documento completo (para versionados) -->
+                                    @if (!Model.RolUsuario.Equals("ADMINISTRADOR", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <div class="mt-2 pt-2 border-top">
+                                            <small class="text-muted">No tienes permisos para eliminar todas las versiones</small>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="mt-2 pt-2 border-top">
+                                            <form method="post"
+                                            asp-page-handler="EliminarDocumento"
+                                            class="d-inline float-end"
+                                            onsubmit="return confirm('⚠️ ¿Eliminar COMPLETAMENTE el documento &quot;@doc.NombreDocumento&quot; y TODAS sus versiones (@doc.TotalVersiones)?\n\nEsta acción no se puede deshacer.\n\nTodos los archivos asociados se eliminarán del sistema.');">
+                                                <input type="hidden" name="idDocumento" value="@doc.IdDocumento" />
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash-alt"></i> Eliminar archivo y todas sus versiones
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
                                 }
-                            }
-
                         </div>
                     </div>
                 }
