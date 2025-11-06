@@ -81,7 +81,7 @@ else
                             {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        <span class="fw-semibold text-dark">@doc.NombreDocumento</span>
+                                        <span class="fw-semibold text-dark">@v.NombreArchivoOriginal</span>
                                         <span class="text-muted">·</span>
                                         <span>@($"v{v.NumeroVersion} ({v.FechaSubida:dd/MM/yyyy HH:mm})")</span>
                                         @if (v.EsVersionActual)
@@ -89,6 +89,7 @@ else
                                             <span class="badge bg-success ms-2">Actual</span>
                                         }
                                     </div>
+
 
                                     <div class="btn-group btn-group-sm">
                                         <a asp-page-handler="DescargarVersion" asp-route-idVersion="@v.IdVersion" class="btn btn-success">
