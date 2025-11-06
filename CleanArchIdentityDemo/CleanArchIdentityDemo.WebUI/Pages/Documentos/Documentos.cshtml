@@ -56,7 +56,7 @@
         </div>
     }
 </div>
-
+ 
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-800">Documentos</h1>
 </div>
@@ -77,58 +77,44 @@
 
 
 <div class="tab-content" id="nav-tabContent">
-    <div class="tab-pane fade" id="nav-DocumentoVersiones-tab" role="tabpanel" aria-labelledby="nav-DocumentoVersiones">
-        <br />
-        <div class="row justify-content-between">
-            <div class="col-4">
-                Buscar documento
-            </div>
-            <div class="col-4">
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <input type="text" class="form-control" placeholder="Buscar por nombre de documento..." />
-                    </div>
-                    <div class="col-md-3">
-                        <button type="button" class="btn btn-primary w-100" onclick="">
-                            <i class="fa-solid fa-magnifying-glass"></i> Buscar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <select class="form-select w-auto">
-                    <option selected>Filtrar por tipo de documento</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <button type="button" class="btn btn-primary w-100" onclick="">
-                    <i class="fas fa-filter"></i> Filtrar
-                </button>
-            </div>
-        </div>
-         <br />
-        <!-- Aca una base de la tabla que carga los resultados, diseñar como el prototipo -->
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Colum 1</th>
-                    <th>Colum 2</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        Colum 1
-                    </td>
-                    <td>
-                        Colum 2
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="tab-pane fade show active" id="nav-DocumentoVersiones-tab" role="tabpanel" aria-labelledby="nav-DocumentoVersiones">
+  <br />
+  <form method="get" class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+
+      <!-- Dropdown de categorías (un solo select con todas) -->
+      <select class="form-select" style="width: 220px;" asp-for="Categoria" asp-items="Model.CategoriasSelect">
+        <option value="">Seleccione una categoría...</option>
+      </select>
+
+      <!-- Barra de busqueda y botón de búsqueda -->
+      <div class="input-group" style="width: 340px;">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
+        <input type="text"
+               class="form-control border-start-0"
+               name="Q"
+               value="@(Model.Q ?? "")"
+               placeholder="Buscar por nombre o tipo de documento..." />
+        <button type="submit" class="btn btn-primary">Buscar</button>
+      </div>
     </div>
+
+    <!-- Botón limpiar filtros -->
+    <div>
+      <a asp-page="/Documentos/Documentos" class="btn btn-link text-decoration-none">
+        Limpiar filtros
+      </a>
+    </div>
+  </form>
+        <!-- Lista de resultados -->
+        <div id="resultados">
+            @await Html.PartialAsync("_ResultadosDocumentos", Model)
+        </div>
+
+    </div>
+
 
     <div class="tab-pane fade" id="nav-GestionVersiones-tab" role="tabpanel" aria-labelledby="nav-GestionVersiones">
         <br />
@@ -1211,4 +1197,61 @@
           });
         });
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          // 1) Referencias
+          const tabContenido = document.getElementById('nav-DocumentoVersiones-tab');
+          if (!tabContenido) return;
+
+          const form = tabContenido.querySelector('form'); // tu form de filtros
+          if (!form) return;
+
+          const sel = form.querySelector('select[name="Categoria"]');
+          const q   = form.querySelector('input[name="Q"]');
+          const cont = document.getElementById('resultados');
+
+          async function cargarResultados() {
+            const params = new URLSearchParams();
+            if (sel && sel.value) params.set('categoria', sel.value);
+            if (q && q.value)     params.set('q', q.value);
+
+            const url = `${location.pathname}?handler=Buscar&${params.toString()}`;
+            const resp = await fetch(url, { headers: { 'X-Requested-With': 'fetch' } });
+            const html = await resp.text();
+            cont.innerHTML = html;
+
+            // Actualiza la URL sin recargar (para compartir / back-forward)
+            const newUrl = `${location.pathname}?${params.toString()}`;
+            history.replaceState(null, '', newUrl);
+          }
+
+          // 2) Interceptar submit del botón "Buscar"
+          form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            cargarResultados();
+          });
+
+          // 3) Buscar al cambiar la categoría
+          sel?.addEventListener('change', cargarResultados);
+
+          // 4) Enter dentro de la caja de búsqueda
+          q?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              cargarResultados();
+            }
+          });
+
+          // 5) “Limpiar filtros” por AJAX si existe el enlace
+          const limpiar = tabContenido.querySelector('a[href$="/Documentos/Documentos"]');
+          limpiar?.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (sel) sel.value = '';
+            if (q)   q.value = '';
+            cargarResultados();
+          });
+        });
+    </script>
+
 }

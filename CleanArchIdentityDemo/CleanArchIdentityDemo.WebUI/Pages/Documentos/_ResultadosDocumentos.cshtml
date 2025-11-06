@@ -1,0 +1,110 @@
+﻿@model CleanArchIdentityDemo.WebUI.Pages.Documentos.DocumentosModel
+
+@if (!Model.DocumentosFiltrados.Any())
+{
+    <div class="alert alert-light border d-flex align-items-center" role="alert">
+        <i class="fa-regular fa-file me-2"></i>
+        No hay documentos que coincidan con tu búsqueda.
+    </div>
+}
+else
+{
+    <div class="small text-muted mb-2">
+        @Model.TotalCoincidencias resultado(s)
+        @if (!string.IsNullOrWhiteSpace(Model.Categoria))
+        {
+            <text> | Categoría: <strong>@Model.Categoria</strong></text>
+            ;
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Q))
+        {
+            <text> | Texto: “<strong>@Model.Q</strong>”</text>
+            ;
+        }
+    </div>
+
+    <div class="list-group list-group-flush">
+        @foreach (var doc in Model.DocumentosFiltrados)
+        {
+            <div class="list-group-item bg-white rounded-3 border mb-2 px-3 py-3">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <div class="fw-semibold text-primary">@doc.NombreDocumento</div>
+                        <div class="text-muted small">
+                            Tipo: @doc.TipoDocumento
+                            @if (!string.IsNullOrWhiteSpace(doc.CategoriaDocumento))
+                            {
+                                <text> | Categoría: @doc.CategoriaDocumento</text>
+                                ;
+                            }
+                            @if (!string.IsNullOrWhiteSpace(doc.NombreProyecto))
+                            {
+                                <text> | Proyecto: @doc.NombreProyecto</text>
+                                ;
+                            }
+                        </div>
+                    </div>
+
+                    @if (doc.TipoDocumento == "Versionado")
+                    {
+                        var targetId = $"doc-{doc.IdDocumento}";
+                        <button class="btn btn-outline-primary btn-sm toggle-versions"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#@targetId"
+                                aria-expanded="false"
+                                aria-controls="@targetId">
+                            Ver versiones
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="btn-group btn-group-sm">
+                            <a asp-page-handler="DescargarDocumento" asp-route-idDocumento="@doc.IdDocumento" class="btn btn-success">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <a asp-page-handler="VerDocumento" asp-route-idDocumento="@doc.IdDocumento" target="_blank" class="btn btn-outline-secondary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                @if (doc.TipoDocumento == "Versionado")
+                {
+                    var targetId = $"doc-{doc.IdDocumento}";
+                    <div class="collapse mt-3" id="@targetId">
+                        <div class="small text-muted mb-2">Versiones:</div>
+                        @if (doc.Versiones?.Any() == true)
+                        {
+                            @foreach (var v in doc.Versiones.OrderByDescending(v => v.NumeroVersion))
+                            {
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        @($"v{v.NumeroVersion} ({v.FechaSubida:dd/MM/yyyy HH:mm})")
+                                        @if (v.EsVersionActual)
+                                        {
+                                            <span class="badge bg-success ms-2">Actual</span>
+                                        }
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-page-handler="DescargarVersion" asp-route-idVersion="@v.IdVersion" class="btn btn-success">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a asp-page-handler="VerVersion" asp-route-idVersion="@v.IdVersion" target="_blank" class="btn btn-outline-secondary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-muted">Sin versiones.</div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
