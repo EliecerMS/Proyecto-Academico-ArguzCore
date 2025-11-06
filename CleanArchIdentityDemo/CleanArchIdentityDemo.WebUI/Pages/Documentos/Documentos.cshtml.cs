@@ -4,7 +4,10 @@ using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -96,6 +99,26 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
 
         public string SubidoPor { get; set; }
 
+
+        // Propiedades para filtros de búsqueda
+        [BindProperty(SupportsGet = true)]
+        public string? Q { get; set; }              // texto de búsqueda
+
+        [BindProperty(SupportsGet = true)]
+        public string? Categoria { get; set; }      // categoría seleccionada
+
+        public IEnumerable<DocumentoDto> DocumentosFiltrados { get; private set; } = Enumerable.Empty<DocumentoDto>();
+        public int TotalCoincidencias { get; private set; }
+
+        public static readonly string[] TodasLasCategorias = new[]
+        {
+            "Plano","Contrato","Especificación","Informe","Memoria de Cálculo",
+            "Presupuesto","Estudio","Factura","Fotografía","Certificado","Acta",
+            "Orden de Compra","Carta","Comprobante","Licencia","Otro"
+        };
+
+        public SelectList CategoriasSelect { get; private set; } = default!;
+
         public async Task OnGet()
         {
             Contratos = (await _ContratoService.GetAllAsync()).ToList();
@@ -108,14 +131,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
             Documentos = (await _DocumentosService.ObtenerTodosLosDocumentosAsync()).ToList();
             Proyectos = (await _proyectoService.MostrarProyectosGeneralAsync()).ToList();
 
-            // Obtener información del usuario autenticado desde Claims
-            // ClaimTypes.NameIdentifier es el claim estándar para el ID de usuario en ASP.NET Identity
             UsuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            // O también puede estar en este claim:
-            // UsuarioId = User.FindFirst("sub")?.Value;
-
             RolUsuario = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+            // Para aplicar filtros ======
+            DocumentosFiltrados = Filtrar(Documentos, Q, Categoria);
+            TotalCoincidencias = DocumentosFiltrados.Count();
+
+            PrepararSelects();
         }
 
 
@@ -518,6 +541,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
         //Ver documento simple en pestaña nueva
         public async Task<IActionResult> OnGetVerDocumentoAsync(int idDocumento)
         {
+            
+            
             try
             {
                 // 1. Obtener documento desde BD
@@ -665,6 +690,66 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
             TempData["TabActiva"] = "ContratosLaborales";
             return RedirectToPage("/Documentos/Documentos");
         }
+
+        private static IEnumerable<DocumentoDto> Filtrar(IEnumerable<DocumentoDto> docs, string? q, string? categoria)
+        {
+            var query = docs;
+
+            if (!string.IsNullOrWhiteSpace(categoria))
+            {
+                query = query.Where(d =>
+                    (d.CategoriaDocumento ?? "").Equals(categoria, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var t = q.Trim();
+                query = query.Where(d =>
+                       (!string.IsNullOrEmpty(d.NombreDocumento) && d.NombreDocumento.Contains(t, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrEmpty(d.Descripcion) && d.Descripcion.Contains(t, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrEmpty(d.TipoDocumento) && d.TipoDocumento.Contains(t, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrEmpty(d.NombreArchivoOriginal) && d.NombreArchivoOriginal.Contains(t, StringComparison.OrdinalIgnoreCase))
+                    || (d.Versiones != null && d.Versiones.Any(v =>
+                           (!string.IsNullOrEmpty(v.NombreArchivoOriginal) && v.NombreArchivoOriginal.Contains(t, StringComparison.OrdinalIgnoreCase))
+                        || (!string.IsNullOrEmpty(v.Comentarios) && v.Comentarios.Contains(t, StringComparison.OrdinalIgnoreCase))
+                    )));
+            }
+
+            // Ordenamiento
+            return query.OrderByDescending(d => d.FechaSubida);
+        }
+
+        private void PrepararSelects()
+        {
+            // El cuarto parámetro es el valor seleccionado actual (Categoria)
+            CategoriasSelect = new SelectList(TodasLasCategorias, Categoria);
+        }
+
+        public async Task<PartialViewResult> OnGetBuscarAsync(string? q, string? categoria)
+        {
+            // Carga base (puedes copiar lo esencial de tu OnGet)
+            Documentos = (await _DocumentosService.ObtenerTodosLosDocumentosAsync()).ToList();
+
+            // Asigna filtros
+            Q = q;
+            Categoria = categoria;
+
+            // Aplica filtros
+            DocumentosFiltrados = Filtrar(Documentos, Q, Categoria);
+            TotalCoincidencias = DocumentosFiltrados.Count();
+
+            // Construye y devuelve la parcial
+            var vdd = new ViewDataDictionary(new EmptyModelMetadataProvider(), ModelState)
+            {
+                Model = this
+            };
+            return new PartialViewResult
+            {
+                ViewName = "_ResultadosDocumentos",
+                ViewData = vdd
+            };
+        }
+
 
     }
 
