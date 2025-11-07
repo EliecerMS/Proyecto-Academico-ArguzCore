@@ -71,12 +71,13 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         [BindProperty]
         public IFormFile ArchivoSimplePagoProveedor { get; set; } = null!;
 
-
+        public List<ProveedorDto> ProveedoresTodos { get; set; } = new(); // almacenara la lista de proveedores
 
         public async Task OnGetAsync()
         {
             PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+            ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
             //TempData["TabActiva"] = "GestionProveedor";
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
         }
@@ -255,6 +256,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             }
 
             // Registrar el pago
+            PagoSeleccionado.NombreDocumentoSubido = NombreDocumentoSimple;
             var resultado = await _FinanzasService.RegistrarPagoProveedorAsync(PagoSeleccionado);
 
             if (resultado != null)
@@ -636,7 +638,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Error al acceder al documento: {ex.Message}";
+                TempData["ErrorMessage"] = $"Error al acceder al documento, busque si existe o si ya fue eliminado";
                 return RedirectToPage();
             }
         }

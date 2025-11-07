@@ -61,12 +61,16 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user != null)
-                await _userManager.DeleteAsync(user);
+                user.Activo = false; // desactiva el usuario en lugar de eliminarlo físicamente
+            await _userManager.UpdateAsync(user);
         }
 
         public async Task<IEnumerable<UserDto>> GetAllNormalUsersAsync()
         {
-            var users = _userManager.Users.ToList();
+            var users = _userManager.Users
+                .Where(u => u.Activo)// solo usuarios activos
+                .ToList();
+
             var normalUsers = new List<UserDto>();
 
             foreach (var user in users)
@@ -100,7 +104,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                     Id = user.Id,
                     NombreCompleto = user.NombreCompleto,
                     Email = user.Email,
-                    Role = roles.FirstOrDefault()
+                    Role = roles.FirstOrDefault(),
+                    Activo = user.Activo
                 });
             }
 
@@ -148,6 +153,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 user.Email = userDto.Email;
                 user.UserName = userDto.Email;
                 user.NombreCompleto = userDto.NombreCompleto;
+                user.Activo = userDto.Activo;
                 if (!string.IsNullOrEmpty(userDto.Password))
                 {  //actualizar la contraseña si se proporciona una nueva
                     user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, userDto.Password);
@@ -158,6 +164,14 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 await _userManager.RemoveFromRolesAsync(user, currentRoles); // remueve el rol actual del usuario
                 await _userManager.AddToRoleAsync(user, userDto.Role); //asigna el nuevo rol para el usuario
             }
+        }
+
+        public async Task ActivateUserAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+                user.Activo = true; // activa el usuario
+            await _userManager.UpdateAsync(user);
         }
     }
 }

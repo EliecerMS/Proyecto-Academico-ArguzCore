@@ -96,12 +96,28 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
             try
             {
                 await _userService.DeleteUserAsync(IdUsuario);
-                TempData["SuccessMessage"] = "Se eliminó el usuario correctamente";
+                TempData["SuccessMessage"] = "Se desactivó el usuario correctamente";
             }
             catch (Exception ex)
             {
                 // Manejar la excepción (por ejemplo, mostrar un mensaje de error)
                 TempData["ErrorMessage"] = "Error al eliminar el usuario";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<ActionResult> OnPostActivateAsync() //se activa el usuario
+        {
+            try
+            {
+                await _userService.ActivateUserAsync(IdUsuario);
+                TempData["SuccessMessage"] = "Se activó el usuario correctamente";
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción (por ejemplo, mostrar un mensaje de error)
+                TempData["ErrorMessage"] = "Error al activar el usuario";
             }
 
             return RedirectToPage();

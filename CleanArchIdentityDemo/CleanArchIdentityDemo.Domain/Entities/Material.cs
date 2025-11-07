@@ -14,6 +14,7 @@ namespace CleanArchIdentityDemo.Domain.Entities
         public string Tipo { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public int CantidadDisponible { get; set; }
+        public bool Activo { get; set; } = true;
 
         // FK -> Proveedores.IdProveedor
         public int ProveedorId { get; set; }

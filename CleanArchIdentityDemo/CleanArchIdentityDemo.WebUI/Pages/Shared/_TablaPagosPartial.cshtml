@@ -8,6 +8,7 @@
             <th>Fecha</th>
             <th>Monto</th>
             <th>Concepto</th>
+            <th>Nombre archivo/documento subido</th>
             <th>Acciones</th>
         </tr>
     </thead>
@@ -21,6 +22,16 @@
                     <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
                     <td>@pago.Monto.ToString("C", new System.Globalization.CultureInfo("es-CR"))</td>
                     <td>@pago.Descripcion</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(@pago.RutaComprobante))
+                        {
+                            <strong>@pago.NombreDocumentoSubido</strong>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin nombre</span>
+                        }
+                    </td>
                     <td>
                         <div class="container">
                             <div class="row">

@@ -11,7 +11,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<IEnumerable<PagoProveedorDto>> ListarPagosProveedoresAsync(); //lista todos los pagos a proveedores
 
         Task<IEnumerable<ProveedorDto>> ListarProveedoresAsync(); //lista todos los proveedores
-
+        Task<IEnumerable<ProveedorDto>> ListarTodosProveedoresAsync(); //lista todos los proveedores
         Task<bool> CrearProveedorAsync(ProveedorDto DatosProveedor);
 
         Task<bool> EditarProveedorAsync(ProveedorDto DatosProveedor);

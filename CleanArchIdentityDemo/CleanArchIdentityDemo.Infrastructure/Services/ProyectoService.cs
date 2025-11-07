@@ -54,8 +54,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             Proyecto? ProyectoEncontrado = await BuscarProyectoPorCodigo(CodigoProyecto);
             if (ProyectoEncontrado != null) //si lo encuentra lo elimina
             {
-                _context.Proyectos.Remove(ProyectoEncontrado);
-                _context.SaveChanges();
+                ProyectoEncontrado.Activo = false; // desactiva el proyecto en lugar de eliminarlo físicamente
+                await _context.SaveChangesAsync();
+
             }
         }
 
@@ -87,6 +88,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         public async Task<IEnumerable<ProyectoDto>> MostrarProyectosAsync()
         {
             var proyectos = await _context.Proyectos
+            .Where(p => p.Activo) // Solo proyectos activos
             .Include(p => p.EstadoProyecto)
             .Include(p => p.Tareas)
             .ToListAsync();
@@ -339,7 +341,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         {
             var proyectos = await _context.Proyectos
                 .Include(p => p.EstadoProyecto)
-                .Where(p => p.CodigoProyecto != codigoProyectoActual)
+                .Where(p => p.CodigoProyecto != codigoProyectoActual && p.Activo)// Excluir el proyecto actual y solo mostrar activos (que no hayan sido eliminados)
                 .ToListAsync();
 
             var listaProyectos = new List<ProyectoDto>();

@@ -21,6 +21,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         public async Task<IEnumerable<MaquinariaDto>> GetAllAsync()
         {
             var equipos = await _context.Maquinarias
+                .Where(m => m.Activo)//donde el equipo este activo
                 .Select(m => new MaquinariaDto
                 {
                     IdMaquinaria = m.IdMaquinaria,
@@ -122,8 +123,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 _context.MantenimientosMaquinaria.RemoveRange(mantenimientos);
             }
 
-            // Finalmente, eliminamos la maquinaria
-            _context.Maquinarias.Remove(maquinaria);
+            // Finalmente, se desactiva la maquinaria en lugar de eliminarla físicamente
+            maquinaria.Activo = false;
 
             await _context.SaveChangesAsync();
             return true;
@@ -212,7 +213,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 maquinaria.Estado = "Mantenimiento";
                 maquinaria.Ubicacion = "Bodega Central";
 
-                _context.MaquinariaProyecto.Remove(proyectoActivo); 
+                _context.MaquinariaProyecto.Remove(proyectoActivo);
                 // NOTA: Esto se mantiene en caso de no modificar la BD, si se añade un parametro extra a MaquinariaProyecto, se podría mantener un historial de asignaciones de proyectos
             }
             else // En caso de que no tenga
@@ -249,7 +250,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             var maquinaria = await _context.Maquinarias.FindAsync(idMaquinaria); // Se trae a la maquinaria que dejó al mantenimiento
             if (maquinaria != null)
             {
-                maquinaria.Estado = "Fuera de Servicio"; 
+                maquinaria.Estado = "Fuera de Servicio";
                 maquinaria.Ubicacion = "Bodega Central";
             }
 
