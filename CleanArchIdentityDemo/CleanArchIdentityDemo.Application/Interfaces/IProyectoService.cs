@@ -20,7 +20,8 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         //metodo para mostrar personal asignado del proyecto
         Task<IEnumerable<PersonalAsignadoDto>> ObtenerPersonalPorProyectoAsync(string codigoProyecto);
 
-
+        //metodo para mostrar detalles generales de un proyecto
+        Task<IEnumerable<ProyectoDto>> MostrarProyectosGeneralAsync();
 
 
         //metodo para asignar nuevo personal a un proyecto

@@ -157,6 +157,11 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         public List<DocumentoDto> Documentos { get; set; } = new();
 
+        // para validar rol usuario usuario Id y mostrar o no opciones en la vista
+        public string RolUsuario { get; set; }
+        public string UsuarioId { get; set; }
+
+        public string SubidoPor { get; set; }
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
         {
             try
@@ -193,6 +198,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             // Lista de usuarios posibles
             UsuariosDisponibles = (await _userService.GetAllNormalUsersAsync()).ToList();
 
+            // Obtener información del usuario autenticado desde Claims
+            // ClaimTypes.NameIdentifier es el claim estándar para el ID de usuario en ASP.NET Identity
+            UsuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // O también puede estar en este claim:
+            // UsuarioId = User.FindFirst("sub")?.Value;
+
+            RolUsuario = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
 
             ProyectosDisponibles = (await _proyectoService.MostrarProyectosListaReasignacionAsync(CodigoProyecto)).ToList();
 

@@ -519,5 +519,77 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             var uri = new Uri(rutaBlobCompleta);
             return uri.Segments.Last();
         }
+
+        //nuevo obtener todos los documentos
+
+        public async Task<IEnumerable<DocumentoDto>> ObtenerTodosLosDocumentosAsync()
+        {
+            // 1. Obtener documentos
+            var documentos = await _context.Documentos
+                .Where(d => d.Activo)
+                .Include(p => p.Proyecto)
+                .OrderByDescending(d => d.FechaSubida)
+                .ToListAsync();
+
+            if (!documentos.Any())
+                return new List<DocumentoDto>();
+
+            // 2. Obtener versiones
+            var documentoIds = documentos.Select(d => d.IdDocumento).ToList();
+            var versiones = await _context.DocumentoVersiones
+                .Where(v => documentoIds.Contains(v.DocumentoId) && v.Activo)
+                .OrderByDescending(v => v.NumeroVersion)
+                .ToListAsync();
+
+            // 3. Obtener todos los usuarios necesarios
+            var todosUsuarioIds = documentos.Select(d => d.SubidoPor)
+                .Concat(versiones.Select(v => v.SubidoPor))
+                .ToList();
+
+            var nombresUsuarios = await ObtenerNombresUsuariosAsync(todosUsuarioIds);
+
+            // 4. Mapear a DTOs
+            return documentos.Select(d => new DocumentoDto
+            {
+                IdDocumento = d.IdDocumento,
+                ProyectoId = d.ProyectoId,
+                NombreProyecto = d.Proyecto.Nombre,
+                NombreDocumento = d.NombreDocumento,
+                CategoriaDocumento = d.CategoriaDocumento,
+                Descripcion = d.Descripcion,
+                TipoDocumento = d.TipoDocumento,
+                VersionActual = d.VersionActual,
+                TotalVersiones = d.TotalVersiones,
+                NombreArchivoOriginal = d.NombreArchivoOriginal,
+                RutaBlobCompleta = d.RutaBlobCompleta,
+                TipoArchivo = d.TipoArchivo,
+                TamanoBytes = d.TamanoBytes,
+                SubidoPor = d.SubidoPor,
+                NombreCreadoPor = nombresUsuarios.GetValueOrDefault(d.SubidoPor, "Usuario desconocido"),
+                FechaSubida = d.FechaSubida,
+                UltimaModificacion = d.UltimaModificacion,
+                Versiones = versiones
+                    .Where(v => v.DocumentoId == d.IdDocumento)
+                    .Select(v => new DocumentoVersionDto
+                    {
+                        IdVersion = v.IdVersion,
+                        DocumentoId = v.DocumentoId,
+                        NumeroVersion = v.NumeroVersion,
+                        EsVersionActual = v.EsVersionActual,
+                        NombreArchivoOriginal = v.NombreArchivoOriginal,
+                        NombreBlob = v.NombreBlob,
+                        RutaBlobCompleta = v.RutaBlobCompleta,
+                        TipoArchivo = v.TipoArchivo,
+                        TamanoBytes = v.TamanoBytes,
+                        SubidoPor = v.SubidoPor,
+                        NombreSubidoPor = nombresUsuarios.GetValueOrDefault(v.SubidoPor, "Usuario desconocido"),
+                        FechaSubida = v.FechaSubida,
+                        Comentarios = v.Comentarios,
+                        NombreDocumento = d.NombreDocumento,
+                        CategoriaDocumento = d.CategoriaDocumento
+                    }).ToList()
+            }).ToList();
+        }
+
     }
 }

@@ -24,13 +24,17 @@
                     <td>
                         @if (!string.IsNullOrEmpty(item.RutaComprobante))
                         {
-                            <a href="@item.RutaComprobante" target="_blank" class="btn btn-outline-primary btn-sm">
-                                Ver comprobante
+                            <!-- Ver en nueva pestaña -->
+                            <a asp-page-handler="VerDocumento"
+                               asp-route-rutaComprobante="@item.RutaComprobante"
+                               target="_blank"
+                               class="btn btn-secondary mb-2">
+                                <i class="fas fa-eye"></i> Ver comprobante
                             </a>
                         }
                         else
                         {
-                            <span class="text-muted">-</span>
+                            <span class="text-muted">No hay comprobante registrado</span>
                         }
                     </td>
                     <td class="text-center">
