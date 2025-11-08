@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace CleanArchIdentityDemo.Infrastructure.Identity
 {
@@ -134,9 +135,10 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
                 .HasForeignKey(p => p.UsuarioId);
         }
 
+        //Guardar los registros de Auditoria
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // 🔹 Obtener usuario actual
+            // Obtener usuario actual
             var userId = _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
             // Si no hay usuario autenticado, usar "Sistema"
@@ -175,12 +177,63 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
 
                 string modulo = entry.Entity.GetType().Name;
 
+                string datosAnteriores = "";
+                string datosNuevos = "";
+
+                if (entry.State == EntityState.Modified)
+                {
+                    var cambios = new Dictionary<string, object>();
+
+                    foreach (var prop in entry.OriginalValues.Properties)
+                    {
+                        var original = entry.OriginalValues[prop]?.ToString();
+                        var current = entry.CurrentValues[prop]?.ToString();
+
+                        if (original != current) // solo propiedades que cambiaron
+                        {
+                            cambios[prop.Name] = new
+                            {
+                                Antes = original,
+                                Despues = current
+                            };
+                        }
+                    }
+
+                    if (cambios.Any())
+                    {
+                        datosAnteriores = JsonSerializer.Serialize(
+                            cambios.ToDictionary(c => c.Key, c => ((dynamic)c.Value).Antes)
+                        );
+                        datosNuevos = JsonSerializer.Serialize(
+                            cambios.ToDictionary(c => c.Key, c => ((dynamic)c.Value).Despues)
+                        );
+                    }
+                }
+                else if (entry.State == EntityState.Added)
+                {
+                    var nuevos = entry.CurrentValues.Properties.ToDictionary(
+                        p => p.Name,
+                        p => entry.CurrentValues[p]?.ToString()
+                    );
+                    datosNuevos = JsonSerializer.Serialize(nuevos);
+                }
+                else if (entry.State == EntityState.Deleted)
+                {
+                    var antiguos = entry.OriginalValues.Properties.ToDictionary(
+                        p => p.Name,
+                        p => entry.OriginalValues[p]?.ToString()
+                    );
+                    datosAnteriores = JsonSerializer.Serialize(antiguos);
+                }
+
                 auditorias.Add(new AuditoriaAccion
                 {
                     UsuarioId = userId ?? "Sistema",
                     Modulo = modulo,
                     Accion = accion,
-                    FechaHora = DateTime.Now
+                    FechaHora = DateTime.Now,
+                    DatoAnterior = datosAnteriores,
+                    DatoNuevo = datosNuevos
                 });
             }
 

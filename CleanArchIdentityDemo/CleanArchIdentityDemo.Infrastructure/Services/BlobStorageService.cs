@@ -25,9 +25,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                throw new InvalidOperationException(
-                    "La cadena de conexión de Azure Blob Storage no está configurada. " +
-                    "Verifique la configuración 'AzureBlobStorage:ConnectionString' en User Secrets o appsettings.json");
+                //throw new InvalidOperationException(
+                //    "La cadena de conexión de Azure Blob Storage no está configurada. " +
+                //    "Verifique la configuración 'AzureBlobStorage:ConnectionString' en User Secrets o appsettings.json");
             }
 
             try
@@ -44,7 +44,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al inicializar BlobStorageService");
-                throw new InvalidOperationException("No se pudo conectar a Azure Blob Storage. Verifique la cadena de conexión.", ex);
+                //throw new InvalidOperationException("No se pudo conectar a Azure Blob Storage. Verifique la cadena de conexión.", ex);
             }
         }
 
