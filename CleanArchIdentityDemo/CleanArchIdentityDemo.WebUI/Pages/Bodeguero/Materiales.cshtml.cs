@@ -3,6 +3,7 @@ using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using CleanArchIdentityDemo.Infrastructure.Services;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -166,9 +167,13 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> OnPostRechazarSolicitudAsync(int idSolicitud)
+        public async Task<IActionResult> OnPostRechazarSolicitudAsync(int idSolicitud, string Observaciones)
         {
-            await _MaterialesService.RechazarSolicitudAsync(idSolicitud);
+            var solicitud = await _MaterialesService.RechazarSolicitudAsync(idSolicitud, Observaciones);
+
+            // Validar respuesta del servicio
+            if (solicitud == "EXCEDE")
+                return new JsonResult(new { excede = true });
 
             TempData["WarningMessage"] = "Solicitud rechazada.";
             TempData["TabActiva"] = "SolicitudesMaterial";

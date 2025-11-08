@@ -251,19 +251,30 @@
     <script>
         // Llenar modal Editar con datos del botón pulsado
         var editUserModal = document.getElementById('editarProyectoModal');
+
         editUserModal.addEventListener('show.bs.modal', function (event) {
             var button = event.relatedTarget;
+
+            
             var NombreProyecto = button.getAttribute('data-NombreProyecto');
             var CodigoProyecto = button.getAttribute('data-CodigoProyecto');
             var DescripcionProyecto = button.getAttribute('data-DescripcionProyecto');
             var ProyectoFechaFinal = button.getAttribute('data-ProyectoFechaFinal');
             var ProyectoPresupuesto = button.getAttribute('data-ProyectoPresupuesto');
 
-            document.getElementById('ProyectoEditado_Nombre').value = NombreProyecto;
-            document.getElementById('ProyectoEditado_CodigoProyecto').value = CodigoProyecto;
-            document.getElementById('ProyectoEditado_Descripcion').value = DescripcionProyecto;
-            document.getElementById('ProyectoEditado_FechaFinalPropuesta').value = ProyectoFechaFinal ? new Date(ProyectoFechaFinal).toISOString().slice(0, 10) : '';
-            document.getElementById('ProyectoEditado_Presupuesto').value = ProyectoPresupuesto;
+           
+            document.getElementById('ProyectoEditado_Nombre').value = NombreProyecto ?? '';
+            document.getElementById('ProyectoEditado_CodigoProyecto').value = CodigoProyecto ?? '';
+            document.getElementById('ProyectoEditado_Descripcion').value = DescripcionProyecto ?? '';
+
+         
+            let fechaValida = '';
+            if (ProyectoFechaFinal && !isNaN(new Date(ProyectoFechaFinal))) {
+                fechaValida = new Date(ProyectoFechaFinal).toISOString().slice(0, 10);
+            }
+
+            document.getElementById('ProyectoEditado_FechaFinalPropuesta').value = fechaValida;
+            document.getElementById('ProyectoEditado_Presupuesto').value = ProyectoPresupuesto ?? '';
         });
     </script>
 }

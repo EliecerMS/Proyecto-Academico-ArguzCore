@@ -9,7 +9,7 @@ namespace CleanArchIdentityDemo.Domain.Entities
         public int IdAuditoria { get; set; }
 
         // FK -> Usuarios.IdUsuario
-        public string UsuarioId { get; set; }
+        public string? UsuarioId { get; set; }
 
         // Atributos
         public string Modulo { get; set; } = string.Empty;

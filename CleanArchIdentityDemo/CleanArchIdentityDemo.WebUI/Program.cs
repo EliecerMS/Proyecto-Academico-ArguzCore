@@ -13,8 +13,20 @@ QuestPDF.Settings.License = LicenseType.Community;
 var builder = WebApplication.CreateBuilder(args);
 
 // Conexión a SQL Server local
-builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContext<IdentityDbContext>(options =>
+//options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Conexión a SQL Server con inyección de dependencias para HttpContextAccessor
+builder.Services.AddDbContext<IdentityDbContext>((serviceProvider, options) =>
+{
+    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+
+    // Si el contexto lo requiere, lo pasará automáticamente por el constructor
+});
+
 
 //Registar los servicios al iniciar el programa
 builder.Services.AddScoped<IUserService, UserService>();
@@ -23,9 +35,14 @@ builder.Services.AddScoped<IEquipoService, EquipoService>();
 builder.Services.AddScoped<IFinanzasService, FinanzasService>();
 builder.Services.AddScoped<IMaterialesService, MaterialesService>();
 builder.Services.AddScoped<IDocumentosService, DocumentosService>();
-builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 
+
+
+
+// Necesario para inyectar HttpContext en los servicios
+builder.Services.AddHttpContextAccessor();
 // Configurar Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
