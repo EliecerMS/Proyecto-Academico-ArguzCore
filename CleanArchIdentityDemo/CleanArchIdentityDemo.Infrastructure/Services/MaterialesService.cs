@@ -1,11 +1,8 @@
 ﻿using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
+using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
-using CleanArchIdentityDemo.Domain.Entities;
-using System.Collections.Generic;
 
 namespace CleanArchIdentityDemo.Infrastructure.Services
 {
@@ -20,7 +17,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
         public async Task<IEnumerable<MaterialDto>> MostrarMaterialesAsync()
         {
-            var materiales = await _context.Materiales.Include(m => m.Proveedor).ToListAsync();
+            var materiales = await _context.Materiales
+                .Where(m => m.Activo)
+                .Include(m => m.Proveedor).ToListAsync();
 
             var resultado = materiales.Select(m => new MaterialDto
             {
@@ -215,7 +214,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             Material MaterialEncontrado = await _context.Materiales.FirstOrDefaultAsync(m => m.IdMaterial == idMateriales);
             if (MaterialEncontrado != null)
             {
-                _context.Materiales.Remove(MaterialEncontrado);
+                MaterialEncontrado.Activo = false;
                 await _context.SaveChangesAsync();
             }
         }

@@ -11,5 +11,6 @@
 
         // solo se usa cuando se crea un usuario, no en consultas de mostrar o editar
         public string Password { get; set; }
+        public bool Activo { get; set; }
     }
 }

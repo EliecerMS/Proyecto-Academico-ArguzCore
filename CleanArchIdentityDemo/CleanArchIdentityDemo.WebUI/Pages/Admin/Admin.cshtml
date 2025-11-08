@@ -95,6 +95,7 @@
                         <th>Email</th>
                         <th>Nombre Completo</th>
                         <th>Rol</th>
+                        <th>Activo</th>
                         <th class="align-content-center">Acciones</th>
                     </tr>
                 </thead>
@@ -108,6 +109,16 @@
                                 <td>@user.NombreCompleto</td>
                                 <td>@user.Role</td>
                                 <td>
+                                    @if(!user.Activo)
+                                    {
+                                        <small class="badge bg-danger">Desactivado</small>
+                                    }
+                                    else
+                                    {
+                                        <small class="badge bg-success">Activo</small>
+                                    }
+                                </td>
+                                <td>
                                     <div class="container">
                                         <div class="row">
                                             <div class="col">
@@ -118,19 +129,36 @@
                                                         data-id="@user.Id"
                                                         data-email="@user.Email"
                                                         data-nombre="@user.NombreCompleto"
+                                                        data-activo="@user.Activo"
                                                         data-rol="@user.Role">
                                                     <i class="fas fa-edit"></i> Editar
                                                 </button>
                                             </div>
-                                            <div class="col">
-                                                <!-- Contenido para columna accion 2 -->
-                                                <form method="post" asp-page-handler="Delete">
-                                                    <input type="hidden" name="IdUsuario" value="@user.Id" />
-                                                    <button class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-trash"></i> Eliminar
-                                                    </button>
-                                                </form>
-                                            </div>
+                                            @if (user.Activo)
+                                            {
+                                                <div class="col">
+                                                    <!-- Contenido para columna accion 2 -->
+                                                    <form method="post" asp-page-handler="Delete">
+                                                        <input type="hidden" name="IdUsuario" value="@user.Id" />
+                                                        <button class="btn btn-sm btn-danger">
+                                                            <i class="fas fa-ban"></i> Desactivar
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="col">
+                                                    <!-- Contenido para columna accion 2 -->
+                                                    <form method="post" asp-page-handler="Activate">
+                                                        <input type="hidden" name="IdUsuario" value="@user.Id" />
+                                                        <button class="btn btn-sm btn-info">
+                                                            <i class="fa-solid fa-circle-check"></i> Activar
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            }
+                                            
                                         </div>
                                     </div>
                                 </td>
@@ -293,11 +321,13 @@
             var email = button.getAttribute('data-email');
             var nombre = button.getAttribute('data-nombre');
             var rol = button.getAttribute('data-rol');
+            var activo = button.getAttribute('data-activo');
 
             document.getElementById('EditedUser_Id').value = id;
             document.getElementById('EditedUser_Email').value = email;
             document.getElementById('EditedUser_NombreCompleto').value = nombre;
             document.getElementById('EditedUser_Role').value = rol;
+            document.getElementById('EditedUser_Activo').value = activo;
         });
     </script>
     <script>

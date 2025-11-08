@@ -7,5 +7,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
     {
         // Campos adicionales de ser requerido
         public string NombreCompleto { get; set; }
+        public bool Activo { get; set; } = true;
     }
 }

@@ -159,7 +159,7 @@
                 <label class="form-label">Filtrar por proveedor</label>
                 <select id="filtroProveedor" class="form-control">
                     <option value="">Todos</option>
-                    @foreach (var proveedor in Model.Proveedores)
+                    @foreach (var proveedor in Model.ProveedoresTodos)
                     {
                         <option value="@proveedor.IdProveedor">@proveedor.NombreProveedor</option>
                     }

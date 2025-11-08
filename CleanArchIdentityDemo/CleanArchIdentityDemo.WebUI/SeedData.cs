@@ -23,9 +23,9 @@ namespace CleanArchIdentityDemo.WebUI
             // Seed de Estados de Proyecto
             await SeedEstadosProyecto(context);
 
-           
 
-            
+
+
         }
 
         private static async Task SeedEstadosProyecto(ApplicationDbContext context)
@@ -48,11 +48,6 @@ namespace CleanArchIdentityDemo.WebUI
                     {
 
                         NombreEstado = "Finalizado"
-                    },
-                    new EstadoProyecto
-                    {
-
-                        NombreEstado = "Ejemplo"
                     }
                 };
 
@@ -130,7 +125,7 @@ namespace CleanArchIdentityDemo.WebUI
                 i += 1;
             }
 
-            // 🔹 Agregar usuario del sistema (sin rol humano)
+            // Agregar usuario del sistema (sin rol humano)
             var sistemaUser = await userManager.FindByNameAsync("Sistema");
             if (sistemaUser == null)
             {
