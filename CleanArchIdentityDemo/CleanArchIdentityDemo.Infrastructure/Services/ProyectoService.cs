@@ -368,6 +368,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         //Crear solicitud de Material
         public async Task CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto)
         {
+            //validar cantidad si sobrepasa el sotck de material
             var solicitud = new SolicitudMaterial
             {
                 ProyectoId = solicitudDto.ProyectoId,
@@ -445,6 +446,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         public async Task<IEnumerable<MaterialDto>> ObtenerMaterialesAsync()
         {
             return await _context.Materiales
+                .Where(m => m.CantidadDisponible > 0 && m.Activo)
                 .Select(m => new MaterialDto
                 {
                     IdMaterial = m.IdMaterial,

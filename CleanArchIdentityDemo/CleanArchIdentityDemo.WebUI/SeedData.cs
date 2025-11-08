@@ -44,11 +44,6 @@ namespace CleanArchIdentityDemo.WebUI
                     {
 
                         NombreEstado = "Finalizado"
-                    },
-                    new EstadoProyecto
-                    {
-
-                        NombreEstado = "Ejemplo"
                     }
                 };
 

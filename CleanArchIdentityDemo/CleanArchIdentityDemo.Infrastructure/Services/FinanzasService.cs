@@ -242,7 +242,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                     Contacto = DatosProveedor.Contacto
                 });
 
-                ProveedorCreado = await _context.SaveChangesAsync() > 0;
+                await _context.SaveChangesAsync();
+
+                ProveedorCreado = true;
             }
 
             return ProveedorCreado;

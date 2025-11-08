@@ -1245,16 +1245,31 @@
                     <div class="mb-3">
                         <label class="form-label">Selecciona un usuario</label>
                         <select asp-for="UsuarioSeleccionado" class="form-select">
-                            @foreach (var u in Model.UsuariosDisponibles)
+                            @if (Model.UsuariosDisponibles != null && Model.UsuariosDisponibles.Any())
                             {
-                                <option value="@u.Id">@u.NombreCompleto</option>
+                                @foreach (var u in Model.UsuariosDisponibles)
+                                {
+                                    <option value="@u.Id">@u.NombreCompleto</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="" disabled selected>No hay usuarios disponibles</option>
                             }
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Asignar</button>
+                    @if (Model.UsuariosDisponibles != null && Model.UsuariosDisponibles.Any())
+                    {
+                            <button type="submit" class="btn btn-primary">Asignar</button>
+                    }
+                    else
+                    {
+                        <button type="submit" disabled class="btn btn-secondary">Asignar</button>
+                    }
+                    
                 </div>
             </form>
         </div>
@@ -1452,7 +1467,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Cantidad</label>
-                        <input type="number" asp-for="NuevaSolicitud.MaterialesSolicitados[0].Cantidad" class="form-control" required />
+                        <input type="number" min="1" value = "1" asp-for="NuevaSolicitud.MaterialesSolicitados[0].Cantidad" class="form-control" required />
                     </div>
 
                     <div class="mb-3">
@@ -1541,7 +1556,7 @@
                     <!-- valor oculto -->
                     <input type="hidden" asp-for="MaterialDisminuir.IdMaterialProyecto" />
                     <label class="form-label">Cantidad a disminuir:</label>
-                    <input type="number" min="0" asp-for="MaterialDisminuir.CantidadADisminuir" />
+                    <input type="number" min="1" asp-for="MaterialDisminuir.CantidadADisminuir" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -1570,7 +1585,7 @@
                     <input type="hidden" asp-for="MaterialDevolver.IdMaterial" />
                     <input type="hidden" id="ProyectoMaterialIdDevolver" asp-for="MaterialDisminuir.IdMaterialProyecto" />
                     <label class="form-label">Cantidad a devolver:</label>
-                    <input type="number" min="0" asp-for="MaterialDevolver.CantidadDisponible" />
+                    <input type="number" min="1" asp-for="MaterialDevolver.CantidadDisponible" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

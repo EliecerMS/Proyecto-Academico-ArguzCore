@@ -117,6 +117,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         {
             ModelState.Remove("Contacto");
             ModelState.Remove("NombreProveedor");
+            ModelState.Remove("ArchivoSimple");
+            ModelState.Remove("NombreDocumentoSimple");
+            ModelState.Remove("ArchivoSimplePagoProveedor");
             // Data Annotations valida automáticamente
             if (!ModelState.IsValid)  //Aquí se valida automáticamente
             {
@@ -155,6 +158,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         {
             ModelState.Remove("Contacto");
             ModelState.Remove("NombreProveedor");
+            ModelState.Remove("ArchivoSimple");
+            ModelState.Remove("NombreDocumentoSimple");
+            ModelState.Remove("ArchivoSimplePagoProveedor");
             // Data Annotations valida automáticamente
             if (!ModelState.IsValid)  //Aquí se valida automáticamente
             {
