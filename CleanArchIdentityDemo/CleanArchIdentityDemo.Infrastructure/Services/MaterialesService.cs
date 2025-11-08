@@ -29,7 +29,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Tipo = m.Tipo,
                 Descripcion = m.Descripcion,
                 CantidadDisponible = m.CantidadDisponible,
-                ProveedorId = m.ProveedorId
+                ProveedorId = m.ProveedorId,
+                ProveedorNombre = m.Proveedor.NombreProveedor
             }).ToList();
 
             return resultado;
@@ -156,7 +157,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         }
 
 
-        public async Task<string> RechazarSolicitudAsync(int IdSolicitud)
+        public async Task<string> RechazarSolicitudAsync(int IdSolicitud, string Observaciones)
         {
             var solicitud = await _context.MaterialesSolicitados
                 .Include(s => s.Material)
@@ -166,6 +167,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 return "NO_EXISTE";
 
             solicitud.SolicitudMaterial.EstadoSolicitud = "Rechazado";
+            // Guardar las observaciones si el campo existe en tu modelo
+            solicitud.SolicitudMaterial.ObservacionesBodeguero = Observaciones;
 
             await _context.SaveChangesAsync();
             return "OK";
@@ -200,6 +203,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 material.Tipo = materialDto.Tipo;
                 material.Descripcion = materialDto.Descripcion;
                 material.CantidadDisponible = materialDto.CantidadDisponible;
+                material.ProveedorId = materialDto.ProveedorId;
 
                 await _context.SaveChangesAsync();
 

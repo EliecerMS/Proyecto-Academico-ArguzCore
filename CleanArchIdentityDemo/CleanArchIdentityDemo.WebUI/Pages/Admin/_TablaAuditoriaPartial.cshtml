@@ -1,0 +1,66 @@
+﻿@model List<CleanArchIdentityDemo.Application.DTOs.AuditoriaDto>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Módulo</th>
+            <th>Acción</th>
+            <th>Detalles de Datos</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                var collapseId = $"collapse_{item.IdAuditoria}";
+                <tr>
+                    <td>@item.FechaHora.ToString("g")</td>
+                    <td>@item.NombreUsuario</td>
+                    <td>@item.Modulo</td>
+                    <td>@item.Accion</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#@collapseId"
+                                aria-expanded="false"
+                                aria-controls="@collapseId">
+                            Ver Detalles
+                        </button>
+
+                        <div class="collapse mt-2" id="@collapseId">
+                            <div class="card border-info shadow-sm">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-danger fw-bold">Dato Anterior</h6>
+                                            <pre class="json-viewer bg-light p-2 rounded border border-danger-subtle"
+                                                 style="max-height: 250px; overflow-y: auto; white-space: pre-wrap;">
+        @item.DatoAnterior
+                                                    </pre>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-success fw-bold">Dato Nuevo</h6>
+                                            <pre class="json-viewer bg-light p-2 rounded border border-success-subtle"
+                                                 style="max-height: 250px; overflow-y: auto; white-space: pre-wrap;">
+        @item.DatoNuevo
+                                                    </pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center text-muted">No se encontraron registros.</td>
+            </tr>
+        }
+    </tbody>
+</table>

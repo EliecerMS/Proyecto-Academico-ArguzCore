@@ -16,7 +16,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<IEnumerable<MaterialSolicitadoDto>> MostrarMaterialesSolicitadosAsync();
         Task<MaterialSolicitadoDto> MostrarSolicitudPorIdAsync(int idSolicitud);
         Task<string> AceptarSolicitudAsync(int idSolicitud, string Observaciones);
-        Task<string> RechazarSolicitudAsync(int idSolicitud);
+        Task<string> RechazarSolicitudAsync(int idSolicitud, string Observaciones);
 
 
 
