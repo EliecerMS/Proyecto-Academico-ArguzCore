@@ -9,9 +9,6 @@ namespace CleanArchIdentityDemo.WebUI
     {
         public static async Task InitializeAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
         {
-            // Seed de Estados de Proyecto
-            await SeedEstadosProyecto(context);
-
             // Seed Roles
             string[] roles = { "Administrador", "SupervisorProyectos", "Contador", "Bodeguero", "JefeMaquinaria", "Usuario" };
             foreach (var role in roles)
@@ -22,6 +19,13 @@ namespace CleanArchIdentityDemo.WebUI
 
             // Seed Usuarios
             await SeedUsuarios(userManager, roles);
+
+            // Seed de Estados de Proyecto
+            await SeedEstadosProyecto(context);
+
+           
+
+            
         }
 
         private static async Task SeedEstadosProyecto(ApplicationDbContext context)
@@ -120,6 +124,27 @@ namespace CleanArchIdentityDemo.WebUI
                 }
                 i += 1;
             }
+
+            // 🔹 Agregar usuario del sistema (sin rol humano)
+            var sistemaUser = await userManager.FindByNameAsync("Sistema");
+            if (sistemaUser == null)
+            {
+                var sistema = new ApplicationUser
+                {
+                    UserName = "Sistema",
+                    Email = "sistema@local",
+                    NombreCompleto = "Usuario del Sistema",
+                    EmailConfirmed = true
+                };
+
+                // Contraseña simple solo para desarrollo
+                var result = await userManager.CreateAsync(sistema, "Sistema123!");
+                if (!result.Succeeded)
+                {
+                    throw new Exception($"Error creando usuario 'Sistema': {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+            }
+
         }
     }
 

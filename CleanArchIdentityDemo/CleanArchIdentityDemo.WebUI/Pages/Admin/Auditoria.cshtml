@@ -66,9 +66,6 @@
         <button class="nav-link" id="nav-Acciones" data-bs-toggle="tab" data-bs-target="#nav-Acciones-tab" type="button" role="tab" aria-controls="nav-Acciones-tab" aria-selected="false">
             Acciones de usuarios
         </button>
-        <button class="nav-link" id="nav-GenerarReporte" data-bs-toggle="tab" data-bs-target="#nav-GenerarReporte-tab" type="button" role="tab" aria-controls="nav-GenerarReporte-tab" aria-selected="false">
-            Generar reporte
-        </button>
     </div>
 </nav>
 
@@ -84,69 +81,82 @@
         <br />
         <!-- Componentes del filtrado para tener una base que pueda le sirva -->
         <div class="row mb-4">
+            <!-- Usuario -->
             <div class="col-md-3">
                 <label class="form-label">Usuario</label>
-                <select id="" class="form-control">
+                <select id="usuario" class="form-control">
                     <option value="">Todos</option>
-                    @* @foreach (var proveedor in Model.Proveedores)
+                    @foreach (var usuario in Model.RegistrosAuditoria
+                                        .Select(r => r.NombreUsuario)
+                                        .Where(u => !string.IsNullOrEmpty(u))
+                                        .Distinct())
                     {
-                        <option value="@proveedor.IdProveedor">@proveedor.NombreProveedor</option>
-                    } *@
+                        <option value="@usuario">@usuario</option>
+                    }
                 </select>
             </div>
+
+            <!-- Acción -->
             <div class="col-md-3">
-                <label for="" class="form-label">Rol</label>
-                <select id="" class="form-control">
+                <label class="form-label">Acción</label>
+                <select id="accion" class="form-control">
                     <option value="">Todos</option>
-                    @* @foreach (var proveedor in Model.Proveedores)
+                    @foreach (var accion in Model.RegistrosAuditoria
+                                        .Select(r => r.Accion)
+                                        .Where(a => !string.IsNullOrEmpty(a))
+                                        .Distinct())
                     {
-                        <option value="@proveedor.IdProveedor">@proveedor.NombreProveedor</option>
-                    } *@
+                        <option value="@accion">@accion</option>
+                    }
                 </select>
             </div>
+
+            <!-- Módulo -->
             <div class="col-md-3">
-                <label for="" class="form-label">Módulo</label>
-                <select id="" class="form-control">
+                <label class="form-label">Módulo</label>
+                <select id="modulo" class="form-control">
                     <option value="">Todos</option>
-                    @* @foreach (var proveedor in Model.Proveedores)
+                    @foreach (var modulo in Model.RegistrosAuditoria
+                                        .Select(r => r.Modulo)
+                                        .Where(m => !string.IsNullOrEmpty(m))
+                                        .Distinct())
                     {
-                        <option value="@proveedor.IdProveedor">@proveedor.NombreProveedor</option>
-                    } *@
+                        <option value="@modulo">@modulo</option>
+                    }
                 </select>
             </div>
+
+            <!-- Fechas -->
             <div class="col-md-3">
-                <label for="" class="form-label">Desde</label>
+                <label class="form-label">Desde</label>
                 <input type="date" class="form-control" id="fechaInicio">
             </div>
             <div class="col-md-3">
-                <label for="" class="form-label">Hasta</label>
+                <label class="form-label">Hasta</label>
                 <input type="date" class="form-control" id="fechaFin">
             </div>
+
+            <!-- Botón filtrar -->
             <div class="col-md-3 d-flex align-items-end">
-                <button type="button" class="btn btn-primary w-100" onclick="">
+                <button type="button" id="btnFiltrar" class="btn btn-primary w-100">
                     <i class="fas fa-filter"></i> Filtrar
                 </button>
             </div>
         </div>
+
+        <!-- Botón descargar PDF -->
+        <div class="text-end mb-3">
+            <button id="btnDescargarExcel" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+            </button>
+        </div>
+
+
         <!-- Aca una base de la tabla que carga los resultados del filtro, diseñar como el prototipo -->
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Colum 1</th>
-                    <th>Colum 2</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        Colum 1
-                    </td>
-                    <td>
-                        Colum 2
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div id="tablaAuditoriaContainer">
+            @await Html.PartialAsync("_TablaAuditoriaPartial", Model.RegistrosAuditoria)
+        </div>
+
     </div>
 
     <div class="tab-pane fade" id="nav-GenerarReporte-tab" role="tabpanel" aria-labelledby="nav-GenerarReporte">
@@ -238,5 +248,40 @@
                 }
             }
         });
+
+        //FIltros de auditoria
+        document.getElementById("btnFiltrar").addEventListener("click", function () {
+            const usuario = document.getElementById("usuario").value;
+            const accion = document.getElementById("accion").value;
+            const modulo = document.getElementById("modulo").value;
+            const desde = document.getElementById("fechaInicio").value;
+            const hasta = document.getElementById("fechaFin").value;
+
+            fetch(`?handler=Filtrar&usuario=${usuario}&accion=${accion}&modulo=${modulo}&desde=${desde}&hasta=${hasta}`, {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("tablaAuditoriaContainer").innerHTML = html;
+                })
+                .catch(err => console.error("Error al filtrar:", err));
+        });
+
+           // Descargar Excel   
+        document.getElementById("btnDescargarExcel").addEventListener("click", function () {
+            const usuario = document.getElementById("usuario").value;
+            const accion = document.getElementById("accion").value;
+            const modulo = document.getElementById("modulo").value;
+            const desde = document.getElementById("fechaInicio").value;
+            const hasta = document.getElementById("fechaFin").value;
+
+            // Redirige a la ruta que genera el Excel
+            window.location.href = `?handler=DescargarExcel&usuario=${usuario}&accion=${accion}&modulo=${modulo}&desde=${desde}&hasta=${hasta}`;
+        });
+    
+
     </script>
 }

@@ -14,5 +14,8 @@ namespace CleanArchIdentityDemo.Application.DTOs
         public string Descripcion { get; set; } = string.Empty;
         public int CantidadDisponible { get; set; }
         public int ProveedorId { get; set; }
+
+
+        public string ProveedorNombre { get; set; } = string.Empty;
     }
 }
