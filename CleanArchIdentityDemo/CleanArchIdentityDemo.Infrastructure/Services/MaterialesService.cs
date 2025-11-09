@@ -1,11 +1,8 @@
 ﻿using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
+using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
-using CleanArchIdentityDemo.Domain.Entities;
-using System.Collections.Generic;
 
 namespace CleanArchIdentityDemo.Infrastructure.Services
 {
@@ -20,7 +17,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
         public async Task<IEnumerable<MaterialDto>> MostrarMaterialesAsync()
         {
-            var materiales = await _context.Materiales.Include(m => m.Proveedor).ToListAsync();
+            var materiales = await _context.Materiales
+                .Where(m => m.Activo)
+                .Include(m => m.Proveedor).ToListAsync();
 
             var resultado = materiales.Select(m => new MaterialDto
             {
@@ -29,7 +28,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Tipo = m.Tipo,
                 Descripcion = m.Descripcion,
                 CantidadDisponible = m.CantidadDisponible,
-                ProveedorId = m.ProveedorId
+                ProveedorId = m.ProveedorId,
+                ProveedorNombre = m.Proveedor.NombreProveedor
             }).ToList();
 
             return resultado;
@@ -156,7 +156,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         }
 
 
-        public async Task<string> RechazarSolicitudAsync(int IdSolicitud)
+        public async Task<string> RechazarSolicitudAsync(int IdSolicitud, string Observaciones)
         {
             var solicitud = await _context.MaterialesSolicitados
                 .Include(s => s.Material)
@@ -166,6 +166,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 return "NO_EXISTE";
 
             solicitud.SolicitudMaterial.EstadoSolicitud = "Rechazado";
+            // Guardar las observaciones si el campo existe en tu modelo
+            solicitud.SolicitudMaterial.ObservacionesBodeguero = Observaciones;
 
             await _context.SaveChangesAsync();
             return "OK";
@@ -200,6 +202,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 material.Tipo = materialDto.Tipo;
                 material.Descripcion = materialDto.Descripcion;
                 material.CantidadDisponible = materialDto.CantidadDisponible;
+                material.ProveedorId = materialDto.ProveedorId;
 
                 await _context.SaveChangesAsync();
 
@@ -211,7 +214,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             Material MaterialEncontrado = await _context.Materiales.FirstOrDefaultAsync(m => m.IdMaterial == idMateriales);
             if (MaterialEncontrado != null)
             {
-                _context.Materiales.Remove(MaterialEncontrado);
+                MaterialEncontrado.Activo = false;
                 await _context.SaveChangesAsync();
             }
         }

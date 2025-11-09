@@ -116,23 +116,23 @@
                                 <td>@m.Tipo</td>
                                 <td class="d-none d-md-table-cell">@m.Descripcion</td>
                                 <td class="text-end">@m.CantidadDisponible</td>
-                                <td class="d-none d-lg-table-cell">@m.ProveedorId</td>
+                                <td class="d-none d-lg-table-cell">@m.ProveedorNombre</td>
                                 <td class="text-center">
                                     <!-- botones de acción (implementar handlers en code-behind según sea necesario) -->
                                         <div class="btn-group btn-group-sm" role="group">
                                             <form method="post" asp-page-handler="EliminarMaterial" asp-route-IdMaterial="@m.IdMaterial" style="display:inline">
                                                 <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash"></i> Eliminar
                                                 </button>
                                             </form>
-                                            <button class="btn btn-sm btn-secondary" title="Editar" data-bs-toggle="modal" data-bs-target="#modalEditarMaterial"
+                                            <button class="btn btn-sm btn-warning" title="Editar" data-bs-toggle="modal" data-bs-target="#modalEditarMaterial"
                                                     data-id="@m.IdMaterial"
                                                     data-nombre="@m.NombreMaterial"
                                                     data-tipo="@m.Tipo"
                                                     data-descripcion="@m.Descripcion"
                                                     data-cantidad="@m.CantidadDisponible"
                                                     data-proveedor="@m.ProveedorId">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="fas fa-edit"></i> Editar
                                             </button>
                                         </div>
                                 </td>
@@ -174,7 +174,27 @@
                                 <td>@ms.SolicitudId</td>
                                 <td>@ms.NombreMaterial</td>
                                 <td class="text-end">@ms.Cantidad</td>
-                                <td>@ms.EstadoSolicitud</td>
+                                <td class="text-center">
+                                    @switch (ms.EstadoSolicitud)
+                                    {
+                                        case "Pendiente":
+                                            <span class="badge rounded-pill bg-warning text-dark px-3 py-2">Pendiente</span>
+                                            break;
+
+                                        case "Aceptado":
+                                            <span class="badge rounded-pill bg-success px-3 py-2">Aceptado</span>
+                                            break;
+
+                                        case "Rechazado":
+                                            <span class="badge rounded-pill bg-danger px-3 py-2">Rechazado</span>
+                                            break;
+
+                                        default:
+                                            <span class="badge rounded-pill bg-secondary px-3 py-2">@ms.EstadoSolicitud</span>
+                                            break;
+                                    }
+                                </td>
+
                                 <td>
                                     @if (ms.EstadoSolicitud != "Aceptado" && ms.EstadoSolicitud != "Rechazado")
                                     {
@@ -447,11 +467,24 @@
         // Rechazar solicitud
         $("#btnRechazar").click(function () {
             var id = $("#solicitudId").val();
+            var observaciones = $("#observaciones").val(); // <-- aquí capturamos
             var token = $('input[name="__RequestVerificationToken"]').val();
-                   $.post("/Bodeguero/Materiales?handler=RechazarSolicitud", { IdSolicitud: id,__RequestVerificationToken: token }, function () {
-                location.reload();
-            });
-        });
+                   $.post("/Bodeguero/Materiales?handler=RechazarSolicitud",
+                    { 
+                        IdSolicitud: id,
+                        Observaciones: observaciones,
+                        __RequestVerificationToken: token
+                    },
+                function (resp) {
+                    if (resp.excede) {
+                        $("#alertaCantidad").removeClass("d-none");
+                    } else {
+                        location.reload();
+                    }
+                }
+                   );
+        }
+        );
 
        // Cargar datos al abrir el modal Editar Material
         $('#modalEditarMaterial').on('show.bs.modal', function (event) {

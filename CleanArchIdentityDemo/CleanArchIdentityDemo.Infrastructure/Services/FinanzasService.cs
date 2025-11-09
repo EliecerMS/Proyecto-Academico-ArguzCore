@@ -208,7 +208,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                NombreProveedor = p.Proveedor.NombreProveedor,
                ProyectoId = p.ProyectoId,
                NombreProyecto = p.Proyecto.Nombre,
-               RutaComprobante = p.RutaComprobante
+               RutaComprobante = p.RutaComprobante,
+               NombreDocumentoSubido = p.NombreDocumentoSubido
            })
            .ToListAsync();  // es Async realmente y es List
 
@@ -218,6 +219,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         public async Task<IEnumerable<ProveedorDto>> ListarProveedoresAsync()
         {
             var Proveedores = await _context.Proveedores
+            .Where(p => p.Activo)//muestra solo los proveedores activos
            .Select(p => new ProveedorDto  // Mapea todos los registros de la tabla Proveedores al Dto
            {
                IdProveedor = p.IdProveedor,
@@ -240,7 +242,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                     Contacto = DatosProveedor.Contacto
                 });
 
-                ProveedorCreado = await _context.SaveChangesAsync() > 0;
+                await _context.SaveChangesAsync();
+
+                ProveedorCreado = true;
             }
 
             return ProveedorCreado;
@@ -268,7 +272,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             var proveedor = await _context.Proveedores.FindAsync(IdProveedor);
             if (proveedor != null)
             {
-                _context.Proveedores.Remove(proveedor);
+                proveedor.Activo = false;
                 ProveedorEliminado = await _context.SaveChangesAsync() > 0;
             }
             return ProveedorEliminado;
@@ -304,7 +308,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Monto = dto.Monto,
                 FechaPago = dto.FechaPago,
                 Descripcion = dto.Descripcion,
-                RutaComprobante = dto.RutaComprobante
+                RutaComprobante = dto.RutaComprobante,
+                NombreDocumentoSubido = dto.NombreDocumentoSubido
             };
 
             _context.PagosProveedores.Add(nuevoPago);
@@ -462,6 +467,20 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Console.WriteLine($"Error al eliminar costo ejecutado: {ex.Message}");
                 return false;
             }
+        }
+
+        public async Task<IEnumerable<ProveedorDto>> ListarTodosProveedoresAsync() //lista todos los proveedores sin importar su estado activo o inactivo
+        {
+            var Proveedores = await _context.Proveedores
+           .Select(p => new ProveedorDto  // Mapea todos los registros de la tabla Proveedores al Dto
+           {
+               IdProveedor = p.IdProveedor,
+               NombreProveedor = p.NombreProveedor,
+               Contacto = p.Contacto
+           })
+           .ToListAsync();  // es Async realmente y list
+
+            return Proveedores;//retorna la lista de proveedores
         }
     }
 }

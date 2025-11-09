@@ -4,6 +4,7 @@ using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanArchIdentityDemo.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251107223439_LogicaTablasActivoInactivo")]
+    partial class LogicaTablasActivoInactivo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,12 +63,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DatoAnterior")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DatoNuevo")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("FechaHora")
                         .HasColumnType("datetime2");
 
@@ -74,6 +71,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UsuarioId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("IdAuditoria");
@@ -1018,7 +1016,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Migrations
                     b.HasOne("CleanArchIdentityDemo.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CleanArchIdentityDemo.Domain.Entities.Contrato", b =>

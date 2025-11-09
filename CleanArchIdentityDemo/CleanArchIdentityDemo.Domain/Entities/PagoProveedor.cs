@@ -20,7 +20,7 @@ namespace CleanArchIdentityDemo.Domain.Entities
         public DateTime FechaPago { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public string RutaComprobante { get; set; } = string.Empty;
-
+        public string? NombreDocumentoSubido { get; set; } = string.Empty;
         // Navegaciones
         [ForeignKey(nameof(ProyectoId))]
         public Proyecto Proyecto { get; set; } = null!;

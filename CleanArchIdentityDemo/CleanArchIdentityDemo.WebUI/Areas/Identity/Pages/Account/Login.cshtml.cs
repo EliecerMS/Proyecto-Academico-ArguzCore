@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
@@ -15,11 +15,13 @@ namespace CleanArchIdentityDemo.WebUI.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger, UserManager<ApplicationUser> userManager)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -103,6 +105,23 @@ namespace CleanArchIdentityDemo.WebUI.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                // Buscar usuario
+                var usuario = await _userManager.FindByEmailAsync(Input.Email);
+
+                if (usuario == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Usuario o contraseña incorrectos.");
+                    return Page();
+                }
+
+                // VALIDAR si está activo ANTES de hacer sign in
+                if (!usuario.Activo)
+                {
+                    ModelState.AddModelError(string.Empty,
+                        "Su cuenta ha sido desactivada. Contacte al administrador.");
+                    return Page();
+                }
+
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);

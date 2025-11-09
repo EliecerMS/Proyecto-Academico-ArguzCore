@@ -14,5 +14,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
         //metodo que obtiene todos los usuarios con el rol usuario
         Task<IEnumerable<UserDto>> GetAllNormalUsersAsync();
+
+        Task ActivateUserAsync(string userId);
     }
 }

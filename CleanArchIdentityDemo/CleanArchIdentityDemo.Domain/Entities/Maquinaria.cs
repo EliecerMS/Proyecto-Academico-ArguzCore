@@ -16,7 +16,7 @@ namespace CleanArchIdentityDemo.Domain.Entities
         public string NumeroSerie { get; set; } = string.Empty;
         public string Estado { get; set; } = string.Empty;
         public string Ubicacion { get; set; } = string.Empty;
-
+        public bool Activo { get; set; } = true;
         // Colecciones
         public ICollection<MantenimientoMaquinaria> Mantenimientos { get; set; } = new List<MantenimientoMaquinaria>();
         public ICollection<MaquinariaProyecto> ProyectosAsignados { get; set; } = new List<MaquinariaProyecto>();

@@ -255,8 +255,15 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         {
             try
             {
-                await _proyectoService.AsignarPersonalAProyectoAsync(CodigoProyecto, UsuarioSeleccionado);
-                TempData["SuccessMessage"] = "Personal asignado correctamente.";
+                if (UsuariosDisponibles == null && !UsuariosDisponibles.Any())
+                {
+                    TempData["ErrorMessage"] = "No hay usuarios disponibles para asignar.";
+                }
+                else
+                {
+                    await _proyectoService.AsignarPersonalAProyectoAsync(CodigoProyecto, UsuarioSeleccionado);
+                    TempData["SuccessMessage"] = "Personal asignado correctamente.";
+                }
             }
             catch (InvalidOperationException ex)
             {
