@@ -668,6 +668,101 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 IdProyecto = p.IdProyecto
             });
         }
+        // Métodos para marcar entrada/salida del personal del proyecto 
+        //Registrar hora de entrada
+        public async Task<bool> RegistrarEntradaAsync(HoraLaboralDto dto)
+        {
+            var hoy = DateTime.Now.Date;
+
+            var existeHoy = await _context.HorasLaborales
+                .AnyAsync(h => h.PersonalProyectoId == dto.PersonalProyectoId &&
+                               h.FechaRegistro.Date == hoy);
+
+            var nuevaEntrada = new HoraLaboral
+            {
+                PersonalProyectoId = dto.PersonalProyectoId,
+                FechaRegistro = hoy,
+                HoraEntrada = dto.HoraEntrada,
+                HoraSalida = DateTime.MinValue
+            };
+
+            _context.HorasLaborales.Add(nuevaEntrada);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RegistrarSalidaAsync(HoraLaboralDto dto)
+        {
+            var hoy = DateTime.Now.Date;
+
+            var registro = await _context.HorasLaborales
+                .FirstOrDefaultAsync(h => h.PersonalProyectoId == dto.PersonalProyectoId &&
+                                          h.FechaRegistro.Date == hoy &&
+                                          h.HoraSalida == DateTime.MinValue);
+
+            if (registro == null)
+                return false;
+
+            registro.HoraSalida = dto.HoraSalida;
+
+            _context.HorasLaborales.Update(registro);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        //Obtener reporte de asistencia
+        public async Task<IEnumerable<HoraLaboralDto>> ObtenerReporteAsistenciaAsync(int proyectoId)
+        {
+            var registros = await (
+                from h in _context.HorasLaborales
+                join p in _context.PersonalProyecto on h.PersonalProyectoId equals p.IdPersonalProyecto
+                join u in _context.Users on p.UsuarioId equals u.Id
+                where p.ProyectoId == proyectoId
+                select new { h, u.UserName }
+            ).ToListAsync();
+
+            var reporte = registros
+                .GroupBy(x => x.h.PersonalProyectoId)
+                .Select(g =>
+                {
+                    double horasTotales = g.Sum(x =>
+                        x.h.HoraSalida != DateTime.MinValue
+                            ? (x.h.HoraSalida - x.h.HoraEntrada).TotalHours
+                            : 0);
+
+                    //1 día por cada 8 horas trabajadas
+                    int diasAsistidos = (int)Math.Floor(horasTotales / 8);
+
+                    return new HoraLaboralDto
+                    {
+                        NombrePersonal = g.First().UserName,
+                        DiasAsistidos = diasAsistidos,
+                        EntradasRegistradas = g.Count(x => x.h.HoraEntrada != DateTime.MinValue),
+                        SalidasRegistradas = g.Count(x => x.h.HoraSalida != DateTime.MinValue),
+                        HorasLaboradas = horasTotales
+                    };
+                })
+                .ToList();
+
+            return reporte;
+        }
+        //Listar personal proyecto
+        public async Task<IEnumerable<PersonalProyectoDto>> ObtenerPersonalPorProyectoAsync(int proyectoId)
+        {
+            return await (
+                from p in _context.PersonalProyecto
+                join u in _context.Users on p.UsuarioId equals u.Id
+                where p.ProyectoId == proyectoId
+                select new PersonalProyectoDto
+                {
+                    IdPersonalProyecto = p.IdPersonalProyecto,
+                    NombrePersonal = u.UserName,
+                    Email = u.Email,
+                    Rol = "Empleado"
+                }
+            ).ToListAsync();
+        }
+
     }
 }
 

@@ -104,5 +104,11 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<bool> DevolverMaterialAsync(MaterialDto MaterialDevolver);
 
         Task<bool> EliminarMaterialObraAsync(int IdMaterialProyecto);
+
+        // Método para marcar entrada/salida del personal del proyecto
+        Task<bool> RegistrarEntradaAsync(HoraLaboralDto dto);
+        Task<bool> RegistrarSalidaAsync(HoraLaboralDto dto);
+        Task<IEnumerable<HoraLaboralDto>> ObtenerReporteAsistenciaAsync(int proyectoId);
+        Task<IEnumerable<PersonalProyectoDto>> ObtenerPersonalPorProyectoAsync(int proyectoId);
     }
 }

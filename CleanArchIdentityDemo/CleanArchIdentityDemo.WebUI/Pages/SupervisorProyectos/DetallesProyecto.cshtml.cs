@@ -162,6 +162,13 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public string UsuarioId { get; set; }
 
         public string SubidoPor { get; set; }
+
+        //Propiedades para entrada/salida del personal
+        [BindProperty]
+        public HoraLaboralDto Asistencia { get; set; } = new HoraLaboralDto();
+
+        public List<HoraLaboralDto> ReporteAsistencia { get; set; } = new();
+        public List<PersonalProyectoDto> PersonalProyecto { get; set; } = new();
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
         {
             try
@@ -193,7 +200,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             Documentos = (await _documentosService.ObtenerDocumentosPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
             // Personal asignado actualmente
-            PersonalAsignado = (await _proyectoService.ObtenerPersonalPorProyectoAsync(CodigoProyecto)).ToList();
+            PersonalProyecto = (await _proyectoService.ObtenerPersonalPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+
 
             // Lista de usuarios posibles
             UsuariosDisponibles = (await _userService.GetAllNormalUsersAsync()).ToList();
@@ -222,6 +230,10 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 Incidentes = (await _proyectoService.MostrarIncidentesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
                 //Cargar solicitudes de material del proyecto
                 SolicitudesMaterial = (await _proyectoService.MostrarSolicitudesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+                //Cargar el personal asignado al proyecto
+                PersonalProyecto = (await _proyectoService.ObtenerPersonalPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+
+                ReporteAsistencia = (await _proyectoService.ObtenerReporteAsistenciaAsync(DetalleProyecto.IdProyecto)).ToList();
             }
             else
             {
@@ -1141,6 +1153,55 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 TempData["ErrorMessage"] = $"Error al acceder a la versión: {ex.Message}";
                 return RedirectToPage(new { CodigoProyecto });
             }
+        }
+        //Métodos para entada/salida del personal 
+        public async Task<IActionResult> OnPostRegistrarEntradaAsync()
+        {
+            if (Asistencia == null || Asistencia.PersonalProyectoId == 0)
+            {
+                TempData["ErrorMessage"] = $"No se pudo registrar la entrada. PersonalProyectoId recibido: {Asistencia?.PersonalProyectoId ?? 0}";
+                return RedirectToPage();
+            }
+
+            var exito = await _proyectoService.RegistrarEntradaAsync(Asistencia);
+
+            if (!exito)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al registrar la entrada.";
+                return RedirectToPage();
+            }
+
+            TempData["SuccessMessage"] = "Entrada registrada correctamente.";
+            return RedirectToPage(new { CodigoProyecto });
+        }
+
+
+        public async Task<IActionResult> OnPostRegistrarSalidaAsync()
+        {
+            if (Asistencia == null)
+            {
+                TempData["ErrorMessage"] = "No se pudo registrar la salida. Datos incompletos.";
+                TempData["TabActiva"] = "Marca";
+                return Page();
+            }
+
+            var exito = await _proyectoService.RegistrarSalidaAsync(Asistencia);
+
+            if (exito)
+            {
+                TempData["SuccessMessage"] = "Salida registrada correctamente.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "No se encontró un registro de entrada para hoy.";
+            }
+
+            TempData["TabActiva"] = "Marca";
+            return RedirectToPage(new { CodigoProyecto = CodigoProyecto });
+        }
+        public async Task OnGetReporteAsistenciaAsync(int proyectoId)
+        {
+            ReporteAsistencia = (await _proyectoService.ObtenerReporteAsistenciaAsync(proyectoId)).ToList();
         }
     }
 }
