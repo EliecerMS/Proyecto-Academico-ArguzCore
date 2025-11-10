@@ -717,39 +717,70 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         //Obtener reporte de asistencia
         public async Task<IEnumerable<HoraLaboralDto>> ObtenerReporteAsistenciaAsync(int proyectoId)
         {
+            var inicioSemana = ObtenerInicioSemanaActual();
+            var finSemana = inicioSemana.AddDays(6);
+
+            // Consulta principal (joins explícitos)
             var registros = await (
                 from h in _context.HorasLaborales
                 join p in _context.PersonalProyecto on h.PersonalProyectoId equals p.IdPersonalProyecto
                 join u in _context.Users on p.UsuarioId equals u.Id
-                where p.ProyectoId == proyectoId
-                select new { h, u.UserName }
+                where p.ProyectoId == proyectoId &&
+                      h.FechaRegistro >= inicioSemana &&
+                      h.FechaRegistro <= finSemana
+                select new
+                {
+                    UsuarioId = u.Id,
+                    NombreUsuario = u.NombreCompleto,
+                    FechaRegistro = h.FechaRegistro,
+                    HoraEntrada = h.HoraEntrada,
+                    HoraSalida = h.HoraSalida
+                }
             ).ToListAsync();
 
+            // Agrupación por usuario (cada usuario tendrá su propio registro)
             var reporte = registros
-                .GroupBy(x => x.h.PersonalProyectoId)
-                .Select(g =>
+                .GroupBy(r => new { r.UsuarioId, r.NombreUsuario })
+                .Select(g => new HoraLaboralDto
                 {
-                    double horasTotales = g.Sum(x =>
-                        x.h.HoraSalida != DateTime.MinValue
-                            ? (x.h.HoraSalida - x.h.HoraEntrada).TotalHours
-                            : 0);
+                    NombrePersonal = g.Key.NombreUsuario,
 
-                    //1 día por cada 8 horas trabajadas
-                    int diasAsistidos = (int)Math.Floor(horasTotales / 8);
+                    DiasAsistidos = g
+                        .Where(r => r.HoraEntrada != default && r.HoraSalida != default)
+                        .Select(r => r.FechaRegistro.Date)
+                        .Distinct()
+                        .Count(),
 
-                    return new HoraLaboralDto
-                    {
-                        NombrePersonal = g.First().UserName,
-                        DiasAsistidos = diasAsistidos,
-                        EntradasRegistradas = g.Count(x => x.h.HoraEntrada != DateTime.MinValue),
-                        SalidasRegistradas = g.Count(x => x.h.HoraSalida != DateTime.MinValue),
-                        HorasLaboradas = horasTotales
-                    };
+                    EntradasRegistradas = g.Count(r => r.HoraEntrada != default),
+                    SalidasRegistradas = g.Count(r => r.HoraSalida != default),
+
+                    HorasLaboradas = Math.Round(
+                        g.Where(r => r.HoraEntrada != default && r.HoraSalida != default)
+                         .Sum(r => (r.HoraSalida - r.HoraEntrada).TotalHours), 2)
                 })
+                .OrderBy(dto => dto.NombrePersonal)
                 .ToList();
 
             return reporte;
         }
+
+        // ============================================
+        // MÉTODO AUXILIAR - CALCULAR INICIO DE SEMANA
+        // ============================================
+
+        private DateTime ObtenerInicioSemanaActual()
+        {
+            var hoy = DateTime.Today;
+            var diaSemana = (int)hoy.DayOfWeek;
+
+            // Si es domingo (0), retroceder 6 días para llegar al lunes
+            if (diaSemana == 0)
+                return hoy.AddDays(-6);
+
+            // De lunes a sábado, retroceder hasta el lunes
+            return hoy.AddDays(-(diaSemana - 1));
+        }
+
         //Listar personal proyecto
         public async Task<IEnumerable<PersonalProyectoDto>> ObtenerPersonalPorProyectoAsync(int proyectoId)
         {
@@ -760,7 +791,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 select new PersonalProyectoDto
                 {
                     IdPersonalProyecto = p.IdPersonalProyecto,
-                    NombrePersonal = u.UserName,
+                    NombrePersonal = u.NombreCompleto,
                     Email = u.Email,
                     Rol = "Empleado"
                 }

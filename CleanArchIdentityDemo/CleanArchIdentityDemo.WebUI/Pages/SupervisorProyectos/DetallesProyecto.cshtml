@@ -392,9 +392,9 @@
                 </tr>
             </thead>
             <tbody>
-                @if (Model.PersonalAsignado != null && Model.PersonalAsignado.Any()) // Validamos que sí haya tareas
+                @if (Model.PersonalAsignadoProyecto != null && Model.PersonalAsignadoProyecto.Any()) // Validamos que sí haya tareas
                 {
-                    @foreach (var p in Model.PersonalAsignado)
+                    @foreach (var p in Model.PersonalAsignadoProyecto)
                     {
                         <tr>
                             <td>@p.Nombre</td>

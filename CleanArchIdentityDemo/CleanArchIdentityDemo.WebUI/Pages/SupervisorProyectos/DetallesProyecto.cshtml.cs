@@ -169,6 +169,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
         public List<HoraLaboralDto> ReporteAsistencia { get; set; } = new();
         public List<PersonalProyectoDto> PersonalProyecto { get; set; } = new();
+        public List<PersonalAsignadoDto> PersonalAsignadoProyecto { get; set; } = new();
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
         {
             try
@@ -200,7 +201,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 
             Documentos = (await _documentosService.ObtenerDocumentosPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
             // Personal asignado actualmente
-            PersonalProyecto = (await _proyectoService.ObtenerPersonalPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+            //PersonalProyecto = (await _proyectoService.ObtenerPersonalPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
 
 
             // Lista de usuarios posibles
@@ -231,6 +232,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 //Cargar solicitudes de material del proyecto
                 SolicitudesMaterial = (await _proyectoService.MostrarSolicitudesPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
                 //Cargar el personal asignado al proyecto
+                PersonalAsignadoProyecto = (await _proyectoService.ObtenerPersonalPorProyectoAsync(CodigoProyecto)).ToList();
+
                 PersonalProyecto = (await _proyectoService.ObtenerPersonalPorProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
 
                 ReporteAsistencia = (await _proyectoService.ObtenerReporteAsistenciaAsync(DetalleProyecto.IdProyecto)).ToList();
