@@ -672,6 +672,132 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 IdProyecto = p.IdProyecto
             });
         }
+        // Métodos para marcar entrada/salida del personal del proyecto 
+        //Registrar hora de entrada
+        public async Task<bool> RegistrarEntradaAsync(HoraLaboralDto dto)
+        {
+            var hoy = DateTime.Now.Date;
+
+            var existeHoy = await _context.HorasLaborales
+                .AnyAsync(h => h.PersonalProyectoId == dto.PersonalProyectoId &&
+                               h.FechaRegistro.Date == hoy);
+
+            var nuevaEntrada = new HoraLaboral
+            {
+                PersonalProyectoId = dto.PersonalProyectoId,
+                FechaRegistro = hoy,
+                HoraEntrada = dto.HoraEntrada,
+                HoraSalida = DateTime.MinValue
+            };
+
+            _context.HorasLaborales.Add(nuevaEntrada);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RegistrarSalidaAsync(HoraLaboralDto dto)
+        {
+            var hoy = DateTime.Now.Date;
+
+            var registro = await _context.HorasLaborales
+                .FirstOrDefaultAsync(h => h.PersonalProyectoId == dto.PersonalProyectoId &&
+                                          h.FechaRegistro.Date == hoy &&
+                                          h.HoraSalida == DateTime.MinValue);
+
+            if (registro == null)
+                return false;
+
+            registro.HoraSalida = dto.HoraSalida;
+
+            _context.HorasLaborales.Update(registro);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        //Obtener reporte de asistencia
+        public async Task<IEnumerable<HoraLaboralDto>> ObtenerReporteAsistenciaAsync(int proyectoId)
+        {
+            var inicioSemana = ObtenerInicioSemanaActual();
+            var finSemana = inicioSemana.AddDays(6);
+
+            // Consulta principal (joins explícitos)
+            var registros = await (
+                from h in _context.HorasLaborales
+                join p in _context.PersonalProyecto on h.PersonalProyectoId equals p.IdPersonalProyecto
+                join u in _context.Users on p.UsuarioId equals u.Id
+                where p.ProyectoId == proyectoId &&
+                      h.FechaRegistro >= inicioSemana &&
+                      h.FechaRegistro <= finSemana
+                select new
+                {
+                    UsuarioId = u.Id,
+                    NombreUsuario = u.NombreCompleto,
+                    FechaRegistro = h.FechaRegistro,
+                    HoraEntrada = h.HoraEntrada,
+                    HoraSalida = h.HoraSalida
+                }
+            ).ToListAsync();
+
+            // Agrupación por usuario (cada usuario tendrá su propio registro)
+            var reporte = registros
+                .GroupBy(r => new { r.UsuarioId, r.NombreUsuario })
+                .Select(g => new HoraLaboralDto
+                {
+                    NombrePersonal = g.Key.NombreUsuario,
+
+                    DiasAsistidos = g
+                        .Where(r => r.HoraEntrada != default && r.HoraSalida != default)
+                        .Select(r => r.FechaRegistro.Date)
+                        .Distinct()
+                        .Count(),
+
+                    EntradasRegistradas = g.Count(r => r.HoraEntrada != default),
+                    SalidasRegistradas = g.Count(r => r.HoraSalida != default),
+
+                    HorasLaboradas = Math.Round(
+                        g.Where(r => r.HoraEntrada != default && r.HoraSalida != default)
+                         .Sum(r => (r.HoraSalida - r.HoraEntrada).TotalHours), 2)
+                })
+                .OrderBy(dto => dto.NombrePersonal)
+                .ToList();
+
+            return reporte;
+        }
+
+        // ============================================
+        // MÉTODO AUXILIAR - CALCULAR INICIO DE SEMANA
+        // ============================================
+
+        private DateTime ObtenerInicioSemanaActual()
+        {
+            var hoy = DateTime.Today;
+            var diaSemana = (int)hoy.DayOfWeek;
+
+            // Si es domingo (0), retroceder 6 días para llegar al lunes
+            if (diaSemana == 0)
+                return hoy.AddDays(-6);
+
+            // De lunes a sábado, retroceder hasta el lunes
+            return hoy.AddDays(-(diaSemana - 1));
+        }
+
+        //Listar personal proyecto
+        public async Task<IEnumerable<PersonalProyectoDto>> ObtenerPersonalPorProyectoAsync(int proyectoId)
+        {
+            return await (
+                from p in _context.PersonalProyecto
+                join u in _context.Users on p.UsuarioId equals u.Id
+                where p.ProyectoId == proyectoId
+                select new PersonalProyectoDto
+                {
+                    IdPersonalProyecto = p.IdPersonalProyecto,
+                    NombrePersonal = u.NombreCompleto,
+                    Email = u.Email,
+                    Rol = "Empleado"
+                }
+            ).ToListAsync();
+        }
+
     }
 }
 
