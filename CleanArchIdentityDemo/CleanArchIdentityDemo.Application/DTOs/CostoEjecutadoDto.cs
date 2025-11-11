@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CleanArchIdentityDemo.Application.DTOs
+﻿namespace CleanArchIdentityDemo.Application.DTOs
 {
     public class CostoEjecutadoDto
     {
@@ -25,5 +19,7 @@ namespace CleanArchIdentityDemo.Application.DTOs
         public string NombreProyecto { get; set; } = string.Empty;
 
         public bool ArchivoActualizado { get; set; } = false;
+
+        public string? NombreDocumentoSubido { get; set; } = string.Empty;
     }
 }

@@ -654,6 +654,15 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         {
             try
             {
+                //saber la cantidad actual en obra para del material a disminuir
+                var cantidadEnObra = await _proyectoService.ObtenerCantidadMaterialEnObra(CodigoProyecto, MaterialDisminuir.IdMaterialProyecto);
+                if (MaterialDisminuir.CantidadADisminuir > cantidadEnObra)
+                {
+                    TempData["ErrorMessage"] = "La cantidad a disminuir excede la cantidad disponible en obra.";
+                    TempData["TabActiva"] = "Materiales";
+                    return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+                }
+
                 await _proyectoService.DisminuirMaterialObraAsync(MaterialDisminuir);
                 TempData["SuccessMessage"] = "Cantidad de material disminuida correctamente.";
 
@@ -678,8 +687,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 if (MaterialDisminuir.CantidadADisminuir > cantidadEnObra)
                 {
                     TempData["ErrorMessage"] = "La cantidad a devolver excede la cantidad disponible en obra.";
-                    return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
                     TempData["TabActiva"] = "Materiales";
+                    return RedirectToPage("/SupervisorProyectos/DetallesProyecto", new { CodigoProyecto });
+
                 }
                 // Primero, disminuir la cantidad en obra
                 await _proyectoService.DisminuirMaterialObraAsync(MaterialDisminuir);

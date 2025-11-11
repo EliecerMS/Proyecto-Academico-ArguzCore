@@ -95,6 +95,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return proyectos.Select(p => new ProyectoDto
             {
+                IdProyecto = p.IdProyecto,
                 Descripcion = p.Descripcion,
                 CodigoProyecto = p.CodigoProyecto,
                 Nombre = p.Nombre,

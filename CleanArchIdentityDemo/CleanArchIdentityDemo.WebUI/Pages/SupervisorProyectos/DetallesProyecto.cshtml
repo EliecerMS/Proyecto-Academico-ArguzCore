@@ -1293,7 +1293,7 @@
                 <div class="modal-body">
                     <input type="hidden" asp-for="CodigoProyecto" />
                     <div class="mb-3">
-                        <label class="form-label">Selecciona un usuario</label>
+                        <label class="form-label">Selecciona un empleado (Se muestran empleados activos)</label>
                         <select asp-for="UsuarioSeleccionado" class="form-select">
                             @if (Model.UsuariosDisponibles != null && Model.UsuariosDisponibles.Any())
                             {
@@ -2061,7 +2061,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalReporteAsistenciaLabel">Reporte de asistencia semana actual</h5>
+                <h5 class="modal-title" id="modalReporteAsistenciaLabel">Reporte de asistencia semana actual - Lunes hasta la fecha</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -2094,7 +2094,7 @@
                 }
                 else
                 {
-                    <p class="text-center text-muted">No hay registros de asistencia para este proyecto.</p>
+                    <p class="text-center text-muted">Al momento no hay registros de asistencia para este proyecto.</p>
                 }
 
             </div>
