@@ -577,8 +577,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 NuevaSolicitud.FechaSolicitud = DateTime.Now;
                 NuevaSolicitud.EstadoSolicitud = "Abierta";
 
-                await _proyectoService.CrearSolicitudMaterialAsync(NuevaSolicitud);
-                TempData["SuccessMessage"] = "Solicitud de material creada correctamente.";
+                if (await _proyectoService.CrearSolicitudMaterialAsync(NuevaSolicitud))
+                {
+                    TempData["SuccessMessage"] = "Solicitud de material creada correctamente.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "No se pudo crear la solicitud de material. Verifique si la cantidad solicitada excede la cantidad en bodega";
+                }
             }
             catch (Exception ex)
             {
@@ -605,8 +611,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             }
             try
             {
-                await _proyectoService.ActualizarSolicitudAsync(solicitud);
-                TempData["SuccessMessage"] = "Solicitud de material editada correctamente.";
+                if (await _proyectoService.ActualizarSolicitudAsync(solicitud))
+                {
+                    TempData["SuccessMessage"] = "Solicitud de material editada correctamente.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "No se pudo editar la solicitud de material. Verifique si la cantidad solicitada excede la cantidad en bodega";
+                }
             }
             catch (Exception ex)
             {
@@ -665,7 +677,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
                 var resultado = await _proyectoService.DevolverMaterialAsync(MaterialDevolver);
                 if (!resultado)
                 {
-                    TempData["ErrorMessage"] = "No se pudo devolver el material. Verifique e intente de nuevo.";
+                    TempData["ErrorMessage"] = "No se pudo devolver el material. Verifique los datos e intente de nuevo.";
 
                 }
                 else
@@ -687,15 +699,21 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             {
                 // Primero, devolver todo el material a bodega central
                 //MaterialDisminuir.CantidadADisminuir = MaterialDevolver.CantidadDisponible;
-                await _proyectoService.DevolverMaterialAsync(MaterialDevolver);
-                var resultado = await _proyectoService.EliminarMaterialObraAsync(MaterialEliminar.IdMaterialProyecto);
-                if (!resultado)
+                if (!await _proyectoService.DevolverMaterialAsync(MaterialDevolver))
                 {
-                    TempData["ErrorMessage"] = "No se pudo eliminar el material del proyecto. Verifique e intente de nuevo.";
+                    TempData["ErrorMessage"] = "No se pudo devolver el material a bodega central. Verifique los datos e intente de nuevo.";
                 }
                 else
                 {
-                    TempData["SuccessMessage"] = "Material eliminado del proyecto correctamente.";
+                    var resultado = await _proyectoService.EliminarMaterialObraAsync(MaterialEliminar.IdMaterialProyecto);
+                    if (!resultado)
+                    {
+                        TempData["ErrorMessage"] = "No se pudo eliminar el material del proyecto. Verifique e intente de nuevo.";
+                    }
+                    else
+                    {
+                        TempData["SuccessMessage"] = "Material eliminado del proyecto correctamente.";
+                    }
                 }
             }
             catch (Exception ex)
