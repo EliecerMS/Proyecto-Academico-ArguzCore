@@ -11,5 +11,7 @@
 
         public int CantidadEnObra { get; set; }
 
+        public int CantidadEnBodega { get; set; }
+
     }
 }

@@ -83,10 +83,10 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
 
         //Método para mostrar las solicitudes de material del proyecto enviadas a bodega central
-        Task CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto);
+        Task<bool> CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto);
 
         // Método para editar la solicitud de material enviada a bodega central
-        Task ActualizarSolicitudAsync(SolicitudMaterialDto solicitudDto);
+        Task<bool> ActualizarSolicitudAsync(SolicitudMaterialDto solicitudDto);
         Task<SolicitudMaterialDto?> ObtenerSolicitudPorIdAsync(int idSolicitud);
 
         //Método para obtener materiales
@@ -110,5 +110,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<bool> RegistrarSalidaAsync(HoraLaboralDto dto);
         Task<IEnumerable<HoraLaboralDto>> ObtenerReporteAsistenciaAsync(int proyectoId);
         Task<IEnumerable<PersonalProyectoDto>> ObtenerPersonalPorProyectoAsync(int proyectoId);
+
+        Task<int> ObtenerCantidadMaterialEnObra(string ProyectoId, int IdMaterial);
     }
 }

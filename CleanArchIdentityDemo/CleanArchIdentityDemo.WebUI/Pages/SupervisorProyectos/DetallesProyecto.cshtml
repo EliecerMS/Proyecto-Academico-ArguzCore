@@ -150,7 +150,7 @@
 <div class="tab-content" id="nav-tabContent">
 
     <div class="tab-pane fade show active" id="nav-Marca-tab" role="tabpanel" aria-labelledby="nav-marcaEntradaSalida">
-
+        <br />
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="mb-0">Lista de personal del proyecto</h4>
             <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalReporteAsistencia">
@@ -985,12 +985,18 @@
         <div class="tab-content" id="nav-tabContent">
             <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-MaterialesProyecto">
                 <br />
-                Contenido del sub tab Materiales en proyecto.
+                <div class="row justify-content-between">
+                    <div class="col-4">
+                        Materiales en el proyecto
+                    </div>
+                </div>
+                <br />
                 <table class="table table-striped align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>Nombre material</th>
-                            <th>Cantidad</th>
+                            <th>Cantidad en obra</th>
+                            <th>Cantidad actual en bodega central</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -1003,6 +1009,7 @@
 
                                     <td>@mat.NombreMaterial</td>
                                     <td>@mat.CantidadEnObra</td>
+                                    <td>@mat.CantidadEnBodega</td>
                                     <td>
                                         <div class="container">
                                             <div class="row">
@@ -1286,7 +1293,7 @@
                 <div class="modal-body">
                     <input type="hidden" asp-for="CodigoProyecto" />
                     <div class="mb-3">
-                        <label class="form-label">Selecciona un usuario</label>
+                        <label class="form-label">Selecciona un empleado (Se muestran empleados activos)</label>
                         <select asp-for="UsuarioSeleccionado" class="form-select">
                             @if (Model.UsuariosDisponibles != null && Model.UsuariosDisponibles.Any())
                             {
@@ -1503,7 +1510,7 @@
                         <select asp-for="NuevaSolicitud.MaterialesSolicitados[0].MaterialId" class="form-select">
                             @foreach (var material in Model.MaterialesDisponibles)
                             {
-                                <option value="@material.IdMaterial">@material.NombreMaterial</option>
+                                <option value="@material.IdMaterial">@material.NombreMaterial - Cantidad en bodega central: @material.CantidadDisponible</option>
                             }
                         </select>
                     </div>
@@ -1553,14 +1560,14 @@
                         <select name="MaterialId" id="editMaterialId" class="form-select">
                             @foreach (var material in Model.MaterialesDisponibles)
                             {
-                                <option value="@material.IdMaterial">@material.NombreMaterial</option>
+                                <option value="@material.IdMaterial">@material.NombreMaterial - Cantidad en bodega central: @material.CantidadDisponible</option>
                             }
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Cantidad</label>
-                        <input type="number" name="Cantidad" id="editCantidad" class="form-control" required />
+                        <input type="number" min="1" value="1" name="Cantidad" id="editCantidad" class="form-control" required />
                     </div>
 
                     <div class="mb-3">
@@ -1599,7 +1606,7 @@
                     <!-- valor oculto -->
                     <input type="hidden" asp-for="MaterialDisminuir.IdMaterialProyecto" />
                     <label class="form-label">Cantidad a disminuir:</label>
-                    <input type="number" min="1" asp-for="MaterialDisminuir.CantidadADisminuir" />
+                    <input type="number" min="1" value="1" asp-for="MaterialDisminuir.CantidadADisminuir" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -1628,7 +1635,7 @@
                     <input type="hidden" asp-for="MaterialDevolver.IdMaterial" />
                     <input type="hidden" id="ProyectoMaterialIdDevolver" asp-for="MaterialDisminuir.IdMaterialProyecto" />
                     <label class="form-label">Cantidad a devolver:</label>
-                    <input type="number" min="1" asp-for="MaterialDevolver.CantidadDisponible" />
+                    <input type="number" min="1" value="1" asp-for="MaterialDevolver.CantidadDisponible" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -2054,7 +2061,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalReporteAsistenciaLabel">Reporte de Asistencia</h5>
+                <h5 class="modal-title" id="modalReporteAsistenciaLabel">Reporte de asistencia semana actual - Lunes hasta la fecha</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -2087,7 +2094,7 @@
                 }
                 else
                 {
-                    <p class="text-center text-muted">No hay registros de asistencia para este proyecto.</p>
+                    <p class="text-center text-muted">Al momento no hay registros de asistencia para este proyecto.</p>
                 }
 
             </div>

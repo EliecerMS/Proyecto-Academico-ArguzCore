@@ -126,6 +126,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 TempData["TabActiva"] = "GestionProveedor";
                 return Page();  // Retorna la página CON errores
@@ -136,6 +137,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 // Retornar la página (NO redirige, solo recarga)
                 TempData["SuccessMessage"] = "Proveedor creado correctamente";
@@ -148,6 +150,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 TempData["TabActiva"] = "GestionProveedor";
                 return Page();
@@ -167,6 +170,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 TempData["TabActiva"] = "GestionProveedor";
                 return Page();  // Retorna la página CON errores
@@ -176,6 +180,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 // Retornar la página (NO redirige, solo recarga)
                 TempData["SuccessMessage"] = "Proveedor editado correctamente";
@@ -188,6 +193,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 TempData["TabActiva"] = "GestionProveedor";
                 return Page();
@@ -201,6 +207,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 // Retornar la página (NO redirige, solo recarga)
                 TempData["SuccessMessage"] = "Proveedor eliminado correctamente";
@@ -213,6 +220,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Cargar datos actualizados
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 TempData["TabActiva"] = "GestionProveedor";
                 return Page();
@@ -244,6 +252,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 TempData["TabActiva"] = "PagosProveedor";
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 return Page();
             }
@@ -256,6 +265,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 // Recargar datos necesarios para la vista
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
                 TempData["TabActiva"] = "PagosProveedor";
                 return Page();
@@ -281,6 +291,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             // Recargar tablas y pestaña activa
             PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+            ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
             TempData["TabActiva"] = "PagosProveedor";
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
             return Page();
@@ -321,10 +332,11 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                 Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                 PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                 Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                 TempData["TabActiva"] = "GastosEjecutados";
                 return Page();
             }
-
+            CostoSeleccionado.NombreDocumentoSubido = NombreDocumentoSimple;
             var resultado = await _FinanzasService.CrearCostoEjecutadoAsync(CostoSeleccionado);
 
             if (resultado)
@@ -343,7 +355,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             TempData["TabActiva"] = "GastosEjecutados";
             PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
-
+            ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
             return Page();
         }
 
@@ -408,6 +420,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
             PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+            ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
             TempData["TabActiva"] = "GastosEjecutados";
 
             return Page();
@@ -437,6 +450,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
             PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
             Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+            ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
             TempData["TabActiva"] = "GastosEjecutados";
 
             return Page();
@@ -627,6 +641,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
                     Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
                     PagosProveedores = (await _FinanzasService.ListarPagosProveedoresAsync()).ToList();
                     Proveedores = (await _FinanzasService.ListarProveedoresAsync()).ToList();
+                    ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
                     TempData["TabActiva"] = "GastosEjecutados";
 
                     return Page();

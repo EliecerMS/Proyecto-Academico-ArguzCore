@@ -5,25 +5,24 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria
 {
     [Authorize(Roles = "JefeMaquinaria")]
     public class DetallesMaquinariaModel : PageModel
     {
-        private readonly ApplicationDbContext _context;
         private readonly IEquipoService _equipoService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IProyectoService _proyectoService;
 
         public DetallesMaquinariaModel(
-            ApplicationDbContext context,
             IEquipoService equipoService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IProyectoService proyectoService)
         {
-            _context = context;
             _equipoService = equipoService;
             _userManager = userManager;
+            _proyectoService = proyectoService;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -57,13 +56,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria
             ProyectoAsignado = await _equipoService.GetProyectoAsignadoAsync(id);
 
             //Obtener lista de proyectos disponibles
-            ProyectosDisponibles = await _context.Proyectos
-                .Select(p => new ProyectoDto
-                {
-                    IdProyecto = p.IdProyecto,
-                    Nombre = p.Nombre
-                })
-                .ToListAsync();
+            ProyectosDisponibles = (await _proyectoService.MostrarProyectosAsync()).ToList();
 
             // Validación: ¿hay algún mantenimiento activo?
             HayMantenimientoActivo = Mantenimientos.Any(m => m.Estado == "Ejecución" || m.FechaCompletado == DateTime.MinValue);

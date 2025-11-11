@@ -23,11 +23,10 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
         private readonly IConfiguration _configuration;
         private readonly IProyectoService _proyectoService;
         private readonly IContratoService _ContratoService;
-        private readonly ApplicationDbContext _context;
 
 
-        public DocumentosModel(IDocumentosService documentosService, IUserService userService, UserManager<ApplicationUser> userManager, IConfiguration configuration, IProyectoService proyectoService, IBlobStorageService blobStorageService, IContratoService contratoService,
-            ApplicationDbContext context)
+        public DocumentosModel(IDocumentosService documentosService, IUserService userService, UserManager<ApplicationUser> userManager, IConfiguration configuration, IProyectoService proyectoService, IBlobStorageService blobStorageService, IContratoService contratoService
+            )
         {
             _DocumentosService = documentosService;
             _UserService = userService;
@@ -36,7 +35,6 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
             _proyectoService = proyectoService;
             _blobStorageService = blobStorageService;
             _ContratoService = contratoService;
-            _context = context;
         }
 
         public List<ContratoDto> Contratos { get; private set; } = new();
@@ -114,7 +112,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
         {
             "Plano","Contrato","Especificación","Informe","Memoria de Cálculo",
             "Presupuesto","Estudio","Factura","Fotografía","Certificado","Acta",
-            "Orden de Compra","Carta","Comprobante","Licencia","Otro"
+            "Orden de Compra","Carta","Comprobante","Licencia","Otro","Equipos", "Transporte"
         };
 
         public SelectList CategoriasSelect { get; private set; } = default!;
@@ -123,10 +121,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
         {
             Contratos = (await _ContratoService.GetAllAsync()).ToList();
 
-            ProyectosDisponibles = await _context.Proyectos
-                .Select(p => new ProyectoDto { IdProyecto = p.IdProyecto, Nombre = p.Nombre })
-                .OrderBy(p => p.Nombre)
-                .ToListAsync();
+            ProyectosDisponibles = (await _proyectoService.MostrarProyectosAsync()).ToList();
 
             Documentos = (await _DocumentosService.ObtenerTodosLosDocumentosAsync()).ToList();
             Proyectos = (await _proyectoService.MostrarProyectosGeneralAsync()).ToList();
@@ -541,8 +536,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
         //Ver documento simple en pestaña nueva
         public async Task<IActionResult> OnGetVerDocumentoAsync(int idDocumento)
         {
-            
-            
+
+
             try
             {
                 // 1. Obtener documento desde BD

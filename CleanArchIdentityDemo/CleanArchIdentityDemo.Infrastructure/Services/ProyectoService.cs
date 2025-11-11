@@ -95,6 +95,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return proyectos.Select(p => new ProyectoDto
             {
+                IdProyecto = p.IdProyecto,
                 Descripcion = p.Descripcion,
                 CodigoProyecto = p.CodigoProyecto,
                 Nombre = p.Nombre,
@@ -366,9 +367,32 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         //Materiales
 
         //Crear solicitud de Material
-        public async Task CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto)
+        public async Task<bool> CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto)
         {
-            //validar cantidad si sobrepasa el sotck de material
+            // Obtener los distintos ids de material
+            var materialIds = solicitudDto.MaterialesSolicitados
+                .Select(ms => ms.MaterialId)
+                .Distinct()
+                .ToList();
+
+            // Consultar materiales existentes y sus cantidades disponibles
+            var materialesDisponibles = await _context.Materiales
+                .Where(m => materialIds.Contains(m.IdMaterial))
+                .ToDictionaryAsync(m => m.IdMaterial, m => m.CantidadDisponible);
+
+            foreach (var ms in solicitudDto.MaterialesSolicitados)
+            {
+                if (!materialesDisponibles.TryGetValue(ms.MaterialId, out var disponible))
+                {
+                    return false; // Material no encontrado
+                }
+
+                if (ms.Cantidad > disponible)
+                {
+                    return false; // si la cantidad solicitada excede la disponible
+                }
+            }
+
             var solicitud = new SolicitudMaterial
             {
                 ProyectoId = solicitudDto.ProyectoId,
@@ -385,6 +409,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             _context.SolicitudesMaterial.Add(solicitud);
             await _context.SaveChangesAsync();
+            return true;
         }
 
 
@@ -418,11 +443,35 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         }
 
         //Actualizar Solicitud Material
-        public async Task ActualizarSolicitudAsync(SolicitudMaterialDto solicitudDto)
+        public async Task<bool> ActualizarSolicitudAsync(SolicitudMaterialDto solicitudDto)
         {
             var solicitud = await _context.SolicitudesMaterial
                 .Include(s => s.MaterialesSolicitados)
                 .FirstOrDefaultAsync(s => s.IdSolicitud == solicitudDto.IdSolicitud);
+
+            // Obtener los distintos ids de material
+            var materialIds = solicitudDto.MaterialesSolicitados
+                .Select(ms => ms.MaterialId)
+                .Distinct()
+                .ToList();
+
+            // Consultar materiales existentes y sus cantidades disponibles
+            var materialesDisponibles = await _context.Materiales
+                .Where(m => materialIds.Contains(m.IdMaterial))
+                .ToDictionaryAsync(m => m.IdMaterial, m => m.CantidadDisponible);
+
+            foreach (var ms in solicitudDto.MaterialesSolicitados)
+            {
+                if (!materialesDisponibles.TryGetValue(ms.MaterialId, out var disponible))
+                {
+                    return false; // Material no encontrado
+                }
+
+                if (ms.Cantidad > disponible)
+                {
+                    return false; // si la cantidad solicitada excede la disponible
+                }
+            }
 
             if (solicitud != null)
             {
@@ -439,7 +488,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 }
 
                 await _context.SaveChangesAsync();
+
             }
+            return true;
         }
 
         //Obtener Materiales 
@@ -620,7 +671,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                    ProyectoId = m.ProyectoId,
                    MaterialId = m.MaterialId,
                    NombreMaterial = m.Material.NombreMaterial,
-                   CantidadEnObra = m.CantidadEnObra
+                   CantidadEnObra = m.CantidadEnObra,
+                   CantidadEnBodega = m.Material.CantidadDisponible
                })
                .ToListAsync();
         }
@@ -641,9 +693,16 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             var material = _context.Materiales.FirstOrDefault(m => m.IdMaterial == MaterialDevolver.IdMaterial);
             if (material != null) //si lo encuentra actualiza la cantidad disponible
             {
-                material.CantidadDisponible += MaterialDevolver.CantidadDisponible;
-                await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
-                return true;
+                if (MaterialDevolver.CantidadDisponible < 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    material.CantidadDisponible += MaterialDevolver.CantidadDisponible;
+                    await _context.SaveChangesAsync(); // Guardar los cambios en la base de datos
+                    return true;
+                }
             }
             return false;
         }
@@ -718,9 +777,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         public async Task<IEnumerable<HoraLaboralDto>> ObtenerReporteAsistenciaAsync(int proyectoId)
         {
             var inicioSemana = ObtenerInicioSemanaActual();
-            var finSemana = inicioSemana.AddDays(6);
+            var finSemana = inicioSemana.AddDays(7).AddTicks(-1);
 
-            // Consulta principal (joins explícitos)
             var registros = await (
                 from h in _context.HorasLaborales
                 join p in _context.PersonalProyecto on h.PersonalProyectoId equals p.IdPersonalProyecto
@@ -730,30 +788,26 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                       h.FechaRegistro <= finSemana
                 select new
                 {
-                    UsuarioId = u.Id,
-                    NombreUsuario = u.NombreCompleto,
-                    FechaRegistro = h.FechaRegistro,
-                    HoraEntrada = h.HoraEntrada,
-                    HoraSalida = h.HoraSalida
+                    u.Id,
+                    u.NombreCompleto,
+                    h.FechaRegistro,
+                    h.HoraEntrada,
+                    h.HoraSalida
                 }
             ).ToListAsync();
 
-            // Agrupación por usuario (cada usuario tendrá su propio registro)
             var reporte = registros
-                .GroupBy(r => new { r.UsuarioId, r.NombreUsuario })
+                .GroupBy(r => new { r.Id, r.NombreCompleto })
                 .Select(g => new HoraLaboralDto
                 {
-                    NombrePersonal = g.Key.NombreUsuario,
-
+                    NombrePersonal = g.Key.NombreCompleto,
                     DiasAsistidos = g
                         .Where(r => r.HoraEntrada != default && r.HoraSalida != default)
                         .Select(r => r.FechaRegistro.Date)
                         .Distinct()
                         .Count(),
-
                     EntradasRegistradas = g.Count(r => r.HoraEntrada != default),
                     SalidasRegistradas = g.Count(r => r.HoraSalida != default),
-
                     HorasLaboradas = Math.Round(
                         g.Where(r => r.HoraEntrada != default && r.HoraSalida != default)
                          .Sum(r => (r.HoraSalida - r.HoraEntrada).TotalHours), 2)
@@ -764,21 +818,11 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return reporte;
         }
 
-        // ============================================
-        // MÉTODO AUXILIAR - CALCULAR INICIO DE SEMANA
-        // ============================================
-
         private DateTime ObtenerInicioSemanaActual()
         {
             var hoy = DateTime.Today;
             var diaSemana = (int)hoy.DayOfWeek;
-
-            // Si es domingo (0), retroceder 6 días para llegar al lunes
-            if (diaSemana == 0)
-                return hoy.AddDays(-6);
-
-            // De lunes a sábado, retroceder hasta el lunes
-            return hoy.AddDays(-(diaSemana - 1));
+            return diaSemana == 0 ? hoy.AddDays(-6) : hoy.AddDays(-(diaSemana - 1));
         }
 
         //Listar personal proyecto
@@ -798,6 +842,17 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             ).ToListAsync();
         }
 
+        public async Task<int> ObtenerCantidadMaterialEnObra(string ProyectoId, int IdMaterial)
+        {
+            var proyecto = await BuscarProyectoPorCodigo(ProyectoId);
+            if (proyecto == null)
+                return 0;
+
+            var materialObra = await _context.MaterialesProyecto
+             .FirstOrDefaultAsync(m => m.ProyectoId == proyecto.IdProyecto && m.IdMaterialProyecto == IdMaterial);
+
+            return materialObra?.CantidadEnObra ?? 0;
+        }
     }
 }
 
