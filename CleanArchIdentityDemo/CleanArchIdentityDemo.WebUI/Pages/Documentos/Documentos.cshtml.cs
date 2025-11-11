@@ -23,11 +23,10 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
         private readonly IConfiguration _configuration;
         private readonly IProyectoService _proyectoService;
         private readonly IContratoService _ContratoService;
-        private readonly ApplicationDbContext _context;
 
 
-        public DocumentosModel(IDocumentosService documentosService, IUserService userService, UserManager<ApplicationUser> userManager, IConfiguration configuration, IProyectoService proyectoService, IBlobStorageService blobStorageService, IContratoService contratoService,
-            ApplicationDbContext context)
+        public DocumentosModel(IDocumentosService documentosService, IUserService userService, UserManager<ApplicationUser> userManager, IConfiguration configuration, IProyectoService proyectoService, IBlobStorageService blobStorageService, IContratoService contratoService
+            )
         {
             _DocumentosService = documentosService;
             _UserService = userService;
@@ -36,7 +35,6 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
             _proyectoService = proyectoService;
             _blobStorageService = blobStorageService;
             _ContratoService = contratoService;
-            _context = context;
         }
 
         public List<ContratoDto> Contratos { get; private set; } = new();
