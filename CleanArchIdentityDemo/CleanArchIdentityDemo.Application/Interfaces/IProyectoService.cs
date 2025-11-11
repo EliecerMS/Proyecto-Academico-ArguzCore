@@ -110,5 +110,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<bool> RegistrarSalidaAsync(HoraLaboralDto dto);
         Task<IEnumerable<HoraLaboralDto>> ObtenerReporteAsistenciaAsync(int proyectoId);
         Task<IEnumerable<PersonalProyectoDto>> ObtenerPersonalPorProyectoAsync(int proyectoId);
+
+        Task<int> ObtenerCantidadMaterialEnObra(string ProyectoId, int IdMaterial);
     }
 }

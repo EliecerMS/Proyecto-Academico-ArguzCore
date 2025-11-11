@@ -841,6 +841,17 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             ).ToListAsync();
         }
 
+        public async Task<int> ObtenerCantidadMaterialEnObra(string ProyectoId, int IdMaterial)
+        {
+            var proyecto = await BuscarProyectoPorCodigo(ProyectoId);
+            if (proyecto == null)
+                return 0;
+
+            var materialObra = await _context.MaterialesProyecto
+             .FirstOrDefaultAsync(m => m.ProyectoId == proyecto.IdProyecto && m.IdMaterialProyecto == IdMaterial);
+
+            return materialObra?.CantidadEnObra ?? 0;
+        }
     }
 }
 
