@@ -112,5 +112,8 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<IEnumerable<PersonalProyectoDto>> ObtenerPersonalPorProyectoAsync(int proyectoId);
 
         Task<int> ObtenerCantidadMaterialEnObra(string ProyectoId, int IdMaterial);
+
+        //Método para reporte financiero
+        Task<ReporteFinancieroDto> ObtenerReporteFinancieroAsync(int proyectoId, DateTime fechaInicio, DateTime fechaFin);
     }
 }

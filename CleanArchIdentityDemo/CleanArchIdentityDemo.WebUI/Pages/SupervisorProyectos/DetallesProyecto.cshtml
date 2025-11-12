@@ -962,7 +962,33 @@
 
     <div class="tab-pane fade" id="nav-ReporteFinanciero-tab" role="tabpanel" aria-labelledby="nav-ReporteFinanciero">
         <br />
-        Contenido del tab Reporte financiero.
+        <h5 class="mb-3">Reporte financiero: Costos ejecutados</h5>
+
+        <form method="post" asp-page-handler="VerReporteFinanciero">
+            <input type="hidden" asp-for="CodigoProyecto" />
+
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Fecha inicial</label>
+                    <input type="date" asp-for="FechaInicioReporte" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Fecha final</label>
+                    <input type="date" asp-for="FechaFinReporte" class="form-control" />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-dark w-100">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        @if (Model.ReporteFinanciero != null)
+        {
+            @await Html.PartialAsync("_ReporteFinancieroPartial", Model.ReporteFinanciero)
+        }
+
     </div>
 
     <div class="tab-pane fade" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-Materiales">
