@@ -853,10 +853,49 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return materialObra?.CantidadEnObra ?? 0;
         }
+        // Método para ver reporte financiero 
+        public async Task<ReporteFinancieroDto> ObtenerReporteFinancieroAsync(int proyectoId, DateTime? fechaInicio, DateTime? fechaFin)
+        {
+            var proyecto = await _context.Proyectos
+                .FirstOrDefaultAsync(p => p.IdProyecto == proyectoId);
+
+            if (proyecto == null)
+                throw new Exception("No se encontró el proyecto.");
+
+            var query = _context.CostosEjecutados
+                .Where(c => c.ProyectoId == proyectoId);
+
+            if (fechaInicio != DateTime.MinValue && fechaFin != DateTime.MinValue)
+            {
+                query = query.Where(c => c.Fecha >= fechaInicio && c.Fecha <= fechaFin);
+            }
+
+            var costos = await query
+                .Select(c => new CostoEjecutadoDto
+                {
+                    CategoriaGasto = c.CategoriaGasto,
+                    Monto = c.Monto,
+                    Fecha = c.Fecha,
+                    Descripcion = c.Descripcion
+                })
+                .ToListAsync();
+
+            var totalEjecutado = costos.Sum(c => c.Monto);
+
+            return new ReporteFinancieroDto
+            {
+                PresupuestoPlanificado = proyecto.Presupuesto,
+                TotalEjecutado = totalEjecutado,
+                CostosEjecutados = costos,
+                SobrepasoPresupuesto = totalEjecutado > proyecto.Presupuesto,
+                MontoSobrepaso = Math.Max(0, totalEjecutado - proyecto.Presupuesto)
+            };
+        }
 
         public async Task<IEnumerable<ProyectoDashboardDto>> MostrarProyectosActivosEInactivosAsync()
         {
             var proyectos = await _context.Proyectos
+            .Where(p => p.Activo)
             .Include(p => p.EstadoProyecto)
             .Include(p => p.Tareas)
             .ToListAsync();

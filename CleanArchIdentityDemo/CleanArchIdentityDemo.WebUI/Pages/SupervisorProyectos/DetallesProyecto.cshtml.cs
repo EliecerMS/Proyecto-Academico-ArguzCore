@@ -170,6 +170,15 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public List<HoraLaboralDto> ReporteAsistencia { get; set; } = new();
         public List<PersonalProyectoDto> PersonalProyecto { get; set; } = new();
         public List<PersonalAsignadoDto> PersonalAsignadoProyecto { get; set; } = new();
+
+        //Propiedades para reporte finanaciero 
+        [BindProperty]
+        public DateTime FechaInicioReporte { get; set; }
+
+        [BindProperty]
+        public DateTime FechaFinReporte { get; set; }
+
+        public ReporteFinancieroDto ReporteFinanciero { get; set; }
         public async Task<IActionResult> OnPostCambiarEstadoAsync()
         {
             try
@@ -219,6 +228,15 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             ProyectosDisponibles = (await _proyectoService.MostrarProyectosListaReasignacionAsync(CodigoProyecto)).ToList();
 
             MaterialesProyecto = (await _proyectoService.ObtenerMaterialProyectoAsync(DetalleProyecto.IdProyecto)).ToList();
+            // Obtener reporte financiero
+            ReporteFinanciero = await _proyectoService.ObtenerReporteFinancieroAsync((DetalleProyecto.IdProyecto), DateTime.MinValue, DateTime.MaxValue);
+
+            //Poner la fecha actual
+            if (FechaInicioReporte == DateTime.MinValue)
+                FechaInicioReporte = DateTime.Today.AddDays(-30);
+
+            if (FechaFinReporte == DateTime.MinValue)
+                FechaFinReporte = DateTime.Today;
 
             // Traer las tareas relacionadas usando el IdProyecto con el metodo que ya tienes en el servicio
             if (DetalleProyecto != null)
@@ -1250,6 +1268,24 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public async Task OnGetReporteAsistenciaAsync(int proyectoId)
         {
             ReporteAsistencia = (await _proyectoService.ObtenerReporteAsistenciaAsync(proyectoId)).ToList();
+        }
+        //Método para reporte financiero 
+        public async Task<IActionResult> OnGetVerReporteFinancieroAsync(int idProyecto, DateTime? fechaInicio, DateTime? fechaFin)
+        {
+            ReporteFinancieroDto costos = null;
+
+            if (fechaInicio.HasValue && fechaFin.HasValue)
+            {
+                // Filtrar los costos por las fechas proporcionadas
+                costos = await _proyectoService.ObtenerReporteFinancieroAsync(idProyecto, fechaInicio, fechaFin);
+            }
+            else
+            {
+
+            }
+
+            // Retornar solo la partial view
+            return Partial("_ReporteFinancieroPartial", costos);
         }
     }
 }

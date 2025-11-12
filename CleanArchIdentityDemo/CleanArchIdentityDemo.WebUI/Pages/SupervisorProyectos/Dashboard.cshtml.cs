@@ -1,13 +1,11 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
-using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 {
-    [Authorize(Roles = "SupervisorProyectos,Administrador,Contador")]
+    [Authorize(Roles = "SupervisorProyectos,Administrador")]
     public class DashboardModel : PageModel
     {
         private readonly IProyectoService _proyectoService;
