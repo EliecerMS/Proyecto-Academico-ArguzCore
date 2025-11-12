@@ -962,7 +962,39 @@
 
     <div class="tab-pane fade" id="nav-ReporteFinanciero-tab" role="tabpanel" aria-labelledby="nav-ReporteFinanciero">
         <br />
-        Contenido del tab Reporte financiero.
+        <h5 class="mb-3">Reporte financiero: Costos ejecutados</h5>
+
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Fecha inicial</label>
+                    <input type="date" asp-for="FechaInicioReporte" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Fecha final</label>
+                    <input type="date" asp-for="FechaFinReporte" class="form-control" />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-secondary w-100" onclick="filtrarReporteFinanciero()">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+                <input type="hidden" id="IdProyectoReporteFinanciero" value="@Model.DetalleProyecto.IdProyecto" />
+            </div>
+
+            <!--- Tabla de reporte financiero --->
+            <div class="position-relative">
+                <div class="table-responsive" id="tablaReporteFinancieroContainer">
+                    <partial name="_ReporteFinancieroPartial" model="Model.ReporteFinanciero" />
+                </div>
+
+                <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Cargando resultados...</p>
+                </div>
+            </div>
+
     </div>
 
     <div class="tab-pane fade" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-Materiales">
@@ -2296,5 +2328,46 @@
             title.textContent = 'Registrar Salida - ' + nombre;
         });
     </script>
+    <script>
+        async function filtrarReporteFinanciero() {
+            const fechaInicio = document.getElementById('FechaInicioReporte').value;
+            const fechaFin = document.getElementById('FechaFinReporte').value;
+            const idProyecto = document.getElementById('IdProyectoReporteFinanciero').value;
 
+            const params = new URLSearchParams({
+                handler: 'VerReporteFinanciero',
+                idProyecto,
+                fechaInicio,
+                fechaFin
+            });
+
+            const tabla = document.getElementById('tablaReporteFinancieroContainer');
+            const spinner = document.getElementById('loadingSpinner');
+
+            try {
+                // Mostrar loading
+                tabla.style.display = 'none';
+                spinner.style.display = 'block';
+
+                // Fetch data
+                const response = await fetch(`?${params.toString()}`, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error('Error en la petición');
+
+                // Actualizar tabla
+                tabla.innerHTML = await response.text();
+
+            } catch (error) {
+                console.error('Error:', error);
+                tabla.innerHTML = '<div class="alert alert-danger">Error al filtrar costos</div>';
+            } finally {
+                // Siempre ocultar spinner y mostrar tabla
+                spinner.style.display = 'none';
+                tabla.style.display = 'block';
+            }
+        }
+    </script>
 }
