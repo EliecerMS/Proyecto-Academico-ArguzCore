@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
 {
-    [Authorize(Roles = "SupervisorProyectos")]
+    [Authorize(Roles = "SupervisorProyectos,Administrador")]
     public class DetallesProyectoModel : PageModel
     {
         private readonly IProyectoService _proyectoService;
