@@ -114,6 +114,6 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<int> ObtenerCantidadMaterialEnObra(string ProyectoId, int IdMaterial);
 
         //Método para reporte financiero
-        Task<ReporteFinancieroDto> ObtenerReporteFinancieroAsync(int proyectoId, DateTime fechaInicio, DateTime fechaFin);
+        Task<ReporteFinancieroDto> ObtenerReporteFinancieroAsync(int proyectoId, DateTime? fechaInicio, DateTime? fechaFin);
     }
 }

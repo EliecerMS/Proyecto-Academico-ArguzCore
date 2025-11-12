@@ -854,7 +854,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return materialObra?.CantidadEnObra ?? 0;
         }
         // Método para ver reporte financiero 
-        public async Task<ReporteFinancieroDto> ObtenerReporteFinancieroAsync(int proyectoId, DateTime fechaInicio, DateTime fechaFin)
+        public async Task<ReporteFinancieroDto> ObtenerReporteFinancieroAsync(int proyectoId, DateTime? fechaInicio, DateTime? fechaFin)
         {
             var proyecto = await _context.Proyectos
                 .FirstOrDefaultAsync(p => p.IdProyecto == proyectoId);

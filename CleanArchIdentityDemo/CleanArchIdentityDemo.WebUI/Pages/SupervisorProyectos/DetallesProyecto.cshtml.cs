@@ -1270,42 +1270,22 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
             ReporteAsistencia = (await _proyectoService.ObtenerReporteAsistenciaAsync(proyectoId)).ToList();
         }
         //Método para reporte financiero 
-        public async Task<IActionResult> OnPostVerReporteFinancieroAsync()
+        public async Task<IActionResult> OnGetVerReporteFinancieroAsync(int idProyecto, DateTime? fechaInicio, DateTime? fechaFin)
         {
-            try
+            ReporteFinancieroDto costos = null;
+
+            if (fechaInicio.HasValue && fechaFin.HasValue)
             {
-                DetalleProyecto = await _proyectoService.DetallesProyecto(CodigoProyecto);
-
-                if (DetalleProyecto == null)
-                {
-                    TempData["ErrorMessage"] = "No se encontró el proyecto.";
-                    return RedirectToPage(new { CodigoProyecto });
-                }
-
-                ReporteFinanciero = await _proyectoService.ObtenerReporteFinancieroAsync(
-                    DetalleProyecto.IdProyecto,
-                    FechaInicioReporte,
-                    FechaFinReporte
-                );
-
-                TempData["TabActiva"] = "Finanzas";
+                // Filtrar los costos por las fechas proporcionadas
+                costos = await _proyectoService.ObtenerReporteFinancieroAsync(idProyecto, fechaInicio, fechaFin);
             }
-            catch (Exception ex)
+            else
             {
-                TempData["ErrorMessage"] = $"Error al generar el reporte financiero: {ex.Message}";
+
             }
 
-            //Evita errores de índice en otras pestañas
-            if (NuevaSolicitud == null)
-                NuevaSolicitud = new SolicitudMaterialDto { MaterialesSolicitados = new List<MaterialSolicitadoDto> { new MaterialSolicitadoDto() } };
-
-            if (NuevaSolicitud.MaterialesSolicitados == null || !NuevaSolicitud.MaterialesSolicitados.Any())
-                NuevaSolicitud.MaterialesSolicitados = new List<MaterialSolicitadoDto> { new MaterialSolicitadoDto() };
-
-            if (NuevosMateriales == null || !NuevosMateriales.Any())
-                NuevosMateriales = new List<NuevoMaterialInput> { new NuevoMaterialInput() };
-
-            return Page();
+            // Retornar solo la partial view
+            return Partial("_ReporteFinancieroPartial", costos);
         }
     }
 }
