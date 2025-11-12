@@ -7,6 +7,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
     {
         Task CrearProyectoAsync(ProyectoDto Proyecto);
         Task<IEnumerable<ProyectoDto>> MostrarProyectosAsync();
+        Task<IEnumerable<ProyectoDashboardDto>> MostrarProyectosActivosEInactivosAsync();
         Task<ProyectoDto> MostrarProyectoPorId(string IdProyecto);
         Task ActualizarProyectoAsync(ProyectoDto Proyecto);
         Task EliminarProyectoAsync(string CodigoProyecto);
