@@ -1,8 +1,10 @@
-﻿using CleanArchIdentityDemo.Infrastructure.Identity;
+﻿using CleanArchIdentityDemo.Domain.Entities;
+using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace CleanArchIdentityDemo.Infrastructure.Persistence
 {
@@ -11,11 +13,11 @@ namespace CleanArchIdentityDemo.Infrastructure.Persistence
         public ApplicationDbContext CreateDbContext(string[] args)
         {
             // Ajustar ruta según donde esté el proyecto WebUI
-            var webUIPath = @"C:\Users\Lenovo\Source\Repos\ArguzCore-Proyecto\CleanArchIdentityDemo\CleanArchIdentityDemo.WebUI";
+            var webUIPath = @"C:\Users\Chris\Documents\Proyecto ArguzCore Desa\ArguzCore-Proyecto\CleanArchIdentityDemo\CleanArchIdentityDemo.WebUI";
+        
 
-
-            // Construir configuración apuntando al proyecto WebUI
-            var configuration = new ConfigurationBuilder()
+        // Construir configuración apuntando al proyecto WebUI
+        var configuration = new ConfigurationBuilder()
                 .SetBasePath(webUIPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true) // Habilitar User Secrets

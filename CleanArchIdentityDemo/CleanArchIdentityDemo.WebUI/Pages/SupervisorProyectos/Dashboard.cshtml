@@ -1,4 +1,51 @@
 ﻿@page
 @model CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos.DashboardModel
 @{
+    ViewData["Title"] = "Dashboard de Proyectos";
 }
+
+<h2 class="fw-bold mb-3">Dashboard de proyectos</h2>
+<p class="text-muted mb-4">Visualiza el estado general de tus proyectos y accede rápidamente a los detalles.</p>
+
+<div class="row g-4">
+    @foreach (var proyecto in Model.Proyectos)
+    {
+        
+        string estadoColor = proyecto.EstadoProyecto switch
+        {
+            "En ejecución" => "success",
+            "Planificado" => "primary",
+            "Finalizado" => "secondary",
+            "Cancelado" => "danger",
+            _ => "secondary"
+        };
+
+       
+
+        <div class="col-md-4 col-lg-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold">@proyecto.Nombre</h5>
+                    <p class="text-muted mb-3">@proyecto.Descripcion</p>
+
+                    <span class="badge bg-@estadoColor">@proyecto.EstadoProyecto</span>
+
+                    <div class="flex gap-2 mb-2">
+                        <p class="mb-1"><strong>Avance:</strong> @proyecto.PorcentajeAvance %</p>
+                        <p class="mb-1"><strong>Presupuesto:</strong> ₡@proyecto.Presupuesto.ToString("N0")</p>
+                        <p class="mb-0"><strong>Finaliza:</strong> @proyecto.FechaFinalPropuesta.ToShortDateString()</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a asp-page="DetallesProyecto" asp-route-id="@proyecto.IdProyecto" class="btn btn-outline-primary btn-sm w-100">
+                        Ver detalles
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+
+

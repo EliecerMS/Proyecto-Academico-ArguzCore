@@ -853,6 +853,29 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return materialObra?.CantidadEnObra ?? 0;
         }
+
+        public async Task<IEnumerable<ProyectoDashboardDto>> MostrarProyectosActivosEInactivosAsync()
+        {
+            var proyectos = await _context.Proyectos
+            .Include(p => p.EstadoProyecto)
+            .Include(p => p.Tareas)
+            .ToListAsync();
+
+            return proyectos.Select(p => new ProyectoDashboardDto
+            {
+                IdProyecto = p.IdProyecto,
+                Descripcion = p.Descripcion,
+                CodigoProyecto = p.CodigoProyecto,
+                Nombre = p.Nombre,
+                FechaFinalPropuesta = p.FechaFinalPropuesta.Date,
+                Presupuesto = p.Presupuesto,
+                EstadoProyecto = p.EstadoProyecto.NombreEstado,
+                IdEstadoProyecto = p.EstadoProyectoId,
+                PorcentajeAvance = RecalculoPorcentajeAvance(p.Tareas.ToList()),
+                //Desviacion se debe agregar y calcular cuando se tenga lista elreporte financiero en detalle proyecto
+            });
+
+        }
     }
 }
 
