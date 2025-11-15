@@ -1,19 +1,14 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
-using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria
 {
-    [Authorize(Roles = "JefeMaquinaria")]
+    [Authorize(Roles = "JefeMaquinaria,Administrador")]
     public class ListaMaquinariaModel : PageModel
     {
         private readonly IEquipoService _equipoService;

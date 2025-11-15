@@ -139,7 +139,10 @@
             Documentos
         </button>
         <button class="nav-link" id="nav-Materiales" data-bs-toggle="tab" data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
-            Materiales
+            Materiales en proyecto
+        </button>
+        <button class="nav-link" id="nav-SolicitudesMaterial" data-bs-toggle="tab" data-bs-target="#nav-SolicitudMateriales-tab" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+            Solicitudes de material
         </button>
         <button class="nav-link" id="nav-ReporteFinanciero" data-bs-toggle="tab" data-bs-target="#nav-ReporteFinanciero-tab" type="button" role="tab" aria-controls="nav-home" aria-selected="true">
             Ver reporte financiero
@@ -998,184 +1001,171 @@
     </div>
 
     <div class="tab-pane fade" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-Materiales">
-        <nav>
-            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-
-                <button class="nav-link" id="nav-MaterialesProyecto" data-bs-toggle="tab"
-                        data-bs-target="#nav-Materiales-tab" type="button" role="tab" aria-controls="nav-contact"
-                        aria-selected="false">
-                    Materiales en proyecto
-                </button>
-                <button class="nav-link" id="nav-SolicitudesMaterial" data-bs-toggle="tab"
-                        data-bs-target="#nav-SolicitudMateriales-tab" type="button" role="tab" aria-controls="nav-contact"
-                        aria-selected="false">
-                    Solicitudes de material
-                </button>
-
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Materiales en el proyecto
             </div>
-        </nav>
-        <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active" id="nav-Materiales-tab" role="tabpanel" aria-labelledby="nav-MaterialesProyecto">
-                <br />
-                <div class="row justify-content-between">
-                    <div class="col-4">
-                        Materiales en el proyecto
-                    </div>
-                </div>
-                <br />
-                <table class="table table-striped align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Nombre material</th>
-                            <th>Cantidad en obra</th>
-                            <th>Cantidad actual en bodega central</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.MaterialesProyecto != null && Model.MaterialesProyecto.Any())
-                        {
-                            foreach (var mat in Model.MaterialesProyecto)
-                            {
-                                <tr>
-
-                                    <td>@mat.NombreMaterial</td>
-                                    <td>@mat.CantidadEnObra</td>
-                                    <td>@mat.CantidadEnBodega</td>
-                                    <td>
-                                        <div class="container">
-                                            <div class="row">
-                                                <div class="col">
-                                                    <!-- Contenido para columna accion 1 -->
-                                                    <button class="btn btn-sm btn-warning"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#modalDisminuiMaterial"
-                                                            data-idMaterialProyecto="@mat.IdMaterialProyecto"
-                                                            data-nombreMaterial="@mat.NombreMaterial">
-                                                        <i class="fa-solid fa-square-minus"></i> Disminuir material
-                                                    </button>
-                                                </div>
-                                                <div class="col">
-                                                    <!-- Contenido para columna accion 2 -->
-                                                    <button class="btn btn-sm btn-secondary"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#modalDevolverMaterial"
-                                                            data-idMaterialDevolver="@mat.MaterialId"
-                                                            data-nombreMaterialDevolver="@mat.NombreMaterial"
-                                                            data-idMaterialProyectoDevolver="@mat.IdMaterialProyecto">
-                                                        <i class="fa-solid fa-arrow-left"></i> Devolver material
-                                                    </button>
-                                                </div>
-                                                <div class="col">
-                                                    <!-- Contenido para columna accion 3 -->
-                                                    <button class="btn btn-sm btn-danger"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#modalEliminarMaterialProyecto"
-                                                            data-idMaterialEliminacionDevolver="@mat.MaterialId"
-                                                            data-nombreMaterialEliminar="@mat.NombreMaterial"
-                                                            data-idMaterialProyectoEliminar="@mat.IdMaterialProyecto"
-                                                            data-cantidadEliminarMaterial="@mat.CantidadEnObra">
-                                                        <i class="fas fa-trash"></i> Eliminar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="8" class="text-center">No hay materiales registrados en este proyecto.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel" aria-labelledby="nav-SolicitudesMaterial">
-                <br />
-                <div class="row justify-content-between">
-                    <div class="col-4">
-                        Solicitudes de material para el proyecto
-                    </div>
-                    <div class="col-4">
-                        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearSolicitudModal">
-                            Solicitar Material
-                        </button>
-                    </div>
-                </div>
-
-
-
-                <table class="table table-striped align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Material</th>
-                            <th>Cantidad</th>
-                            <th>Prioridad</th>
-                            <th>Fecha Solicitud</th>
-                            <th>Estado</th>
-                            <th>Observaciones bodeguero</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.SolicitudesMaterial != null && Model.SolicitudesMaterial.Any())
-                        {
-                            foreach (var solicitud in Model.SolicitudesMaterial)
-                            {
-                                foreach (var mat in solicitud.MaterialesSolicitados)
-                                {
-                                    <tr>
-                                        <td>@mat.NombreMaterial</td>
-                                        <td>@mat.Cantidad</td>
-                                        <td>@mat.Prioridad</td>
-                                        <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
-                                        <td>@solicitud.EstadoSolicitud</td>
-                                        <td>@solicitud.ObservacionesBodeguero</td>
-                                        <td>
-                                            @if (solicitud.EstadoSolicitud == "Abierta")
-                                            {
-                                                <button type="button" class="btn btn-sm btn-warning"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#editarSolicitudModal"
-                                                        data-id="@solicitud.IdSolicitud"
-                                                        data-material="@mat.MaterialId"
-                                                        data-cantidad="@mat.Cantidad"
-                                                        data-prioridad="@mat.Prioridad">
-                                                    <i class="fas fa-edit"></i> Editar
-                                                </button>
-
-                                                <form method="post" asp-page-handler="EliminarSolicitud"
-                                                      asp-route-idSolicitud="@solicitud.IdSolicitud"
-                                                      asp-route-CodigoProyecto="@Model.CodigoProyecto"
-                                                      style="display:inline;">
-                                                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
-                                                </form>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted">No editable</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="8" class="text-center">No hay solicitudes registradas.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-
-            </div>
-
         </div>
+        <br />
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre material</th>
+                    <th>Cantidad en obra</th>
+                    <th>Cantidad actual en bodega central</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.MaterialesProyecto != null && Model.MaterialesProyecto.Any())
+                {
+                    foreach (var mat in Model.MaterialesProyecto)
+                    {
+                        <tr>
+
+                            <td>@mat.NombreMaterial</td>
+                            <td>@mat.CantidadEnObra</td>
+                            <td>
+                                @if (!mat.Activo || mat.CantidadEnBodega <= 0)
+                                {
+                                    <span class="badge bg-danger">No hay existencias</span>
+                                }
+                                else
+                                {
+                                    @mat.CantidadEnBodega
+                                }
+                            </td>
+                            <td>
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col">
+                                            <!-- Contenido para columna accion 1 -->
+                                            <button class="btn btn-sm btn-warning"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalDisminuiMaterial"
+                                                    data-idMaterialProyecto="@mat.IdMaterialProyecto"
+                                                    data-nombreMaterial="@mat.NombreMaterial">
+                                                <i class="fa-solid fa-square-minus"></i> Disminuir material
+                                            </button>
+                                        </div>
+                                        <div class="col">
+                                            <!-- Contenido para columna accion 2 -->
+                                            <button class="btn btn-sm btn-secondary"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalDevolverMaterial"
+                                                    data-idMaterialDevolver="@mat.MaterialId"
+                                                    data-nombreMaterialDevolver="@mat.NombreMaterial"
+                                                    data-idMaterialProyectoDevolver="@mat.IdMaterialProyecto">
+                                                <i class="fa-solid fa-arrow-left"></i> Devolver material
+                                            </button>
+                                        </div>
+                                        <div class="col">
+                                            <!-- Contenido para columna accion 3 -->
+                                            <button class="btn btn-sm btn-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalEliminarMaterialProyecto"
+                                                    data-idMaterialEliminacionDevolver="@mat.MaterialId"
+                                                    data-nombreMaterialEliminar="@mat.NombreMaterial"
+                                                    data-idMaterialProyectoEliminar="@mat.IdMaterialProyecto"
+                                                    data-cantidadEliminarMaterial="@mat.CantidadEnObra">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center">No hay materiales registrados en este proyecto.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tab-pane fade" id="nav-SolicitudMateriales-tab" role="tabpanel" aria-labelledby="nav-SolicitudesMaterial">
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                Solicitudes de material para el proyecto
+            </div>
+            <div class="col-4">
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearSolicitudModal">
+                    Solicitar Material
+                </button>
+            </div>
+        </div>
+
+
+
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Material</th>
+                    <th>Cantidad</th>
+                    <th>Prioridad</th>
+                    <th>Fecha Solicitud</th>
+                    <th>Estado</th>
+                    <th>Observaciones bodeguero</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.SolicitudesMaterial != null && Model.SolicitudesMaterial.Any())
+                {
+                    foreach (var solicitud in Model.SolicitudesMaterial)
+                    {
+                        foreach (var mat in solicitud.MaterialesSolicitados)
+                        {
+                            <tr>
+                                <td>@mat.NombreMaterial</td>
+                                <td>@mat.Cantidad</td>
+                                <td>@mat.Prioridad</td>
+                                <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@solicitud.EstadoSolicitud</td>
+                                <td>@solicitud.ObservacionesBodeguero</td>
+                                <td>
+                                    @if (solicitud.EstadoSolicitud == "Abierta")
+                                    {
+                                        <button type="button" class="btn btn-sm btn-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editarSolicitudModal"
+                                                data-id="@solicitud.IdSolicitud"
+                                                data-material="@mat.MaterialId"
+                                                data-cantidad="@mat.Cantidad"
+                                                data-prioridad="@mat.Prioridad">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+
+                                        <form method="post" asp-page-handler="EliminarSolicitud"
+                                              asp-route-idSolicitud="@solicitud.IdSolicitud"
+                                              asp-route-CodigoProyecto="@Model.CodigoProyecto"
+                                              style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No editable</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center">No hay solicitudes registradas.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 

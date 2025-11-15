@@ -9,13 +9,15 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
     public class DashboardModel : PageModel
     {
         private readonly IProyectoService _proyectoService;
+        private readonly IDashboardService _dashboardService;
 
-        public IEnumerable<ProyectoDashboardDto> Proyectos { get; set; } = new List<ProyectoDashboardDto>();
-
-        public DashboardModel(IProyectoService proyectoService)
+        public DashboardModel(IProyectoService proyectoService, IDashboardService dashboardService)
         {
             _proyectoService = proyectoService;
+            _dashboardService = dashboardService;
         }
+        public IEnumerable<ProyectoDashboardDto> Proyectos { get; set; } = new List<ProyectoDashboardDto>();
+
         public async Task OnGetAsync()
         {
             Proyectos = await _proyectoService.MostrarProyectosActivosEInactivosAsync();

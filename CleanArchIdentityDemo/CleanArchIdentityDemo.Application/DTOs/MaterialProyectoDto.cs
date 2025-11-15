@@ -13,5 +13,7 @@
 
         public int CantidadEnBodega { get; set; }
 
+        public bool Activo { get; set; }
+
     }
 }

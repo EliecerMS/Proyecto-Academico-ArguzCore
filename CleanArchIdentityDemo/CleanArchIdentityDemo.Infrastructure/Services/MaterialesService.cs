@@ -85,6 +85,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 .Include(ms => ms.Material)
                 .Include(ms => ms.SolicitudMaterial)
                     .ThenInclude(sm => sm.Proyecto)
+                    .OrderByDescending(ms => ms.SolicitudMaterial.FechaSolicitud)
                 .ToListAsync();
 
             var resultado = materiales.Select(ms => new MaterialSolicitadoDto

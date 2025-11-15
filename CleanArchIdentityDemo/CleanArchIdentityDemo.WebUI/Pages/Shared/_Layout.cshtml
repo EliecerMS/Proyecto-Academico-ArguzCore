@@ -79,9 +79,25 @@
                             </ul>
                             <ul class="nav flex-column">
                                 <li class="nav-item">
+                                    <a class="nav-link" asp-page="/Bodeguero/Materiales"><i class="fa-solid fa-cubes"></i> Materiales</a>
+                                </li>
+                            </ul>
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-page="/Contador/Finanzas"><i class="fa-solid fa-dollar-sign"></i> Finanzas</a>
+                                </li>
+                            </ul>
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-page="/JefeMaquinaria/ListaMaquinaria"><i class="fa-solid fa-screwdriver-wrench"></i> Equipos</a>
+                                </li>
+                            </ul>
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
                                     <a class="nav-link" asp-page="/Admin/Auditoria"><i class="fa-solid fa-user-secret"></i> Auditoria</a>
                                 </li>
                             </ul>
+                            
                             }
                             if (roles.Contains("SupervisorProyectos"))
                              {

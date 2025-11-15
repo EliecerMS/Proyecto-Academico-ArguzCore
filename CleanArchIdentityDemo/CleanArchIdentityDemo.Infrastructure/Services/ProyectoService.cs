@@ -517,6 +517,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 .Include(s => s.MaterialesSolicitados)
                 .ThenInclude(ms => ms.Material)
                 .Where(s => s.ProyectoId == proyectoId)
+                .OrderByDescending(s => s.FechaSolicitud)
                 .ToListAsync();
 
             return solicitudes.Select(s => new SolicitudMaterialDto
@@ -672,7 +673,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                    MaterialId = m.MaterialId,
                    NombreMaterial = m.Material.NombreMaterial,
                    CantidadEnObra = m.CantidadEnObra,
-                   CantidadEnBodega = m.Material.CantidadDisponible
+                   CantidadEnBodega = m.Material.CantidadDisponible,
+                   Activo = m.Material.Activo
                })
                .ToListAsync();
         }
@@ -911,9 +913,60 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 EstadoProyecto = p.EstadoProyecto.NombreEstado,
                 IdEstadoProyecto = p.EstadoProyectoId,
                 PorcentajeAvance = RecalculoPorcentajeAvance(p.Tareas.ToList()),
-                //Desviacion se debe agregar y calcular cuando se tenga lista elreporte financiero en detalle proyecto
+                Desviacion = DesviacionAsync(p.Presupuesto, CostosEjecutadosAsync(p.IdProyecto), RecalculoPorcentajeAvance(p.Tareas.ToList())).Result //Desviacion se debe agregar y calcular cuando se tenga lista elreporte financiero en detalle proyecto
             });
 
+        }
+
+        private async Task<decimal> DesviacionAsync(decimal Presupuesto, Task<decimal> CostoEjecutadoActual, int PorcentajeAvanceActual)
+        {
+            if (Presupuesto == 0) return 0;
+
+            // 1. Espera de forma asíncrona (sin bloquear el hilo)
+            decimal costoActual = await CostoEjecutadoActual;
+
+            // 2. Cálculo del Valor Ganado (EV)
+            // El sufijo M asegura que la división sea decimal y no entera
+            decimal valorGanado = Presupuesto * (PorcentajeAvanceActual / 100M);
+
+            // 3. Cálculo de la Varianza de Costo (CV)
+            decimal varianzaCostoAbsoluta = valorGanado - costoActual;
+
+            return varianzaCostoAbsoluta;
+        }
+
+        private async Task<decimal> CostosEjecutadosAsync(int IdProyecto)
+        {
+            // Obtener el proyecto
+            var proyecto = await _context.Proyectos
+                .FirstOrDefaultAsync(p => p.IdProyecto == IdProyecto);
+            //De no encontrar el proyecto lanza excepcion
+            if (proyecto == null)
+                throw new Exception("No se encontró el proyecto.");
+
+            //Busca los costos ejecutados del proyecto
+            var query = _context.CostosEjecutados
+                .Where(c => c.ProyectoId == IdProyecto);
+
+            //Si no hay costos ejecutados retorna 0
+            if (query == null)
+                return 0;
+
+            //Obtiene la lista de costos ejecutados
+            var costos = await query
+                 .Select(c => new CostoEjecutadoDto
+                 {
+                     CategoriaGasto = c.CategoriaGasto,
+                     Monto = c.Monto,
+                     Fecha = c.Fecha,
+                     Descripcion = c.Descripcion
+                 })
+                 .ToListAsync();
+
+            //Suma los costos ejecutados para tener el total ejecutado
+            var totalEjecutado = costos.Sum(c => c.Monto);
+
+            return totalEjecutado;
         }
     }
 }
