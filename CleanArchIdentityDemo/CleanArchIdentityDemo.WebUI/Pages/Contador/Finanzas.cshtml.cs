@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.Contador
 {
-    [Authorize(Roles = "Contador")]
+    [Authorize(Roles = "Contador,Administrador")]
     public class FinanzasModel : PageModel
     {
         private readonly IFinanzasService _FinanzasService;

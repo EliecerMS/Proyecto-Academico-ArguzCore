@@ -1,22 +1,14 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
-using CleanArchIdentityDemo.Domain.Entities;
 using CleanArchIdentityDemo.Infrastructure.Identity;
-using CleanArchIdentityDemo.Infrastructure.Services;
-using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
 {
-    [Authorize(Roles = "Bodeguero")]
+    [Authorize(Roles = "Bodeguero,Administrador")]
     public class MaterialesModel : PageModel
     {
         private readonly IMaterialesService _MaterialesService;
@@ -30,7 +22,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
             _UserManager = userManager;
         }
 
-       
+
 
         public List<MaterialDto> Materiales { get; set; } = new();
 
@@ -62,7 +54,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
         {
             if (!ModelState.IsValid)
             {
-                
+
 
                 TempData["ErrorMessage"] = "Hay errores en el formulario. Verifica los campos.";
                 TempData["TabActiva"] = "MaterialesBodega";
@@ -181,5 +173,5 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
         }
     }
 
- 
+
 }

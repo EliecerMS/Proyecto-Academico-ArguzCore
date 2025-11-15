@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria
 {
-    [Authorize(Roles = "JefeMaquinaria")]
+    [Authorize(Roles = "JefeMaquinaria,Administrador")]
     public class DetallesMaquinariaModel : PageModel
     {
         private readonly IEquipoService _equipoService;
