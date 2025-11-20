@@ -67,7 +67,7 @@
         </button>
         <button class="nav-link" id="nav-Respaldos" data-bs-toggle="tab" data-bs-target="#nav-Respaldos-tab"
                 type="button" role="tab" aria-controls="nav-Respaldos-tab" aria-selected="false">
-            Respaldos
+            Respaldos automáticos
         </button>
     </div>
 </nav>
@@ -182,7 +182,7 @@
         <br />
         <div class="row justify-content-between">
             <div class="col-4">
-                <h2>Gestión de Backups</h2>
+               
             </div>
             <div class="col-4">
                 <!-- Botón para abrir modal Crear Usuario -->
@@ -197,19 +197,40 @@
                 <div>
                     <div class="card">
                         <div class="card-header bg-info text-white">
-                            <h5>Backups Automáticos (PITR)</h5>
+                            <h5>Backups Automáticos (PITR): Copias de seguridad automáticas para permitir la restauración a un punto en el tiempo (Point In Time Restore).</h5>
                         </div>
                         <div class="card-body">
                             <p>
-                                <strong>Retención:</strong> 7 días (configurable hasta 35 días)
+                                <strong>Retención:</strong> 7 días (puede ser configurable hasta 35 días por medio de Azure Portal)
                             </p>
                             
                             <p class="text-muted mb-0">
+                                <p>
+                                    En esta pestaña solo se muestran los registros de estos puntos de restauración.
+                                </p>
+                                <p>
+                                    Azure SQL Database crea:
+                                </p>
+                                    <ul>
+                                       <li>
+                                           Copias de seguridad automáticas para permitir la restauración a un punto en el tiempo (PITR - Point In Time Restore).
+                                       </li>
+                                        <li>
+                                            Copias de seguridad completas cada semana.
+                                        </li>
+                                        <li>
+                                            Copias de seguridad diferenciales se realizan cada 12h o 24h (es configurable).
+                                        </li>
+                                        <li>
+                                            Las copias de seguridad del registro de transacciones se realizan aproximadamente cada 10 minutos.
+                                        </li>
+                                    </ul>
                                 <small>
-                                    Los backups automáticos se realizan cada 5-10 minutos. Solo se muestran los registros de estos puntos de restauración.
-                                    La única acción a tomar para estos puntos de restauración es unicamente restaurarlos, y para hacerlo solamente es posible ingresando al Azure Portal.
+                                    Los puntos de resturación obtenidos son resultado de las copias de seguridad o backups automáticos.
+
+                                    La única acción a tomar para estos puntos de restauración es restaurarlos únicamente, y para hacerlo solamente es posible ingresando al Azure Portal donde puede realizar más configuraciones de ser necesario.
+                                    Puede tener mas información en: https://learn.microsoft.com/en-us/azure/azure-sql/database/automated-backups-overview?view=azuresql
                                 </small>
-                            </p>
                         </div>
                     </div>
                 </div>

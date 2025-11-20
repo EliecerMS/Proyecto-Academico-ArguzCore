@@ -6,11 +6,11 @@
             <th>Nombre Punto</th>
             <th>Fecha Creacion</th>
             <th>Tipo Punto</th>
-            <th>Fecha mas antigua</th>
+            <th>Fecha y hora mas antigua</th>
         </tr>
     </thead>
     <tbody>
-        @if (Model != null && Model.Any())
+        @if (Model != null && Model.Any() && Model.Count != 0)
         {
             @foreach (var backup in Model)
             {
@@ -34,7 +34,7 @@
         else
         {
             <tr>
-                <td colspan="5" class="text-center">No se encontraron backups automaticos.</td>
+                <td colspan="5" class="text-center">No se encontraron backups automaticos o no se pudo conectar al servicio para consultar. También puede dirigirse a Azure Portal para consultar de ser necesario</td>
             </tr>
         }
     </tbody>

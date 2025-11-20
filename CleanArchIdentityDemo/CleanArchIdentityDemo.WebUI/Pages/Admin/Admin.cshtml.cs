@@ -137,12 +137,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         public async Task<IActionResult> OnGetCargarBackupsAutomaticosAsync()
         {
             // Obtener la fecha del backup más antiguo
-            FechaBackupMasAntiguo = await _BDRespaldoService.ObtenerFechaBackupMasAntiguoAsync();
+            //FechaBackupMasAntiguo = await _BDRespaldoService.ObtenerFechaBackupMasAntiguoAsync();
             // Obtener la lista de puntos de restauración (backups automáticos)
             PuntosRestauracion = (await _BDRespaldoService.ListarPuntosRestauracionAsync());
 
+
             // Retornar solo la partial view
             return Partial("_TablaBackupsPITR", PuntosRestauracion.ToList());
+
         }
     }
 }
