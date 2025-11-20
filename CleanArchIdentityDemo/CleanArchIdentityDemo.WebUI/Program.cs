@@ -41,7 +41,7 @@ builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 builder.Services.AddScoped<IContratoService, ContratoService>();
 builder.Services.AddScoped<IAnaliticaService, AnaliticaService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
-
+builder.Services.AddScoped<IBDRespladosService, BDRespaldoService>();
 
 
 

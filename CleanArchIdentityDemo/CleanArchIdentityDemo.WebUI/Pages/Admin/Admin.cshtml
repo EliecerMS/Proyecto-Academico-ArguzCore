@@ -65,7 +65,8 @@
         <button class="nav-link" id="nav-Usuarios" data-bs-toggle="tab" data-bs-target="#nav-Usuarios-tab" type="button" role="tab" aria-controls="nav-Usuarios-tab" aria-selected="false">
             Usuarios
         </button>
-        <button class="nav-link" id="nav-Respaldos" data-bs-toggle="tab" data-bs-target="#nav-Respaldos-tab" type="button" role="tab" aria-controls="nav-Respaldos-tab" aria-selected="false">
+        <button class="nav-link" id="nav-Respaldos" data-bs-toggle="tab" data-bs-target="#nav-Respaldos-tab"
+                type="button" role="tab" aria-controls="nav-Respaldos-tab" aria-selected="false">
             Respaldos
         </button>
     </div>
@@ -181,34 +182,96 @@
         <br />
         <div class="row justify-content-between">
             <div class="col-4">
-                Respaldos
+                <h2>Gestión de Backups</h2>
             </div>
             <div class="col-4">
                 <!-- Botón para abrir modal Crear Usuario -->
-                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#">
-                    Crear respaldo
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearBackupModal">
+                    Crear backup
                 </button>
             </div>
         </div>
-        <!-- Aca una base rapida, disenar la tabla donde se listan respaldos como el prototipo -->
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Colum 1</th>
-                    <th>Colum 2</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        Colum 1
-                    </td>
-                    <td>
-                        Colum 2
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="container-fluid mt-4">
+            <!-- Información PITR -->
+            <div class="row">
+                <div>
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5>Backups Automáticos (PITR)</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>
+                                <strong>Retención:</strong> 7 días (configurable hasta 35 días)
+                            </p>
+                            
+                            <p class="text-muted mb-0">
+                                <small>
+                                    Los backups automáticos se realizan cada 5-10 minutos. Solo se muestran los registros de estos puntos de restauración.
+                                    La única acción a tomar para estos puntos de restauración es unicamente restaurarlos, y para hacerlo solamente es posible ingresando al Azure Portal.
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--- Tabla de backups automaticos --->
+            <div class="position-relative">
+                <div class="table-responsive" id="tablaBackupsAutomaticosContainer">
+                    <partial name="_TablaBackupsPITR" model="Model.PuntosRestauracion" />
+                </div>
+
+                <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Cargando datos de backups automaticos...</p>
+                </div>
+            </div>
+
+            <!-- Backups Manuales -->
+            @* <div class="card">
+                <div class="card-header">
+                    <h5>Backups Manuales Disponibles</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.BackupsManuales.Any())
+                    {
+                        <p class="text-muted">No hay backups manuales creados</p>
+                    }
+                    else
+                    {
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Archivo</th>
+                                    <th>Fecha</th>
+                                    <th>Tamaño</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var backup in Model.BackupsManuales)
+                                {
+                                    <tr>
+                                        <td>@backup.NombreArchivo</td>
+                                        <td>@backup.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@backup.TamanoFormateado</td>
+                                        <td>
+                                            <a href="@backup.UrlDescarga"
+                                               class="btn btn-sm btn-primary"
+                                               target="_blank">
+                                                <i class="fas fa-download"></i> Descargar
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div> *@
+        </div>
     </div>
 
 </div>
@@ -299,6 +362,35 @@
     </div>
 </div>
 
+<!-- Crear Backup Manual -->
+<div class="modal fade" id="crearBackupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crear backup</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del Backup</label>
+                        <input type="text"
+                               class="form-control"
+                               asp-for="NombreBackup"
+                               placeholder="backup_pre_actualizacion"
+                               required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary"> <i class="fas fa-save"></i> Crear Backup </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -313,6 +405,13 @@
 
             // Activar cada toast
             toastList.forEach(toast => toast.show());
+
+         const respaldosButton = document.getElementById('nav-Respaldos');
+
+        if (respaldosButton) {
+            respaldosButton.addEventListener('click', cargarBackupsAutomaticos);
+        }
+
         });
         // Llenar modal Editar con datos del botón pulsado
         var editUserModal = document.getElementById('editUserModal');
@@ -342,6 +441,40 @@
                 }
             }
         });
+    </script>
+    <script>
+        async function cargarBackupsAutomaticos() {
+          const handlerName = 'CargarBackupsAutomaticos';
+
+             const tabla = document.getElementById('tablaBackupsAutomaticosContainer');
+             const spinner = document.getElementById('loadingSpinner');
+
+             try {
+                         // Mostrar loading
+                         tabla.style.display = 'none';
+                         spinner.style.display = 'block';
+
+                         // Fetch data
+                          const response = await fetch(`?handler=${handlerName}`, {
+                            method: 'GET',
+                            // Headers son opcionales pero útiles para depuración
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+
+                         if (!response.ok) throw new Error('Error en la petición');
+
+                         // Actualizar tabla
+                         tabla.innerHTML = await response.text();
+
+                     } catch (error) {
+                         console.error('Error:', error);
+                         tabla.innerHTML = '<div class="alert alert-danger">Error al obtener los datos de backups automaticos</div>';
+                     } finally {
+                         // Siempre ocultar spinner y mostrar tabla
+                         spinner.style.display = 'none';
+                         tabla.style.display = 'block';
+                     }
+         }
     </script>
     
 }

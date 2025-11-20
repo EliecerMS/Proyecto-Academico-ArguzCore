@@ -13,11 +13,13 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
     {
         private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IBDRespladosService _BDRespaldoService;
 
-        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager)
+        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager, IBDRespladosService BDRespladosService)
         {
             _userService = userService;
             _userManager = userManager;
+            _BDRespaldoService = BDRespladosService;
         }
 
         public List<UserDto> Users { get; set; } = new(); // almacenara la lista de usuarios
@@ -38,6 +40,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         [BindProperty]
         public string IdUsuario { get; set; } = string.Empty;
 
+        //Propiedas para respaldo de BD
+        public List<PuntoRestauracionDto> PuntosRestauracion { get; set; } = new();
+        public List<BackupManualDto> BackupsManuales { get; set; } = new();
+        public string FechaBackupMasAntiguo { get; set; }
+
+        [BindProperty]
+        public string NombreBackup { get; set; }
+
         public async Task OnGetAsync()//muestra los usuarios excepto el del admin actual
         {
             var idUser = _userManager.GetUserId(User);
@@ -48,6 +58,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
                 Roles = (List<UserRolesDto>)await _userService.GetRoles();
             }
             //TempData["TabActiva"] = "Usuarios";
+
 
         }
 
@@ -121,6 +132,17 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
             }
 
             return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnGetCargarBackupsAutomaticosAsync()
+        {
+            // Obtener la fecha del backup más antiguo
+            FechaBackupMasAntiguo = await _BDRespaldoService.ObtenerFechaBackupMasAntiguoAsync();
+            // Obtener la lista de puntos de restauración (backups automáticos)
+            PuntosRestauracion = (await _BDRespaldoService.ListarPuntosRestauracionAsync());
+
+            // Retornar solo la partial view
+            return Partial("_TablaBackupsPITR", PuntosRestauracion.ToList());
         }
     }
 }

@@ -1,0 +1,41 @@
+﻿@model List<CleanArchIdentityDemo.Application.DTOs.PuntoRestauracionDto>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre Punto</th>
+            <th>Fecha Creacion</th>
+            <th>Tipo Punto</th>
+            <th>Fecha mas antigua</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var backup in Model)
+            {
+                <tr>
+                    <td>@backup.NombrePunto</td>
+                    <td>
+                        @if (backup.FechaCreacion.HasValue)
+                        {
+                            @backup.FechaCreacion.Value.LocalDateTime
+                        }
+                        else
+                        {
+                            <span>Desconocido</span>
+                        }
+                    </td>
+                    <td>@backup.TipoPunto</td>
+                    <td>@backup.FechaMasAntigua.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">No se encontraron backups automaticos.</td>
+            </tr>
+        }
+    </tbody>
+</table>
