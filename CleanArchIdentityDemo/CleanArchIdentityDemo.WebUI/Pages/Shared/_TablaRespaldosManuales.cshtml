@@ -1,0 +1,38 @@
+﻿@model List<CleanArchIdentityDemo.Application.DTOs.BackupManualDto>
+
+
+<!-- Backups Manuales -->
+        @if (!Model.Any())
+        {
+            <p class="text-muted">No hay backups manuales creados</p>
+        }
+        else
+        {
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Archivo</th>
+                        <th>Fecha</th>
+                        <th>Tamaño</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var backup in Model)
+                    {
+                        <tr>
+                            <td>@backup.NombreArchivo</td>
+                            <td>@backup.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@backup.TamanoFormateado</td>
+                            <td>
+                                <a href="@backup.UrlDescarga"
+                                   class="btn btn-sm btn-primary"
+                                   target="_blank">
+                                    <i class="fas fa-download"></i> Descargar
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }

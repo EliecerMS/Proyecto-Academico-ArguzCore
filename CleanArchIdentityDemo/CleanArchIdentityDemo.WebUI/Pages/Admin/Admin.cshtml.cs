@@ -58,7 +58,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
                 Roles = (List<UserRolesDto>)await _userService.GetRoles();
             }
             //TempData["TabActiva"] = "Usuarios";
-
+            //BackupsManuales = (await _BDRespaldoService.ListarBackupsManualesAsync()).ToList();
 
         }
 
@@ -145,6 +145,42 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
             // Retornar solo la partial view
             return Partial("_TablaBackupsPITR", PuntosRestauracion.ToList());
 
+        }
+
+        public async Task<IActionResult> OnGetCargarBackupsManualesAsync()
+        {
+            // Obtener la fecha del backup más antiguo
+            //FechaBackupMasAntiguo = await _BDRespaldoService.ObtenerFechaBackupMasAntiguoAsync();
+            // Obtener la lista de puntos de restauración (backups automáticos)
+            BackupsManuales = (await _BDRespaldoService.ListarBackupsManualesAsync());
+
+
+            // Retornar solo la partial view
+            return Partial("_TablaRespaldosManuales", BackupsManuales.ToList());
+
+        }
+
+        public async Task<IActionResult> OnPostCrearBackupManualAsync()
+        {
+            try
+            {
+                var resultado = await _BDRespaldoService.CrearBackupManualBacpacAsync(NombreBackup);
+
+                if (resultado.Exito)
+                {
+                    TempData["SuccessMessage"] = resultado.Mensaje;
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = resultado.Mensaje;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error al crear el respaldo manual.";
+            }
+            return RedirectToPage();
         }
     }
 }

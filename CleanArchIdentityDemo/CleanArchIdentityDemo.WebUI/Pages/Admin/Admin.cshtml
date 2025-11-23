@@ -65,9 +65,12 @@
         <button class="nav-link" id="nav-Usuarios" data-bs-toggle="tab" data-bs-target="#nav-Usuarios-tab" type="button" role="tab" aria-controls="nav-Usuarios-tab" aria-selected="false">
             Usuarios
         </button>
-        <button class="nav-link" id="nav-Respaldos" data-bs-toggle="tab" data-bs-target="#nav-Respaldos-tab"
-                type="button" role="tab" aria-controls="nav-Respaldos-tab" aria-selected="false">
+        <button class="nav-link" id="nav-RespaldosAutomaticosBtn" data-bs-toggle="tab" data-bs-target="#nav-RespaldosAutomaticos-tab"
+                type="button" role="tab" aria-controls="nav-RespaldosAutomaticos" aria-selected="false">
             Respaldos automáticos
+        </button>
+        <button class="nav-link" id="nav-RespaldosManualesBtn" data-bs-toggle="tab" data-bs-target="#nav-RespaldosManuales-tab" type="button" role="tab" aria-controls="nav-RespaldosManuales-tab" aria-selected="false" onclick="cargarBackupsManuales()">
+            Respaldos manuales
         </button>
     </div>
 </nav>
@@ -178,19 +181,8 @@
         </div>
     </div>
 
-    <div class="tab-pane fade" id="nav-Respaldos-tab" role="tabpanel" aria-labelledby="nav-Respaldos">
+    <div class="tab-pane fade" id="nav-RespaldosAutomaticos-tab" role="tabpanel" aria-labelledby="nav-RespaldosAutomaticos">
         <br />
-        <div class="row justify-content-between">
-            <div class="col-4">
-               
-            </div>
-            <div class="col-4">
-                <!-- Botón para abrir modal Crear Usuario -->
-                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearBackupModal">
-                    Crear backup
-                </button>
-            </div>
-        </div>
         <div class="container-fluid mt-4">
             <!-- Información PITR -->
             <div class="row">
@@ -242,59 +234,89 @@
                     <partial name="_TablaBackupsPITR" model="Model.PuntosRestauracion" />
                 </div>
 
-                <div id="loadingSpinner" class="text-center py-5" style="display: none;">
+                <div id="loadingSpinnerAutomaticos" class="text-center py-5" style="display: none;">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Cargando...</span>
                     </div>
-                    <p class="mt-2 text-muted">Cargando datos de backups automaticos...</p>
+                    <p class="mt-2 text-muted">Cargando datos de backups automáticos...</p>
                 </div>
             </div>
 
-            <!-- Backups Manuales -->
-            @* <div class="card">
-                <div class="card-header">
-                    <h5>Backups Manuales Disponibles</h5>
-                </div>
-                <div class="card-body">
-                    @if (!Model.BackupsManuales.Any())
-                    {
-                        <p class="text-muted">No hay backups manuales creados</p>
-                    }
-                    else
-                    {
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Archivo</th>
-                                    <th>Fecha</th>
-                                    <th>Tamaño</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var backup in Model.BackupsManuales)
-                                {
-                                    <tr>
-                                        <td>@backup.NombreArchivo</td>
-                                        <td>@backup.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
-                                        <td>@backup.TamanoFormateado</td>
-                                        <td>
-                                            <a href="@backup.UrlDescarga"
-                                               class="btn btn-sm btn-primary"
-                                               target="_blank">
-                                                <i class="fas fa-download"></i> Descargar
-                                            </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    }
-                </div>
-            </div> *@
         </div>
     </div>
 
+
+    <div class="tab-pane fade" id="nav-RespaldosManuales-tab" role="tabpanel" aria-labelledby="nav-RespaldosManuales-tab">
+        <br />
+        <div class="row justify-content-between">
+            <div class="col-4">
+                
+                        Backups manuales
+            </div>
+            <div class="col-4">
+                <!-- Botón para abrir modal Crear Usuario -->
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearBackupModal">
+                    Crear backup
+                </button>
+            </div>
+        </div>
+
+        <!--- Tabla de backups manuales --->
+        <div class="position-relative">
+            <div class="table-responsive" id="tablaBackupsManualesContainer">
+                <partial name="_TablaRespaldosManuales" model="Model.BackupsManuales" />
+            </div>
+
+            <div id="loadingSpinnerManuales" class="text-center py-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted">Cargando datos de backups manuales...</p>
+            </div>
+        </div>
+
+        <!-- Backups Manuales -->
+        @*<div class="card">
+            <div class="card-header">
+                <h5>Backups Manuales Disponibles</h5>
+            </div>
+           <div class="card-body">
+                @if (!Model.BackupsManuales.Any())
+                {
+                    <p class="text-muted">No hay backups manuales creados</p>
+                }
+                else
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Archivo</th>
+                                <th>Fecha</th>
+                                <th>Tamaño</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var backup in Model.BackupsManuales)
+                            {
+                                <tr>
+                                    <td>@backup.NombreArchivo</td>
+                                    <td>@backup.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@backup.TamanoFormateado</td>
+                                    <td>
+                                        <a href="@backup.UrlDescarga"
+                                           class="btn btn-sm btn-primary"
+                                           target="_blank">
+                                            <i class="fas fa-download"></i> Descargar
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>*@      
+        </div>
 </div>
 
 
@@ -392,7 +414,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="post">
+                <form method="post" asp-page-handler="CrearBackupManual">
                     <div class="mb-3">
                         <label class="form-label">Nombre del Backup</label>
                         <input type="text"
@@ -427,11 +449,20 @@
             // Activar cada toast
             toastList.forEach(toast => toast.show());
 
-         const respaldosButton = document.getElementById('nav-Respaldos');
+        //Event listener para el boton que muestra la pestanna de respaldos automaticos
+         const respaldosButton = document.getElementById('nav-RespaldosAutomaticosBtn');
 
         if (respaldosButton) {
             respaldosButton.addEventListener('click', cargarBackupsAutomaticos);
         }
+
+        // //Event listener para el boton que muestra la pestanna de respaldos manueales
+        // const respaldosManualesButton = document.getElementById('nav-RespaldosManualesBtn');
+
+         // if (respaldosManualesButton) {
+         //     respaldosManualesButton.addEventListener('click', cargarBackupsManuales);
+         // }
+
 
         });
         // Llenar modal Editar con datos del botón pulsado
@@ -465,37 +496,56 @@
     </script>
     <script>
         async function cargarBackupsAutomaticos() {
-          const handlerName = 'CargarBackupsAutomaticos';
+            const tabla = document.getElementById('tablaBackupsAutomaticosContainer');
+            const spinner = document.getElementById('loadingSpinnerAutomaticos'); // ⚠️ ID actualizado
 
-             const tabla = document.getElementById('tablaBackupsAutomaticosContainer');
-             const spinner = document.getElementById('loadingSpinner');
+            try {
+                tabla.style.display = 'none';
+                spinner.style.display = 'block';
 
-             try {
-                         // Mostrar loading
-                         tabla.style.display = 'none';
-                         spinner.style.display = 'block';
+                const response = await fetch('?handler=CargarBackupsAutomaticos', {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
 
-                         // Fetch data
-                          const response = await fetch(`?handler=${handlerName}`, {
-                            method: 'GET',
-                            // Headers son opcionales pero útiles para depuración
-                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                        });
+                if (!response.ok) throw new Error('Error en la petición');
 
-                         if (!response.ok) throw new Error('Error en la petición');
+                tabla.innerHTML = await response.text();
 
-                         // Actualizar tabla
-                         tabla.innerHTML = await response.text();
+            } catch (error) {
+                console.error('Error:', error);
+                tabla.innerHTML = '<div class="alert alert-danger">Error al obtener los datos de backups automáticos</div>';
+            } finally {
+                spinner.style.display = 'none';
+                tabla.style.display = 'block';
+            }
+        }
 
-                     } catch (error) {
-                         console.error('Error:', error);
-                         tabla.innerHTML = '<div class="alert alert-danger">Error al obtener los datos de backups automaticos</div>';
-                     } finally {
-                         // Siempre ocultar spinner y mostrar tabla
-                         spinner.style.display = 'none';
-                         tabla.style.display = 'block';
-                     }
-         }
+        async function cargarBackupsManuales() {
+            const tabla = document.getElementById('tablaBackupsManualesContainer');
+            const spinner = document.getElementById('loadingSpinnerManuales'); // ⚠️ ID actualizado
+
+            try {
+                tabla.style.display = 'none';
+                spinner.style.display = 'block';
+
+                const response = await fetch('?handler=CargarBackupsManuales', {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error('Error en la petición');
+
+                tabla.innerHTML = await response.text();
+
+            } catch (error) {
+                console.error('Error:', error);
+                tabla.innerHTML = '<div class="alert alert-danger">Error al obtener los datos de backups manuales</div>';
+            } finally {
+                spinner.style.display = 'none';
+                tabla.style.display = 'block';
+            }
+        }
     </script>
     
 }

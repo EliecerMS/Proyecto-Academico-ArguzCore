@@ -1,15 +1,17 @@
-﻿using Azure.Core;
+﻿using Azure;
+using Azure.Core;
 using Azure.Identity;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Sql;
+using Azure.ResourceManager.Sql.Models;
 using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 
 namespace CleanArchIdentityDemo.Infrastructure.Services
 {
@@ -19,6 +21,11 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         private readonly string _resourceGroup;
         private readonly string _serverName;
         private readonly string _databaseName;
+        private readonly string _blobStorageConnectionString;
+        private readonly string _containerName;
+        private readonly string _sqlUser;
+        private readonly string _sqlPassword;
+        private readonly string _storageAccountName;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuditoriaService> _logger;
 
@@ -32,6 +39,11 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             _resourceGroup = configuration["Azure:ResourceGroup"];
             _serverName = configuration["Azure:ServerName"];
             _databaseName = configuration["Azure:DatabaseName"];
+            _blobStorageConnectionString = configuration.GetSection("AzureBlobStorage:ConnectionString").Value;
+            _containerName = configuration["AzureBackupStorage:ContainerName"];
+            _sqlUser = configuration["Azure:SqlUser"];
+            _sqlPassword = configuration["Azure:SqlPassword"];
+            _storageAccountName = configuration["AzureBackupStorage:StorageAccount"];
         }
 
         // LISTAR PUNTOS DE RESTAURACIÓN DISPONIBLES (PITR)
@@ -116,76 +128,180 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
         // OPCIÓN 2: BACKUPS MANUALES CON BACPAC es más simple, no requiere Azure AD
 
+        //public async Task<ResultadoOperacion> CrearBackupManualBacpacAsync(string nombreBackup)
+        //{
+        //    try
+        //    {
+        //        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        //        var nombreArchivo = $"{nombreBackup}_{timestamp}.bacpac";
+
+
+        //        // Leer el nombre del contenedor de backups desde la nueva sección de configuración
+        //        var contenedorBackups = _configuration["AzureBackupStorage:ContainerName"];
+
+        //        // Asumo que esta clave "Azure:StorageAccount" existe en tus secrets o settings.
+        //        var storageAccountName = _configuration["AzureBackupStorage:StorageAccount"];
+
+
+        //        // Usar Azure CLI (debe estar instalado en el servidor)
+        //        var command = "az";
+        //        var arguments = $"sql db export " +
+        //                      $"--resource-group {_resourceGroup} " +
+        //                      $"--server {_serverName} " +
+        //                      $"--name {_databaseName} " +
+        //                      $"--admin-user {_configuration["Azure:SqlUser"]} " +
+        //                      $"--admin-password {_configuration["Azure:SqlPassword"]} " +
+        //                      $"--storage-key {_configuration["Azure:StorageKey"]} " +
+        //                      $"--storage-key-type StorageAccessKey " +
+        //                      $"--storage-uri https://{storageAccountName}.blob.core.windows.net/{contenedorBackups}/{nombreArchivo}";
+
+        //        var processInfo = new ProcessStartInfo
+        //        {
+        //            FileName = command,
+        //            Arguments = arguments,
+        //            RedirectStandardOutput = true,
+        //            RedirectStandardError = true,
+        //            UseShellExecute = false,
+        //            CreateNoWindow = true
+        //        };
+
+        //        using var process = Process.Start(processInfo);
+        //        var output = await process.StandardOutput.ReadToEndAsync();
+        //        var error = await process.StandardError.ReadToEndAsync();
+        //        await process.WaitForExitAsync();
+
+        //        if (process.ExitCode != 0)
+        //        {
+        //            _logger.LogError($"Error al crear backup: {error}");
+        //            return new ResultadoOperacion
+        //            {
+        //                Exito = false,
+        //                Mensaje = "Error al crear backup. Verifique los logs."
+        //            };
+        //        }
+
+        //        // Guardar metadata en tabla
+        //        // (implementar según necesites)
+
+        //        return new ResultadoOperacion
+        //        {
+        //            Exito = true,
+        //            Mensaje = $"Backup '{nombreArchivo}' creado exitosamente"
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error al crear backup manual");
+        //        return new ResultadoOperacion
+        //        {
+        //            Exito = false,
+        //            Mensaje = $"Error: {ex.Message}"
+        //        };
+        //    }
+        //}
+
         public async Task<ResultadoOperacion> CrearBackupManualBacpacAsync(string nombreBackup)
         {
             try
             {
                 var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                var nombreArchivo = $"{nombreBackup}_{timestamp}.bacpac";
+                // Añade un GUID para asegurar unicidad absoluta, incluso si ejecutas en el mismo segundo
+                var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
+                var nombreArchivo = $"{nombreBackup}_{timestamp}_{uniqueId}.bacpac";
 
+                // Obtener la SAS Token para el Blob Storage
+                var storageUrl = await GetBlobSasUrlAsync(nombreArchivo);
 
-                // Leer el nombre del contenedor de backups desde la nueva sección de configuración
-                var contenedorBackups = _configuration["AzureBackupStorage:ContainerName"];
+                // Autenticación con Azure Resource Manager usando DefaultAzureCredential
+                // DefaultAzureCredential intentará usar la Managed Identity del App Service
+                var credential = new DefaultAzureCredential();
+                var armClient = new ArmClient(credential);
 
-                // Asumo que esta clave "Azure:StorageAccount" existe en tus secrets o settings.
-                var storageAccountName = _configuration["AzureBackupStorage:StorageAccount"];
+                // Identificar el recurso de la base de datos SQL
+                var scope = new ResourceIdentifier($"/subscriptions/{_subscriptionId}/resourceGroups/{_resourceGroup}/providers/Microsoft.Sql/servers/{_serverName}/databases/{_databaseName}");
+                var sqlDatabase = armClient.GetSqlDatabaseResource(scope);
 
-
-                // Usar Azure CLI (debe estar instalado en el servidor)
-                var command = "az";
-                var arguments = $"sql db export " +
-                              $"--resource-group {_resourceGroup} " +
-                              $"--server {_serverName} " +
-                              $"--name {_databaseName} " +
-                              $"--admin-user {_configuration["Azure:SqlUser"]} " +
-                              $"--admin-password {_configuration["Azure:SqlPassword"]} " +
-                              $"--storage-key {_configuration["Azure:StorageKey"]} " +
-                              $"--storage-key-type StorageAccessKey " +
-                              $"--storage-uri https://{storageAccountName}.blob.core.windows.net/{contenedorBackups}/{nombreArchivo}";
-
-                var processInfo = new ProcessStartInfo
+                // Definir los parámetros de exportación
+                var exportDefinition = new DatabaseExportDefinition(
+                    storageKeyType: StorageKeyType.SharedAccessKey, // Usamos SAS Key generado
+                    storageKey: storageUrl.SasToken,
+                    storageUri: storageUrl.BlobUri,
+                    administratorLogin: _sqlUser,
+                    administratorLoginPassword: _sqlPassword)
                 {
-                    FileName = command,
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
+                    AuthenticationType = "Sql" // Especificamos autenticación SQL para la DB interna
                 };
 
-                using var process = Process.Start(processInfo);
-                var output = await process.StandardOutput.ReadToEndAsync();
-                var error = await process.StandardError.ReadToEndAsync();
-                await process.WaitForExitAsync();
+                // Iniciar la operación de exportación asíncrona
+                // WaitUntil.Completed indica que el método esperará a que la operación termine
+                ArmOperation<ImportExportOperationResult> lro = await sqlDatabase.ExportAsync(WaitUntil.Completed, exportDefinition);
+                ImportExportOperationResult result = lro.Value;
 
-                if (process.ExitCode != 0)
-                {
-                    _logger.LogError($"Error al crear backup: {error}");
-                    return new ResultadoOperacion
-                    {
-                        Exito = false,
-                        Mensaje = "Error al crear backup. Verifique los logs."
-                    };
-                }
 
-                // Guardar metadata en tabla
-                // (implementar según necesites)
+                _logger.LogInformation($"Backup '{nombreArchivo}' creado exitosamente. Status: {result.Status}");
 
                 return new ResultadoOperacion
                 {
                     Exito = true,
-                    Mensaje = $"Backup '{nombreArchivo}' creado exitosamente"
+                    Mensaje = $"Backup '{nombreArchivo}' creado exitosamente en Blob Storage."
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear backup manual");
+                _logger.LogError(ex, "Error al crear backup manual con Azure SDK.");
                 return new ResultadoOperacion
                 {
                     Exito = false,
-                    Mensaje = $"Error: {ex.Message}"
+                    Mensaje = $"Error al crear backup: {ex.Message}"
                 };
             }
+        }
+
+        // Helper para generar una SAS Token temporal necesaria para que el servicio de Exportación de SQL acceda al Blob
+        private async Task<(Uri BlobUri, string SasToken)> GetBlobSasUrlAsync(string blobName)
+        {
+            var blobServiceClient = new BlobServiceClient(
+                new Uri($"https://{_storageAccountName}.blob.core.windows.net/"),
+                new DefaultAzureCredential());
+
+            var containerClient = blobServiceClient.GetBlobContainerClient(_containerName);
+            await containerClient.CreateIfNotExistsAsync();
+            var blobClient = containerClient.GetBlobClient(blobName);
+
+            // Obtener User Delegation Key
+            var userDelegationKey = await blobServiceClient.GetUserDelegationKeyAsync(
+                DateTimeOffset.UtcNow.AddMinutes(-5),
+                DateTimeOffset.UtcNow.AddHours(24) // Más tiempo para operaciones largas
+            );
+
+            var sasBuilder = new BlobSasBuilder()
+            {
+                BlobContainerName = _containerName,
+                BlobName = blobName,
+                Resource = "b",
+                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
+                ExpiresOn = DateTimeOffset.UtcNow.AddHours(24)
+            };
+
+            // Incluir Delete es OBLIGATORIO para Azure SQL Export
+            sasBuilder.SetPermissions(
+                BlobSasPermissions.Read |
+                BlobSasPermissions.Write |
+                BlobSasPermissions.Create |
+                BlobSasPermissions.Delete |
+                BlobSasPermissions.Add  // También recomendado
+            );
+
+            var sasQueryParameters = sasBuilder.ToSasQueryParameters(
+                userDelegationKey,
+                blobServiceClient.AccountName
+            );
+
+            // Retornar URI SIN el token SAS incluido
+            var blobUriWithoutSas = blobClient.Uri; // URI limpia sin query string
+            var sasTokenOnly = sasQueryParameters.ToString(); // Solo el token
+
+            return (blobUriWithoutSas, sasTokenOnly);
         }
 
 
@@ -194,9 +310,21 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         {
             try
             {
-                var blobConnectionString = _configuration.GetConnectionString("BlobStorageConnection");
-                var blobServiceClient = new BlobServiceClient(blobConnectionString);
-                var containerClient = blobServiceClient.GetBlobContainerClient("backups");
+                //DefaultAzureCredential igual que en GetBlobSasUrlAsync
+                var blobServiceClient = new BlobServiceClient(
+                    new Uri($"https://{_storageAccountName}.blob.core.windows.net/"),
+                    new DefaultAzureCredential()
+                );
+
+                // obtener referencia al contenedor
+                var containerClient = blobServiceClient.GetBlobContainerClient(_containerName);
+
+                // Verificar que el contenedor existe
+                if (!await containerClient.ExistsAsync())
+                {
+                    _logger.LogWarning($"El contenedor '{_containerName}' no existe");
+                    return new List<BackupManualDto>();
+                }
 
                 var backups = new List<BackupManualDto>();
 
@@ -217,6 +345,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                     }
                 }
 
+                _logger.LogInformation($"Se encontraron {backups.Count} backups en el contenedor '{_containerName}'");
                 return backups.OrderByDescending(b => b.FechaCreacion).ToList();
             }
             catch (Exception ex)
