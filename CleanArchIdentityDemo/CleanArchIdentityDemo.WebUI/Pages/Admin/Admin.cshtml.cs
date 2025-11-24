@@ -14,12 +14,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IBDRespladosService _BDRespaldoService;
+        private readonly IBlobStorageService _blobStorageService;
 
-        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager, IBDRespladosService BDRespladosService)
+        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager, IBDRespladosService BDRespladosService, IBlobStorageService blobStorageService)
         {
             _userService = userService;
             _userManager = userManager;
             _BDRespaldoService = BDRespladosService;
+            _blobStorageService = blobStorageService;
         }
 
         public List<UserDto> Users { get; set; } = new(); // almacenara la lista de usuarios
@@ -181,6 +183,28 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
                 TempData["ErrorMessage"] = "Error al crear el respaldo manual.";
             }
             return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnGetDescargarDocumentoAsync(string urlDescarga, string nombreBackup)
+        {
+            try
+            {
+                // 2. Descargar archivo desde Blob Storage
+                var (stream, contentType) = await _blobStorageService.DescargarBackupAsync(urlDescarga!);
+
+                // 3. Retornar archivo al navegador
+                return File(stream, contentType, nombreBackup!);
+            }
+            catch (FileNotFoundException ex)
+            {
+                TempData["ErrorMessage"] = $"Backuo no encontrado: {ex.Message}";
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al descargar el archivo backup: {ex.Message}";
+                return RedirectToPage();
+            }
         }
     }
 }

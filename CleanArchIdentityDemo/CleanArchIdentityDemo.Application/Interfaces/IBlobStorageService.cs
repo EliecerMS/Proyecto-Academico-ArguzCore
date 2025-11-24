@@ -14,5 +14,7 @@
         Task<bool> ExisteArchivoAsync(string blobUrl);
         // Obtiene el tamaño de un archivo en bytes
         Task<long> ObtenerTamanoArchivoAsync(string blobUrl);
+
+        Task<(Stream stream, string contentType)> DescargarBackupAsync(string blobUrl);
     }
 }

@@ -25,11 +25,15 @@
                             <td>@backup.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>@backup.TamanoFormateado</td>
                             <td>
-                                <a href="@backup.UrlDescarga"
-                                   class="btn btn-sm btn-primary"
-                                   target="_blank">
-                                    <i class="fas fa-download"></i> Descargar
-                                </a>
+                        <!-- Descargar -->
+                            <a asp-page-handler="DescargarDocumento"
+                                asp-route-urlDescarga="@backup.UrlDescarga"
+                                asp-route-nombreBackup="@backup.NombreArchivo"
+                               class="btn btn-outline-primary"
+                               title="Descargar">
+                                <i class="fas fa-download"></i>
+                                Descargar
+                            </a>
                             </td>
                         </tr>
                     }
