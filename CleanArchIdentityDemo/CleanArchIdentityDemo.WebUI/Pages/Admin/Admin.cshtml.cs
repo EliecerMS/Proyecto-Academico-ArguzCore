@@ -151,8 +151,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
 
         public async Task<IActionResult> OnGetCargarBackupsManualesAsync()
         {
-            // Obtener la fecha del backup más antiguo
-            //FechaBackupMasAntiguo = await _BDRespaldoService.ObtenerFechaBackupMasAntiguoAsync();
+
             // Obtener la lista de puntos de restauración (backups automáticos)
             BackupsManuales = (await _BDRespaldoService.ListarBackupsManualesAsync());
 
@@ -162,27 +161,29 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
 
         }
 
-        public async Task<IActionResult> OnPostCrearBackupManualAsync()
+        public async Task<IActionResult> OnPostCrearBackupManual([FromBody] string nombreBackup)
         {
             try
             {
-                var resultado = await _BDRespaldoService.CrearBackupManualBacpacAsync(NombreBackup);
+                var resultado = await _BDRespaldoService.CrearBackupManualBacpacAsync(nombreBackup);
 
                 if (resultado.Exito)
                 {
-                    TempData["SuccessMessage"] = resultado.Mensaje;
+                    // Devolver una respuesta JSON de éxito
+                    return new JsonResult(new { success = true, mensaje = resultado.Mensaje });
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = resultado.Mensaje;
+                    // Devolver error JSON (código 400 Bad Request)
+                    return new BadRequestObjectResult(new { success = false, message = resultado.Mensaje });
                 }
-
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Error al crear el respaldo manual.";
+                //
+                // Devolver un error interno del servidor
+                return new StatusCodeResult(500);
             }
-            return RedirectToPage();
         }
 
         public async Task<IActionResult> OnGetDescargarDocumentoAsync(string urlDescarga, string nombreBackup)
