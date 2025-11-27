@@ -13,11 +13,15 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
     {
         private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IBDRespladosService _BDRespaldoService;
+        private readonly IBlobStorageService _blobStorageService;
 
-        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager)
+        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager, IBDRespladosService BDRespladosService, IBlobStorageService blobStorageService)
         {
             _userService = userService;
             _userManager = userManager;
+            _BDRespaldoService = BDRespladosService;
+            _blobStorageService = blobStorageService;
         }
 
         public List<UserDto> Users { get; set; } = new(); // almacenara la lista de usuarios
@@ -38,6 +42,16 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         [BindProperty]
         public string IdUsuario { get; set; } = string.Empty;
 
+        //Propiedas para respaldo de BD
+        public List<PuntoRestauracionDto> PuntosRestauracion { get; set; } = new();
+        public List<BackupManualDto> BackupsManuales { get; set; } = new();
+
+        [BindProperty]
+        public string UrlBackupEliminar { get; set; }
+
+        [BindProperty]
+        public string NombreBackup { get; set; }
+
         public async Task OnGetAsync()//muestra los usuarios excepto el del admin actual
         {
             var idUser = _userManager.GetUserId(User);
@@ -47,7 +61,6 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
                 //carga la lista de roles
                 Roles = (List<UserRolesDto>)await _userService.GetRoles();
             }
-            //TempData["TabActiva"] = "Usuarios";
 
         }
 
@@ -118,6 +131,95 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
             {
                 // Manejar la excepción (por ejemplo, mostrar un mensaje de error)
                 TempData["ErrorMessage"] = "Error al activar el usuario";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnGetCargarBackupsAutomaticosAsync()
+        {
+            // Obtener la fecha del backup más antiguo
+            //FechaBackupMasAntiguo = await _BDRespaldoService.ObtenerFechaBackupMasAntiguoAsync();
+            // Obtener la lista de puntos de restauración (backups automáticos)
+            PuntosRestauracion = (await _BDRespaldoService.ListarPuntosRestauracionAsync());
+
+
+            // Retornar solo la partial view
+            return Partial("_TablaBackupsPITR", PuntosRestauracion.ToList());
+
+        }
+
+        public async Task<IActionResult> OnGetCargarBackupsManualesAsync()
+        {
+
+            // Obtener la lista de puntos de restauración (backups automáticos)
+            BackupsManuales = (await _BDRespaldoService.ListarBackupsManualesAsync());
+
+
+            // Retornar solo la partial view
+            return Partial("_TablaRespaldosManuales", BackupsManuales.ToList());
+
+        }
+
+        public async Task<IActionResult> OnPostCrearBackupManual([FromBody] string nombreBackup)
+        {
+            try
+            {
+                var resultado = await _BDRespaldoService.CrearBackupManualBacpacAsync(nombreBackup);
+
+                if (resultado.Exito)
+                {
+                    // Devolver una respuesta JSON de éxito
+                    return new JsonResult(new { success = true, mensaje = resultado.Mensaje });
+                }
+                else
+                {
+                    // Devolver error JSON (código 400 Bad Request)
+                    return new BadRequestObjectResult(new { success = false, message = resultado.Mensaje });
+                }
+            }
+            catch (Exception ex)
+            {
+                //
+                // Devolver un error interno del servidor
+                return new StatusCodeResult(500);
+            }
+        }
+
+        public async Task<IActionResult> OnGetDescargarBackupAsync(string urlDescarga, string nombreBackup)
+        {
+            try
+            {
+                // 2. Descargar archivo desde Blob Storage
+                var (stream, contentType) = await _blobStorageService.DescargarBackupAsync(urlDescarga!);
+
+                // 3. Retornar archivo al navegador
+                return File(stream, contentType, nombreBackup!);
+            }
+            catch (FileNotFoundException ex)
+            {
+                TempData["ErrorMessage"] = "Backup no encontrado";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error al descargar el archivo backup";
+
+            }
+
+            TempData["TabActiva"] = "RespaldosManuales";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostEliminarBackupAsync()
+        {
+            var resultado = await _blobStorageService.EliminarBackupAsync(UrlBackupEliminar);
+            if (resultado.Exito)
+            {
+                TempData["SuccessMessage"] = resultado.Mensaje;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = resultado.Mensaje;
             }
 
             return RedirectToPage();

@@ -14,6 +14,7 @@ namespace CleanArchIdentityDemo.Domain.Entities
         public string Nombre { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public DateTime FechaFinalPropuesta { get; set; }
+        public DateTime? FechaInicioPropuesta { get; set; }
         public decimal Presupuesto { get; set; }
         public bool Activo { get; set; } = true;
         // FK -> EstadosProyecto.IdEstadoProyecto
