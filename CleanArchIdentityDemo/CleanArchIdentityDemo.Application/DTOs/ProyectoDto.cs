@@ -10,6 +10,7 @@
         public int IdEstadoProyecto { get; set; }
         public string EstadoProyecto { get; set; } = string.Empty;
         public DateTime FechaFinalPropuesta { get; set; }
+        public DateTime? FechaInicioPropuesta { get; set; }
         public decimal Presupuesto { get; set; }
 
         public int PorcentajeAvance { get; set; }

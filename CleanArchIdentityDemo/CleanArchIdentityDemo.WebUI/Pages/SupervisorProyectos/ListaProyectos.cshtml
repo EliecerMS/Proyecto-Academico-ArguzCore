@@ -69,6 +69,7 @@
             <th>Nombre</th>
             <th>Progreso</th>
             <th>Estado</th>
+            <th>Fecha inicio propuesta</th>
             <th>Fecha final propuesta</th>
             <th>Acciones</th>
         </tr>
@@ -108,6 +109,9 @@
                         }
                     </td>
                     <td>
+                        @(proyecto.FechaInicioPropuesta.HasValue ? proyecto.FechaInicioPropuesta.Value.ToShortDateString() : "Sin dato de inicio")
+                    </td>
+                    <td>
                         @proyecto.FechaFinalPropuesta.ToShortDateString()
                     </td>
                         <td>
@@ -121,6 +125,7 @@
                                                 data-CodigoProyecto="@proyecto.CodigoProyecto"
                                                 data-NombreProyecto="@proyecto.Nombre"
                                                 data-DescripcionProyecto="@proyecto.Descripcion"
+                                                data-ProyectoFechaInicial="@proyecto.FechaInicioPropuesta"
                                                 data-ProyectoFechaFinal="@proyecto.FechaFinalPropuesta"
                                                 data-ProyectoPresupuesto="@proyecto.Presupuesto">
                                             <i class="fas fa-edit"></i>  Editar
@@ -174,11 +179,18 @@
                         <input asp-for="NuevoProyecto.Descripcion" class="form-control" />
                     </div>
                     <div class="mb-3">
+                        <label>Fecha inicio</label>
+                        <input asp-for="NuevoProyecto.FechaInicioPropuesta"
+                               type="date"
+                               class="form-control"
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" required/>
+                    </div>
+                    <div class="mb-3">
                         <label>Fecha finalización</label>
                         <input asp-for="NuevoProyecto.FechaFinalPropuesta"
                                type="date"
                                class="form-control"
-                               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" required/>
                     </div>
                     <div class="mb-3">
                         <label>Presupuesto</label>
@@ -216,7 +228,11 @@
                     </div>
                     <div class="mb-3">
                         <label>Fecha finalización</label>
-                        <input asp-for="ProyectoEditado.FechaFinalPropuesta" type="date" class="form-control" />
+                        <input asp-for="ProyectoEditado.FechaInicioPropuesta" type="date" class="form-control" required/>
+                    </div>
+                    <div class="mb-3">
+                        <label>Fecha finalización</label>
+                        <input asp-for="ProyectoEditado.FechaFinalPropuesta" type="date" class="form-control" required/>
                     </div>
                     <div class="mb-3">
                         <label>Presupuesto</label>
@@ -261,6 +277,7 @@
             var DescripcionProyecto = button.getAttribute('data-DescripcionProyecto');
             var ProyectoFechaFinal = button.getAttribute('data-ProyectoFechaFinal');
             var ProyectoPresupuesto = button.getAttribute('data-ProyectoPresupuesto');
+            var ProyectoFechaInicial = button.getAttribute('data-ProyectoFechaInicial');
 
            
             document.getElementById('ProyectoEditado_Nombre').value = NombreProyecto ?? '';
@@ -272,7 +289,11 @@
             if (ProyectoFechaFinal && !isNaN(new Date(ProyectoFechaFinal))) {
                 fechaValida = new Date(ProyectoFechaFinal).toISOString().slice(0, 10);
             }
-
+            let fechaInicialValida = '';
+            if (ProyectoFechaInicial && !isNaN(new Date(ProyectoFechaInicial))) {
+                fechaInicialValida = new Date(ProyectoFechaInicial).toISOString().slice(0, 10);
+            }
+            document.getElementById('ProyectoEditado_FechaInicioPropuesta').value = fechaInicialValida;
             document.getElementById('ProyectoEditado_FechaFinalPropuesta').value = fechaValida;
             document.getElementById('ProyectoEditado_Presupuesto').value = ProyectoPresupuesto ?? '';
         });
