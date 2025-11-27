@@ -243,7 +243,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 return new ResultadoOperacion
                 {
                     Exito = true,
-                    Mensaje = $"Backup '{nombreArchivo}' creado exitosamente en Blob Storage."
+                    Mensaje = $"Backup '{nombreArchivo}' creado exitosamente."
                 };
             }
             catch (Exception ex)

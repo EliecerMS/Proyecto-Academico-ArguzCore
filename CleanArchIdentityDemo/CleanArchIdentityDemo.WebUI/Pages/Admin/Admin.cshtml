@@ -433,6 +433,30 @@
     </div>
 </div>
 
+<!-- Modal eliminar backup -->
+<div class="modal fade" id="modalEliminarBackup" tabindex="-1" aria-labelledby="modalEliminacionBackupLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EliminarBackup">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEliminarBackup">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Seguro que desea eliminar este backup permanentemente?</p>
+                    <p><strong id="nombreBackup"></strong></p>
+
+                    <!-- valores ocultos -->
+                    <input type="hidden" id="UrlBackupEliminacion" asp-for="UrlBackupEliminar" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 
 @section Scripts {
@@ -513,6 +537,17 @@
             document.getElementById('EditedUser_NombreCompleto').value = nombre;
             document.getElementById('EditedUser_Role').value = rol;
             document.getElementById('EditedUser_Activo').value = activo;
+        });
+
+        // Llenar modal Eliminar Backup con datos del botón pulsado
+        var eliminarBackupModal = document.getElementById('modalEliminarBackup');
+        eliminarBackupModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var backupNombre = button.getAttribute('data-backupNombre');
+            var backupUrl = button.getAttribute('data-backupUrl');
+
+            document.getElementById('nombreBackup').textContent = backupNombre;
+            document.getElementById('UrlBackupEliminacion').value = backupUrl;
         });
     </script>
     <script>

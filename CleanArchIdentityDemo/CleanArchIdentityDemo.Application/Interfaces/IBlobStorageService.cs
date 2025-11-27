@@ -1,4 +1,6 @@
-﻿namespace CleanArchIdentityDemo.Application.Interfaces
+﻿using CleanArchIdentityDemo.Application.DTOs;
+
+namespace CleanArchIdentityDemo.Application.Interfaces
 {
     public interface IBlobStorageService
     {
@@ -16,5 +18,7 @@
         Task<long> ObtenerTamanoArchivoAsync(string blobUrl);
 
         Task<(Stream stream, string contentType)> DescargarBackupAsync(string blobUrl);
+
+        Task<ResultadoOperacion> EliminarBackupAsync(string blobUrl);
     }
 }

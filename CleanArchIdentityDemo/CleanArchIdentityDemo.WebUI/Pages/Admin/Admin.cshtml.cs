@@ -45,7 +45,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         //Propiedas para respaldo de BD
         public List<PuntoRestauracionDto> PuntosRestauracion { get; set; } = new();
         public List<BackupManualDto> BackupsManuales { get; set; } = new();
-        public string FechaBackupMasAntiguo { get; set; }
+
+        [BindProperty]
+        public string UrlBackupEliminar { get; set; }
 
         [BindProperty]
         public string NombreBackup { get; set; }
@@ -59,8 +61,6 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
                 //carga la lista de roles
                 Roles = (List<UserRolesDto>)await _userService.GetRoles();
             }
-            //TempData["TabActiva"] = "Usuarios";
-            //BackupsManuales = (await _BDRespaldoService.ListarBackupsManualesAsync()).ToList();
 
         }
 
@@ -186,7 +186,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
             }
         }
 
-        public async Task<IActionResult> OnGetDescargarDocumentoAsync(string urlDescarga, string nombreBackup)
+        public async Task<IActionResult> OnGetDescargarBackupAsync(string urlDescarga, string nombreBackup)
         {
             try
             {
@@ -198,14 +198,31 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
             }
             catch (FileNotFoundException ex)
             {
-                TempData["ErrorMessage"] = $"Backuo no encontrado: {ex.Message}";
-                return RedirectToPage();
+                TempData["ErrorMessage"] = "Backup no encontrado";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Error al descargar el archivo backup: {ex.Message}";
-                return RedirectToPage();
+                TempData["ErrorMessage"] = "Error al descargar el archivo backup";
+
             }
+
+            TempData["TabActiva"] = "RespaldosManuales";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostEliminarBackupAsync()
+        {
+            var resultado = await _blobStorageService.EliminarBackupAsync(UrlBackupEliminar);
+            if (resultado.Exito)
+            {
+                TempData["SuccessMessage"] = resultado.Mensaje;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = resultado.Mensaje;
+            }
+
+            return RedirectToPage();
         }
     }
 }

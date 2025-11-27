@@ -2,6 +2,7 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
+using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -421,6 +422,53 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 _logger.LogError(ex, "Error inesperado al descargar archivo: {BlobUrl}", blobUrl);
                 throw new Exception($"Error al descargar archivo: {ex.Message}", ex);
             }
+        }
+        public async Task<ResultadoOperacion> EliminarBackupAsync(string blobUrl)
+        {
+            ResultadoOperacion resultado = new ResultadoOperacion();
+            try
+            {
+                // Extraer nombre del blob
+                var nombreBlob = ExtraerNombreBlobDesdeUrl(blobUrl);
+
+                // Obtener cliente del blob
+                var blobClient = _containerClientBackUps.GetBlobClient(nombreBlob);
+
+                // Eliminar si existe
+                var result = await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+
+                if (result.Value)
+                {
+
+                    _logger.LogInformation("Archivo eliminado exitosamente: {NombreBlob}", nombreBlob);
+                    resultado.Exito = true;
+                    resultado.Mensaje = "Backup eliminado exitosamente.";
+                }
+                else
+                {
+
+                    _logger.LogWarning("Intento de eliminar un backup que no está guardado en la nube: {NombreBlob}", nombreBlob);
+                    resultado.Exito = false;
+                    resultado.Mensaje = "No se pudo eliminar el bvackup debido a que no esta almacenado en la nube";
+                }
+            }
+            catch (RequestFailedException ex)
+            {
+                _logger.LogError(ex, "Error de Azure al eliminar archivo: {BlobUrl}", blobUrl);
+                resultado.Exito = false;
+                resultado.Mensaje = "No se pudo eliminar el backup debido a un error en el servicio de almacenamiento";
+                throw new Exception($"Error al eliminar archivo de Azure Blob Storage: {ex.Message}", ex);
+
+            }
+            catch (Exception ex)
+            {
+                resultado.Exito = false;
+                resultado.Mensaje = "No se pudo eliminar el archivo debido a un error en el servicio de almacenamiento";
+                _logger.LogError(ex, "Error inesperado al eliminar archivo: {BlobUrl}", blobUrl);
+                throw new Exception($"Error al eliminar archivo: {ex.Message}", ex);
+            }
+
+            return resultado;
         }
     }
 }
