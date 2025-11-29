@@ -364,9 +364,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return listaProyectos;
         }
-        //Materiales
 
-        //Crear solicitud de Material
+        // ====================== MÉTODOS PARA SOLICITUEDES DE MATERIALES ======================
         public async Task<bool> CrearSolicitudMaterialAsync(SolicitudMaterialDto solicitudDto)
         {
             // Obtener los distintos ids de material
@@ -412,8 +411,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return true;
         }
 
-
-        //Obtener solicitud por ID
         public async Task<SolicitudMaterialDto?> ObtenerSolicitudPorIdAsync(int idSolicitud)
         {
             var solicitud = await _context.SolicitudesMaterial
@@ -442,7 +439,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             };
         }
 
-        //Actualizar Solicitud Material
         public async Task<bool> ActualizarSolicitudAsync(SolicitudMaterialDto solicitudDto)
         {
             var solicitud = await _context.SolicitudesMaterial
@@ -493,7 +489,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return true;
         }
 
-        //Obtener Materiales 
         public async Task<IEnumerable<MaterialDto>> ObtenerMaterialesAsync()
         {
             return await _context.Materiales
@@ -509,8 +504,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 .ToListAsync();
         }
 
-
-        //Mostrar solicitud por proyecto
         public async Task<IEnumerable<SolicitudMaterialDto>> MostrarSolicitudesPorProyectoAsync(int proyectoId)
         {
             var solicitudes = await _context.SolicitudesMaterial
@@ -538,7 +531,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }).ToList();
         }
 
-        //Elimar solicitud proyecto
         public async Task EliminarSolicitudMaterialAsync(int idSolicitud)
         {
             var solicitud = await _context.SolicitudesMaterial
@@ -552,11 +544,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 await _context.SaveChangesAsync();
             }
         }
-
-
-
-
-
 
         // ====================== MÉTODOS PARA NOTAS (Checho)======================
         public async Task<IEnumerable<NotaAvanceDto>> MostrarNotasAsync(int idProyecto)
@@ -629,10 +616,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return true;
         }
 
-
-
-
-        //Mostrar incidente 
+        // ====================== MÉTODOS PARA INCIDENTES ======================
         public async Task<IEnumerable<Incidente>> MostrarIncidentesPorProyectoAsync(int proyectoId)
         {
             return await _context.Incidentes
@@ -641,14 +625,12 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 .ToListAsync();
         }
 
-        //Crear Incidente
         public async Task CrearIncidenteAsync(Incidente incidente)
         {
             _context.Incidentes.Add(incidente);
             await _context.SaveChangesAsync();
         }
 
-        //Cerrar Incidente
         public async Task<Incidente> ObtenerIncidentePorIdAsync(int idIncidente)
         {
             return await _context.Incidentes.FindAsync(idIncidente);
@@ -660,6 +642,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             await _context.SaveChangesAsync();
 
         }
+
+
 
         public async Task<IEnumerable<MaterialProyectoDto>> ObtenerMaterialProyectoAsync(int IdProyecto)
         {
@@ -733,8 +717,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 IdProyecto = p.IdProyecto
             });
         }
-        // Métodos para marcar entrada/salida del personal del proyecto 
-        //Registrar hora de entrada
+
+        // ====================== MÉTODOS PARA REGISTRAR ENTRADA/SALIDA======================
         public async Task<bool> RegistrarEntradaAsync(HoraLaboralDto dto)
         {
             var hoy = DateTime.Now.Date;
@@ -775,7 +759,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return true;
         }
 
-        //Obtener reporte de asistencia
         public async Task<IEnumerable<HoraLaboralDto>> ObtenerReporteAsistenciaAsync(int proyectoId)
         {
             var inicioSemana = ObtenerInicioSemanaActual();
@@ -827,7 +810,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             return diaSemana == 0 ? hoy.AddDays(-6) : hoy.AddDays(-(diaSemana - 1));
         }
 
-        //Listar personal proyecto
         public async Task<IEnumerable<PersonalProyectoDto>> ObtenerPersonalPorProyectoAsync(int proyectoId)
         {
             return await (
@@ -855,6 +837,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return materialObra?.CantidadEnObra ?? 0;
         }
+
         // Método para ver reporte financiero 
         public async Task<ReporteFinancieroDto> ObtenerReporteFinancieroAsync(int proyectoId, DateTime? fechaInicio, DateTime? fechaFin)
         {
