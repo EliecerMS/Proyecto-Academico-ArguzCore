@@ -1,6 +1,7 @@
 ﻿using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
+using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +21,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
         private readonly IBlobStorageService _blobStorageService;
         private readonly IConfiguration _configuration;
         private readonly IDocumentosService _DocumentosService;
+        private readonly IAuditoriaService _auditoriaService;
 
-        public FinanzasModel(IFinanzasService finanzasService, IUserService userService, UserManager<ApplicationUser> userManager, IProyectoService proyectoService, IBlobStorageService blobStorageService, IConfiguration configuration, IDocumentosService documentoService)
+        public FinanzasModel(IFinanzasService finanzasService,IAuditoriaService auditoriaService, IUserService userService, UserManager<ApplicationUser> userManager, IProyectoService proyectoService, IBlobStorageService blobStorageService, IConfiguration configuration, IDocumentosService documentoService)
         {
             _FinanzasService = finanzasService;
             _UserService = userService;
@@ -30,6 +32,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             _blobStorageService = blobStorageService;
             _configuration = configuration;
             _DocumentosService = documentoService;
+            _auditoriaService = auditoriaService;
         }
 
         public List<PagoProveedorDto> PagosProveedores { get; set; } = new(); // almacenara la lista de pagos a proveedores
@@ -80,6 +83,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Contador
             ProveedoresTodos = (await _FinanzasService.ListarTodosProveedoresAsync()).ToList();
             //TempData["TabActiva"] = "GestionProveedor";
             Proyectos = (await _FinanzasService.ListarProyectosAsync()).ToList();
+
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            await _auditoriaService.RegistrarAccesoAsync("Finanzas");
         }
         public async Task<IActionResult> OnPostVerReciboAsync()
         {

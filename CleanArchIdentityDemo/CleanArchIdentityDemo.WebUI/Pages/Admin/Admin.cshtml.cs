@@ -1,6 +1,7 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
+using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
     {
         private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAuditoriaService _auditoriaService;
+        
 
-        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager)
+        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager, IAuditoriaService auditoria)
         {
             _userService = userService;
             _userManager = userManager;
+            _auditoriaService = auditoria;
         }
 
         public List<UserDto> Users { get; set; } = new(); // almacenara la lista de usuarios
@@ -46,9 +50,12 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
                 Users = (await _userService.GetAllUsersAsync(idUser)).ToList();
                 //carga la lista de roles
                 Roles = (List<UserRolesDto>)await _userService.GetRoles();
+                await _auditoriaService.RegistrarAccesoAsync("Administracion");
             }
             //TempData["TabActiva"] = "Usuarios";
 
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            
         }
 
         public async Task<IActionResult> OnPostCreateAsync() // crear un nuevo usuario

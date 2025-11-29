@@ -1,5 +1,6 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
+using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -10,10 +11,12 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
     public class ListaProyectosModel : PageModel
     {
         private readonly IProyectoService _proyectoService;
+        private readonly IAuditoriaService _auditoriaService;
 
-        public ListaProyectosModel(IProyectoService proyectoService)
+        public ListaProyectosModel(IProyectoService proyectoService, IAuditoriaService auditoriaService)
         {
             _proyectoService = proyectoService;
+            _auditoriaService = auditoriaService;
         }
 
 
@@ -34,6 +37,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public async Task OnGetAsync()//muestra los proyectos 
         {
             Proyectos = (await _proyectoService.MostrarProyectosAsync()).ToList();
+
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            await _auditoriaService.RegistrarAccesoAsync("Dashboard");
         }
 
         public async Task<IActionResult> OnPostCreateAsync() // crear un nuevo proyecto
