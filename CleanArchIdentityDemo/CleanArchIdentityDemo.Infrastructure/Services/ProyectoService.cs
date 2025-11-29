@@ -16,7 +16,6 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             _context = context;
         }
 
-
         public async Task ActualizarProyectoAsync(ProyectoDto Proyecto)
         {
             var ProyectoEncontrado = _context.Proyectos.Include(p => p.EstadoProyecto).FirstOrDefault(p => p.CodigoProyecto == Proyecto.CodigoProyecto);//busca el proyecto por código e incluye la propiedad de navegacion para acceder al codigo estado
@@ -953,6 +952,159 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
             return totalEjecutado;
         }
+
+        private int CalcularMesesTotales(Proyecto proyecto)
+        {
+            if (proyecto == null)
+                throw new ArgumentNullException(nameof(proyecto));
+
+            // Validamos que tenga fecha de inicio
+            if (!proyecto.FechaInicioPropuesta.HasValue)
+                throw new InvalidOperationException("El proyecto no tiene FechaInicioPropuesta.");
+
+            var inicio = proyecto.FechaInicioPropuesta.Value.Date; // Sacar solo la fecha sin hora
+
+            // Si FechaFinalPropuesta.Year > 2001 => se toma como fecha real de fin
+            // Si no, se asume que el proyecto sigue activo y se usa la fecha actual
+            var fin = proyecto.FechaFinalPropuesta.Year > 2001
+                        ? proyecto.FechaFinalPropuesta.Date
+                        : DateTime.Today;
+
+            if (fin < inicio)
+                return 0;
+
+            // Cantidad total de meses (incluyendo el mes actual)
+            int meses = ((fin.Year - inicio.Year) * 12) + fin.Month - inicio.Month + 1;
+
+            return meses < 1 ? 1 : meses;
+        }
+
+        private (DateTime inicioMes, DateTime finMes)
+        CalcularRangoMesEjecucion(Proyecto proyecto, int mesEjecucion)
+        {
+            if (proyecto == null)
+                throw new ArgumentNullException(nameof(proyecto));
+
+            if (!proyecto.FechaInicioPropuesta.HasValue)
+                throw new InvalidOperationException("El proyecto no tiene FechaInicioPropuesta.");
+
+            if (mesEjecucion < 1)
+                throw new ArgumentOutOfRangeException(nameof(mesEjecucion));
+
+            var inicioProyecto = proyecto.FechaInicioPropuesta.Value.Date;
+
+            var inicioMes = inicioProyecto.AddMonths(mesEjecucion - 1);
+            var finMes = inicioProyecto.AddMonths(mesEjecucion);
+
+            var finProyecto = proyecto.FechaFinalPropuesta.Year > 2001
+                ? proyecto.FechaFinalPropuesta.Date
+                : DateTime.Today;
+
+            // Si el mes empieza después de que terminó el proyecto,
+            // forzamos a usar el último mes válido del proyecto.
+            if (inicioMes > finProyecto)
+            {
+                // primer día del mes final del proyecto
+                inicioMes = new DateTime(finProyecto.Year, finProyecto.Month, 1);
+                finMes = finProyecto;
+                return (inicioMes, finMes);
+            }
+
+            // Si el fin del mes calculado se pasa del fin del proyecto, lo recortamos
+            if (finMes > finProyecto)
+                finMes = finProyecto;
+
+            return (inicioMes, finMes);
+        }
+
+
+        private int RecalculoPorcentajeAvanceEnFecha(List<Tarea> tareas, DateTime fechaReferencia)
+        {
+            if (tareas == null || tareas.Count == 0) return 0;
+
+            double sumaPorcentajes = 0;
+
+            foreach (var tarea in tareas)
+            {
+                if (fechaReferencia < tarea.FechaInicioEsperada)
+                    sumaPorcentajes += 0;
+                else if (fechaReferencia >= tarea.FechaFinalEsperada)
+                    sumaPorcentajes += 100;
+                else
+                {
+                    var duracion = (tarea.FechaFinalEsperada - tarea.FechaInicioEsperada).TotalSeconds;
+                    var transcurrido = (fechaReferencia - tarea.FechaInicioEsperada).TotalSeconds;
+                    if (duracion > 0)
+                        sumaPorcentajes += (transcurrido / duracion) * 100.0;
+                }
+            }
+
+            return (int)Math.Round(sumaPorcentajes / tareas.Count);
+        }
+
+        // Avance en el mes de ejecución N
+        public int RecalculoPorcentajeAvancePorMes(Proyecto proyecto, int mesEjecucion)
+        {
+            if (proyecto == null)
+                throw new ArgumentNullException(nameof(proyecto));
+
+            var tareas = proyecto.Tareas?.ToList() ?? new List<Tarea>();
+            if (!tareas.Any())
+                return 0;
+
+            var (_, finMes) = CalcularRangoMesEjecucion(proyecto, mesEjecucion);
+
+            // calculamos avance usando la fecha de corte del mes
+            return RecalculoPorcentajeAvanceEnFecha(tareas, finMes);
+        }
+
+        public async Task<decimal> CostosEjecutadosPorMesAsync(int idProyecto, int mesEjecucion)
+        {
+            var proyecto = await _context.Proyectos
+                .FirstOrDefaultAsync(p => p.IdProyecto == idProyecto);
+
+            if (proyecto == null)
+                throw new Exception("No se encontró el proyecto.");
+
+            var (inicioMes, finMes) = CalcularRangoMesEjecucion(proyecto, mesEjecucion);
+
+            var query = _context.CostosEjecutados
+                .Where(c => c.ProyectoId == idProyecto
+                            && c.Fecha >= inicioMes
+                            && c.Fecha < finMes);
+
+
+            var total = await query
+                .Select(c => (decimal?)c.Monto)
+                .SumAsync() ?? 0m;
+
+            return total;
+        }
+
+        public async Task<decimal> DesviacionPorMesAsync(int idProyecto, int mesEjecucion)
+        {
+            var proyecto = await _context.Proyectos
+                .Include(p => p.Tareas)
+                .FirstOrDefaultAsync(p => p.IdProyecto == idProyecto);
+
+            if (proyecto == null)
+                throw new Exception("No se encontró el proyecto.");
+
+            if (!proyecto.FechaInicioPropuesta.HasValue)
+                throw new InvalidOperationException("El proyecto no tiene FechaInicioPropuesta.");
+
+            int porcentajeAvanceMes = RecalculoPorcentajeAvancePorMes(proyecto, mesEjecucion);
+
+            decimal presupuesto = proyecto.Presupuesto;
+            var costosMesTask = CostosEjecutadosPorMesAsync(idProyecto, mesEjecucion);
+
+            var desviacion = await DesviacionAsync(presupuesto, costosMesTask, porcentajeAvanceMes);
+
+            return desviacion;
+        }
+
+
+
     }
 }
 
