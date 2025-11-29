@@ -65,8 +65,12 @@
         <button class="nav-link" id="nav-Usuarios" data-bs-toggle="tab" data-bs-target="#nav-Usuarios-tab" type="button" role="tab" aria-controls="nav-Usuarios-tab" aria-selected="false">
             Usuarios
         </button>
-        <button class="nav-link" id="nav-Respaldos" data-bs-toggle="tab" data-bs-target="#nav-Respaldos-tab" type="button" role="tab" aria-controls="nav-Respaldos-tab" aria-selected="false">
-            Respaldos
+        <button class="nav-link" id="nav-RespaldosAutomaticosBtn" data-bs-toggle="tab" data-bs-target="#nav-RespaldosAutomaticos-tab"
+                type="button" role="tab" aria-controls="nav-RespaldosAutomaticos" aria-selected="false">
+            Respaldos automáticos
+        </button>
+        <button class="nav-link" id="nav-RespaldosManualesBtn" data-bs-toggle="tab" data-bs-target="#nav-RespaldosManuales-tab" type="button" role="tab" aria-controls="nav-RespaldosManuales-tab" aria-selected="false" onclick="cargarBackupsManuales()">
+            Respaldos manuales
         </button>
     </div>
 </nav>
@@ -177,40 +181,127 @@
         </div>
     </div>
 
-    <div class="tab-pane fade" id="nav-Respaldos-tab" role="tabpanel" aria-labelledby="nav-Respaldos">
+    <div class="tab-pane fade" id="nav-RespaldosAutomaticos-tab" role="tabpanel" aria-labelledby="nav-RespaldosAutomaticos">
+        <br />
+        <div class="container-fluid mt-4">
+            <!-- Información PITR -->
+            <div class="row">
+                <div>
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5>Backups Automáticos (PITR): Copias de seguridad automáticas para permitir la restauración a un punto en el tiempo (Point In Time Restore).</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>
+                                <strong>Retención:</strong> 7 días (puede ser configurable hasta 35 días por medio de Azure Portal)
+                            </p>
+                            
+                            <p class="text-muted mb-0">
+                                <p>
+                                    En esta pestaña solo se muestran los registros de estos puntos de restauración.
+                                </p>
+                                <p>
+                                    Azure SQL Database crea:
+                                </p>
+                                    <ul>
+                                       <li>
+                                           Copias de seguridad automáticas para permitir la restauración a un punto en el tiempo (PITR - Point In Time Restore).
+                                       </li>
+                                        <li>
+                                            Copias de seguridad completas cada semana.
+                                        </li>
+                                        <li>
+                                            Copias de seguridad diferenciales se realizan cada 12h o 24h (es configurable).
+                                        </li>
+                                        <li>
+                                            Las copias de seguridad del registro de transacciones se realizan aproximadamente cada 10 minutos.
+                                        </li>
+                                    </ul>
+                                <small>
+                                    Los puntos de resturación obtenidos son resultado de las copias de seguridad o backups automáticos.
+
+                                    La única acción a tomar para estos puntos de restauración es restaurarlos únicamente, y para hacerlo solamente es posible ingresando al Azure Portal donde puede realizar más configuraciones de ser necesario.
+                                    Puede tener mas información en: https://learn.microsoft.com/en-us/azure/azure-sql/database/automated-backups-overview?view=azuresql
+                                </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--- Tabla de backups automaticos --->
+            <div class="position-relative">
+                <div class="table-responsive" id="tablaBackupsAutomaticosContainer">
+                    <partial name="_TablaBackupsPITR" model="Model.PuntosRestauracion" />
+                </div>
+
+                <div id="loadingSpinnerAutomaticos" class="text-center py-5" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Cargando datos de backups automáticos...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="tab-pane fade" id="nav-RespaldosManuales-tab" role="tabpanel" aria-labelledby="nav-RespaldosManuales-tab">
         <br />
         <div class="row justify-content-between">
             <div class="col-4">
-                Respaldos
+                
+                        Backups manuales
             </div>
             <div class="col-4">
                 <!-- Botón para abrir modal Crear Usuario -->
-                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#">
-                    Crear respaldo
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#crearBackupModal">
+                    Crear backup
                 </button>
             </div>
         </div>
-        <!-- Aca una base rapida, disenar la tabla donde se listan respaldos como el prototipo -->
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Colum 1</th>
-                    <th>Colum 2</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        Colum 1
-                    </td>
-                    <td>
-                        Colum 2
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+        <!-- Información de exportar backup .bacpac -->
+        <div class="row">
+            <div>
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>Backups manuales: Respaldos manuales que contienen toda la base de datos junto con los datos almacenados hasta el momento</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            <strong>Tiempo para completar el respaldo manual completo:</strong> puede tomar varios minutos o más, dependiendo del tamaño de la base de datos y la carga del sistema en ese momento.
+                        </p>
 
+                        <p class="text-muted mb-0">
+                        <p>
+                            En esta pestaña muestra los registros de estos respaldos manuales hechos al momento.
+                        </p>
+                        <p>
+                            El archivo de extensión bacpac: Al exportar una base de datos (crear un respaldo bajo petición de la base de datos) crea un archivo de exportación que incluye las definiciones de los objetos y todos los datos de las tablas. El archivo de exportación ( .bacpac) se puede <strong>importar</strong> a otra instancia del Motor de base de datos o a Azure SQL Database. Las operaciones de exportación e importación se pueden combinar para migrar .bacpacentre instancias, crear un archivo o una copia local de una base de datos implementada en SQL Database.
+                        </p>
+                        <small>
+                            La única acción a tomar para estos respaldos manuales es importarlos y para hacerlo solamente es posible ingresando al Azure Portal donde puede realizar más configuraciones de ser necesario.
+                            Puede tener mas información en: https://learn.microsoft.com/en-us/sql/tools/sql-database-projects/concepts/data-tier-applications/import-bacpac-file-create-new-database?view=sql-server-ver17&tabs=import-wizard
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--- Tabla de backups manuales --->
+        <div class="position-relative">
+            <div class="table-responsive" id="tablaBackupsManualesContainer">
+                <partial name="_TablaRespaldosManuales" model="Model.BackupsManuales" />
+            </div>
+
+            <div id="loadingSpinnerManuales" class="text-center py-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted">Cargando datos de backups manuales...</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -299,6 +390,75 @@
     </div>
 </div>
 
+<!-- Modal Crear Backup Manual -->
+
+<div class="modal fade" id="crearBackupModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crear respaldo</h5>
+            </div>
+            <div class="modal-body">
+
+                <div id="backupStatusMessage" class="alert alert-info">
+                    Inicie el proceso. <strong>Esto puede tomar varios minutos dependiendo del tamaño de la base de datos.</strong>
+                </div>
+                <!-- Spinner -->
+                <div id="backupGlobalSpinner" class="text-center mt-3 d-none">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Esto puede tomar varios minutos...</p>
+                </div>
+                <form id="backupForm">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del Backup</label>
+                        <input type="text"
+                               class="form-control"
+                               id="inputNombreBackup"
+                               placeholder="backup_pre_actualizacion"
+                               required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <!-- Botón de acción -->
+                <button type="button" class="btn btn-primary" id="btnIniciarBackup">
+                    <i class="fas fa-save"></i> Iniciar Backup
+                </button>
+                
+                <button type="button" class="btn btn-secondary d-none" id="btnCloseBackupModal" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal eliminar backup -->
+<div class="modal fade" id="modalEliminarBackup" tabindex="-1" aria-labelledby="modalEliminacionBackupLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="EliminarBackup">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEliminarBackup">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Seguro que desea eliminar este backup permanentemente?</p>
+                    <p><strong id="nombreBackup"></strong></p>
+
+                    <!-- valores ocultos -->
+                    <input type="hidden" id="UrlBackupEliminacion" asp-for="UrlBackupEliminar" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -313,6 +473,54 @@
 
             // Activar cada toast
             toastList.forEach(toast => toast.show());
+
+        //Event listener para el boton que muestra la pestanna de respaldos automaticos
+         const respaldosButton = document.getElementById('nav-RespaldosAutomaticosBtn');
+
+        if (respaldosButton) {
+            respaldosButton.addEventListener('click', cargarBackupsAutomaticos);
+        }
+
+        // 1. Asignar el evento click al botón de inicio
+        const btnIniciarBackup = document.getElementById('btnIniciarBackup');
+
+        if (btnIniciarBackup) {
+            btnIniciarBackup.addEventListener('click', iniciarBackupManual);
+        }
+
+        // //Event listener para el boton que muestra la pestanna de respaldos manueales
+        // const respaldosManualesButton = document.getElementById('nav-RespaldosManualesBtn');
+
+         // if (respaldosManualesButton) {
+         //     respaldosManualesButton.addEventListener('click', cargarBackupsManuales);
+         // }
+
+         // Nuevo Event Listener para reiniciar el modal CADA VEZ que se abre
+        var crearBackupModalElement = document.getElementById('crearBackupModal');
+        crearBackupModalElement.addEventListener('show.bs.modal', function (event) {
+            // Obtener referencias a los elementos del modal
+            const backupForm = document.getElementById('backupForm');
+            const btnIniciarBackup = document.getElementById('btnIniciarBackup');
+            const btnCloseBackupModal = document.getElementById('btnCloseBackupModal');
+            const globalSpinner = document.getElementById('backupGlobalSpinner');
+            const statusMessageArea = document.getElementById('backupStatusMessage');
+            const nombreBackupInput = document.getElementById('inputNombreBackup');
+
+            // 1. Restablecer el formulario y los botones a su estado inicial (Antes de empezar)
+            backupForm.classList.remove('d-none'); // Mostrar el formulario
+            btnIniciarBackup.classList.remove('d-none'); // Mostrar el botón de Iniciar
+            btnCloseBackupModal.classList.remove('d-none'); // Ocultar el botón de Cerrar (que solo sale al finalizar)
+            globalSpinner.classList.add('d-none'); // Ocultar el spinner
+
+            // 2. Limpiar el input de texto
+            nombreBackupInput.value = '';
+
+            // 3. Restablecer el mensaje de estado inicial
+            statusMessageArea.textContent = 'Ingrese un nombre para iniciar el respaldo.';
+            statusMessageArea.className = 'alert alert-info';
+        });
+
+
         });
         // Llenar modal Editar con datos del botón pulsado
         var editUserModal = document.getElementById('editUserModal');
@@ -330,6 +538,17 @@
             document.getElementById('EditedUser_Role').value = rol;
             document.getElementById('EditedUser_Activo').value = activo;
         });
+
+        // Llenar modal Eliminar Backup con datos del botón pulsado
+        var eliminarBackupModal = document.getElementById('modalEliminarBackup');
+        eliminarBackupModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var backupNombre = button.getAttribute('data-backupNombre');
+            var backupUrl = button.getAttribute('data-backupUrl');
+
+            document.getElementById('nombreBackup').textContent = backupNombre;
+            document.getElementById('UrlBackupEliminacion').value = backupUrl;
+        });
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -342,6 +561,164 @@
                 }
             }
         });
+    </script>
+    <script>
+        async function cargarBackupsAutomaticos() {
+            const tabla = document.getElementById('tablaBackupsAutomaticosContainer');
+            const spinner = document.getElementById('loadingSpinnerAutomaticos'); 
+
+            try {
+                tabla.style.display = 'none';
+                spinner.style.display = 'block';
+
+                const response = await fetch('?handler=CargarBackupsAutomaticos', {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error('Error en la petición');
+
+                tabla.innerHTML = await response.text();
+
+            } catch (error) {
+                console.error('Error:', error);
+                tabla.innerHTML = '<div class="alert alert-danger">Error al obtener los datos de backups automáticos</div>';
+            } finally {
+                spinner.style.display = 'none';
+                tabla.style.display = 'block';
+            }
+        }
+
+        async function cargarBackupsManuales() {
+            const tabla = document.getElementById('tablaBackupsManualesContainer');
+            const spinner = document.getElementById('loadingSpinnerManuales');
+
+            try {
+                tabla.style.display = 'none';
+                spinner.style.display = 'block';
+
+                const response = await fetch('?handler=CargarBackupsManuales', {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error('Error en la petición');
+
+                tabla.innerHTML = await response.text();
+
+            } catch (error) {
+                console.error('Error:', error);
+                tabla.innerHTML = '<div class="alert alert-danger">Error al obtener los datos de backups manuales</div>';
+            } finally {
+                spinner.style.display = 'none';
+                tabla.style.display = 'block';
+            }
+        }
+
+
+
+        async function iniciarBackupManual() {
+            const nombreBackupInput = document.getElementById('inputNombreBackup');
+            const nombreBackup = nombreBackupInput.value;
+            const statusMessageArea = document.getElementById('backupStatusMessage');
+            const btnIniciarBackup = document.getElementById('btnIniciarBackup');
+            const btnCloseBackupModal = document.getElementById('btnCloseBackupModal');
+            const globalSpinner = document.getElementById('backupGlobalSpinner');
+            const backupForm = document.getElementById('backupForm');
+
+            if (!nombreBackup) {
+                statusMessageArea.textContent = 'El nombre del backup es requerido.';
+                statusMessageArea.className = 'alert alert-warning';
+                return;
+            }
+
+            // --- Transición a Modo Progreso ---
+
+            // Ocultar elementos de entrada y botón de inicio
+            backupForm.classList.add('d-none');
+            btnIniciarBackup.classList.add('d-none');
+            btnCloseBackupModal.classList.add('d-none');
+
+            // Mostrar spinner y actualizar mensaje
+            globalSpinner.classList.remove('d-none');
+            statusMessageArea.textContent = 'Iniciando y esperando respuesta de Azure...';
+            statusMessageArea.className = 'alert alert-info';
+
+            let success = false;
+            let message = '';
+
+            try {
+                // 2. Enviar la solicitud POST al handler usando Fetch API
+                const response = await fetch('?handler=CrearBackupManual', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Importante para CSRF en Razor Pages con fetch:
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify(nombreBackup)
+                });
+
+                const resultado = await response.json();
+
+                if (!response.ok) {
+                    // Si el servidor responde con un error
+                    message = resultado.message || 'Error desconocido en el servidor.';
+                    throw new Error(message);
+                }
+
+                success = true;
+                message = resultado.mensaje;
+
+            } catch (error) {
+                // Manejar el error
+                success = false;
+                message = error.message || 'Error al procesar la solicitud.';
+                console.error(error);
+
+            } finally {
+
+                // --- Transición a Modo Finalizado ---
+
+                // Mostrar el toast usando lógica usada para TempData
+                mostrarToast(success ? 'success' : 'error', message);
+
+                // Cerrar el modal automáticamente al finalizar
+                var modalElement = document.getElementById('crearBackupModal');
+                var modal = bootstrap.Modal.getInstance(modalElement);
+                modal.hide();
+                //recargar backupsManuales
+                cargarBackupsManuales();
+            }
+        }
+
+        // Helper function para disparar el toasts manualmente
+        function mostrarToast(type, message) {
+            const toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) return;
+
+            // Crear dinámicamente un elemento toast para que se comporte como el TempData
+            const toastHtml = `
+                <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>`;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const newToastEl = toastContainer.lastElementChild;
+            const newToast = new bootstrap.Toast(newToastEl, { autohide: true, delay: 5000 });
+            newToast.show();
+
+            // Eliminar el toast del DOM después de que se oculte
+            newToastEl.addEventListener('hidden.bs.toast', function () {
+                newToastEl.remove();
+            });
+        }
     </script>
     
 }

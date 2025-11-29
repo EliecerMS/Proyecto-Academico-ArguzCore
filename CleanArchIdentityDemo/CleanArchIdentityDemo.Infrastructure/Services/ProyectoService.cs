@@ -24,6 +24,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             {
                 ProyectoEncontrado.Nombre = Proyecto.Nombre;
                 ProyectoEncontrado.Descripcion = Proyecto.Descripcion;
+                ProyectoEncontrado.FechaInicioPropuesta = Proyecto.FechaInicioPropuesta;
                 ProyectoEncontrado.FechaFinalPropuesta = Proyecto.FechaFinalPropuesta;
                 ProyectoEncontrado.Presupuesto = Proyecto.Presupuesto;
 
@@ -38,7 +39,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             string CodigoProyecto = Guid.NewGuid().ToString();
 
             // Mapear ProyectoDto a Proyecto y asignar el codigo unico, y estado inicial 1 (Planificado)
-            var proyecto = new Proyecto { CodigoProyecto = CodigoProyecto, Nombre = Proyecto.Nombre, Descripcion = Proyecto.Descripcion, FechaFinalPropuesta = Proyecto.FechaFinalPropuesta, Presupuesto = Proyecto.Presupuesto, EstadoProyectoId = 1 };
+            var proyecto = new Proyecto { CodigoProyecto = CodigoProyecto, Nombre = Proyecto.Nombre, Descripcion = Proyecto.Descripcion, FechaFinalPropuesta = Proyecto.FechaFinalPropuesta, Presupuesto = Proyecto.Presupuesto, EstadoProyectoId = 1, FechaInicioPropuesta = Proyecto.FechaInicioPropuesta };
             _context.Proyectos.Add(proyecto);
             await _context.SaveChangesAsync();
         }
@@ -99,6 +100,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 Descripcion = p.Descripcion,
                 CodigoProyecto = p.CodigoProyecto,
                 Nombre = p.Nombre,
+                FechaInicioPropuesta = p.FechaInicioPropuesta.HasValue ? p.FechaInicioPropuesta.Value.Date : null,
                 FechaFinalPropuesta = p.FechaFinalPropuesta.Date,
                 Presupuesto = p.Presupuesto,
                 EstadoProyecto = p.EstadoProyecto.NombreEstado,

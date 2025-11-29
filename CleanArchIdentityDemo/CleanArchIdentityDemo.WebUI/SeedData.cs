@@ -125,26 +125,6 @@ namespace CleanArchIdentityDemo.WebUI
                 i += 1;
             }
 
-            // Agregar usuario del sistema (sin rol humano)
-            var sistemaUser = await userManager.FindByNameAsync("Sistema");
-            if (sistemaUser == null)
-            {
-                var sistema = new ApplicationUser
-                {
-                    UserName = "Sistema",
-                    Email = "sistema@local",
-                    NombreCompleto = "Usuario del Sistema",
-                    EmailConfirmed = true
-                };
-
-                // Contraseña simple solo para desarrollo
-                var result = await userManager.CreateAsync(sistema, "Sistema123!");
-                if (!result.Succeeded)
-                {
-                    throw new Exception($"Error creando usuario 'Sistema': {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                }
-            }
-
         }
     }
 
