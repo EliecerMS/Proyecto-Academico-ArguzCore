@@ -1,6 +1,7 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
+using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +15,18 @@ namespace CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria
         private readonly IEquipoService _equipoService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IProyectoService _proyectoService;
-
+        private readonly IAuditoriaService _auditoriaService;
         public DetallesMaquinariaModel(
             IEquipoService equipoService,
             UserManager<ApplicationUser> userManager,
-            IProyectoService proyectoService)
+            IProyectoService proyectoService,
+            IAuditoriaService auditoriaService)
+
         {
             _equipoService = equipoService;
             _userManager = userManager;
             _proyectoService = proyectoService;
+            _auditoriaService = auditoriaService;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -61,6 +65,8 @@ namespace CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria
             // Validación: ¿hay algún mantenimiento activo?
             HayMantenimientoActivo = Mantenimientos.Any(m => m.Estado == "Ejecución" || m.FechaCompletado == DateTime.MinValue);
 
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            await _auditoriaService.RegistrarAccesoAsync("Documentos");
             return Page();
         }
 

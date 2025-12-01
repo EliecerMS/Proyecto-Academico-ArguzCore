@@ -135,34 +135,28 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
                 .HasForeignKey(p => p.UsuarioId);
         }
 
-        //Guardar los registros de Auditoria
+        private string FormatearDiccionario(Dictionary<string, string> datos)
+        {
+            return string.Join("\n", datos.Select(d => $"{d.Key}: {d.Value}"));
+        }
+
+        private string FormatearCambios(Dictionary<string, (string Antes, string Despues)> cambios)
+        {
+            return string.Join("\n", cambios.Select(c =>
+                $"{c.Key}: Antes = {c.Value.Antes} | Después = {c.Value.Despues}"
+            ));
+        }
+
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             // Obtener usuario actual
             var userId = _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Si no hay usuario autenticado, usar "Sistema"
-            if (string.IsNullOrEmpty(userId))
-            {
-                var sistemaUser = await Set<ApplicationUser>().FirstOrDefaultAsync(u => u.UserName == "Sistema");
-                if (sistemaUser != null)
-                    userId = sistemaUser.Id;
-                else
-                {
-                    //  No auditar si el usuario Sistema aún no existe
-                    return await base.SaveChangesAsync(cancellationToken);
-                }
-            }
-
-            // 🔹 Detectar cambios
             var entries = ChangeTracker.Entries()
-                .Where(e => e.Entity is not AuditoriaAccion &&
-                            (e.State == EntityState.Added ||
-                             e.State == EntityState.Modified ||
-                             e.State == EntityState.Deleted))
-                .ToList(); // ✅ fuerza evaluación antes del foreach
+                .Where(e => e.State == EntityState.Added ||
+                            e.State == EntityState.Modified ||
+                            e.State == EntityState.Deleted)
+                .ToList();
 
-            // 🔹 Crear una lista temporal para evitar modificar la colección durante la iteración
             var auditorias = new List<AuditoriaAccion>();
 
             foreach (var entry in entries)
@@ -180,50 +174,54 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
                 string datosAnteriores = "";
                 string datosNuevos = "";
 
+                // MODIFICACIÓN
                 if (entry.State == EntityState.Modified)
                 {
-                    var cambios = new Dictionary<string, object>();
+                    var cambios = new Dictionary<string, (string Antes, string Despues)>();
 
                     foreach (var prop in entry.OriginalValues.Properties)
                     {
                         var original = entry.OriginalValues[prop]?.ToString();
                         var current = entry.CurrentValues[prop]?.ToString();
 
-                        if (original != current) // solo propiedades que cambiaron
+                        if (original != current)
                         {
-                            cambios[prop.Name] = new
-                            {
-                                Antes = original,
-                                Despues = current
-                            };
+                            cambios[prop.Name] = (Antes: original ?? "", Despues: current ?? "");
                         }
                     }
 
                     if (cambios.Any())
                     {
-                        datosAnteriores = JsonSerializer.Serialize(
-                            cambios.ToDictionary(c => c.Key, c => ((dynamic)c.Value).Antes)
+                        datosAnteriores = string.Join("\n",
+                            cambios.Select(c => $"{c.Key}: {c.Value.Antes}")
                         );
-                        datosNuevos = JsonSerializer.Serialize(
-                            cambios.ToDictionary(c => c.Key, c => ((dynamic)c.Value).Despues)
+
+                        datosNuevos = string.Join("\n",
+                            cambios.Select(c => $"{c.Key}: {c.Value.Despues}")
                         );
                     }
                 }
+
+                // CREACIÓN
                 else if (entry.State == EntityState.Added)
                 {
                     var nuevos = entry.CurrentValues.Properties.ToDictionary(
                         p => p.Name,
-                        p => entry.CurrentValues[p]?.ToString()
+                        p => entry.CurrentValues[p]?.ToString() ?? ""
                     );
-                    datosNuevos = JsonSerializer.Serialize(nuevos);
+
+                    datosNuevos = FormatearDiccionario(nuevos);
                 }
+
+                // ELIMINACIÓN
                 else if (entry.State == EntityState.Deleted)
                 {
                     var antiguos = entry.OriginalValues.Properties.ToDictionary(
                         p => p.Name,
-                        p => entry.OriginalValues[p]?.ToString()
+                        p => entry.OriginalValues[p]?.ToString() ?? ""
                     );
-                    datosAnteriores = JsonSerializer.Serialize(antiguos);
+
+                    datosAnteriores = FormatearDiccionario(antiguos);
                 }
 
                 auditorias.Add(new AuditoriaAccion
@@ -237,12 +235,12 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
                 });
             }
 
-            // ✅ Ahora agregamos todas las auditorías al final (fuera del foreach)
             if (auditorias.Any())
                 await AuditoriaAcciones.AddRangeAsync(auditorias, cancellationToken);
 
             return await base.SaveChangesAsync(cancellationToken);
         }
+
 
     }
 }

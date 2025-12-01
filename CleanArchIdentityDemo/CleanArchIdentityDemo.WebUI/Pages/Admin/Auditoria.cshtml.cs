@@ -29,6 +29,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
 
         //Lista de registros para mostrar en la vista
         public List<AuditoriaDto> RegistrosAuditoria { get; set; } = new();
+        public List<AccesoModuloDto> RegistrosAccesosModulo { get; set; } = new();
         public List<ApplicationUser> Usuarios { get; set; } = new();
 
         public List<string> FiltroUsuarios { get; set; } = new();
@@ -41,8 +42,44 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
             var auditorias = await _auditoriaService.MostrarRegistrosAsync();
             RegistrosAuditoria = auditorias.ToList();
 
+            RegistrosAccesosModulo = await _auditoriaService.ObtenerAccesosPorModuloAsync(null, null);
+
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            await _auditoriaService.RegistrarAccesoAsync("Auditoria");
 
         }
+
+        public async Task<IActionResult> OnGetFiltrarAccesosAsync(string modulo, string usuario)
+        {
+            var resultados = await _auditoriaService.ObtenerAccesosPorModuloAsync(modulo, usuario);
+
+            return Partial("_TablaAccesosModuloPartial", resultados);
+        }
+
+        public async Task<FileResult> OnGetDescargarPdfAuditoriaAsync(
+    string usuarioId, string accion, string modulo, DateTime? desde, DateTime? hasta)
+        {
+            var datos = await _auditoriaService.ObtenerAccesosPorModuloAsync(modulo, usuarioId);
+
+            if (!string.IsNullOrEmpty(usuarioId))
+                datos = datos.Where(a => a.UsuarioId == usuarioId).ToList();
+
+            if (!string.IsNullOrEmpty(modulo))
+                datos = datos.Where(a => a.Modulo == modulo).ToList();
+
+            if (datos == null || !datos.Any())
+                throw new Exception("No hay datos para generar el PDF");
+
+            var pdf = await _auditoriaService.GenerarReportePdfAsync(datos);
+
+            return File(pdf, "application/pdf", "ReporteAccesos.pdf");
+        }
+
+
+
+
+
+
 
         public async Task<PartialViewResult> OnGetFiltrarAsync(string usuario, string accion, string modulo, DateTime? desde, DateTime? hasta)
         {

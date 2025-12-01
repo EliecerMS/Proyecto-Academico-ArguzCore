@@ -1,6 +1,7 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
+using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -23,9 +24,10 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
         private readonly IConfiguration _configuration;
         private readonly IProyectoService _proyectoService;
         private readonly IContratoService _ContratoService;
+        private readonly IAuditoriaService _auditoriaService;
 
 
-        public DocumentosModel(IDocumentosService documentosService, IUserService userService, UserManager<ApplicationUser> userManager, IConfiguration configuration, IProyectoService proyectoService, IBlobStorageService blobStorageService, IContratoService contratoService
+        public DocumentosModel(IDocumentosService documentosService,IAuditoriaService auditoriaService, IUserService userService, UserManager<ApplicationUser> userManager, IConfiguration configuration, IProyectoService proyectoService, IBlobStorageService blobStorageService, IContratoService contratoService
             )
         {
             _DocumentosService = documentosService;
@@ -35,6 +37,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
             _proyectoService = proyectoService;
             _blobStorageService = blobStorageService;
             _ContratoService = contratoService;
+            _auditoriaService = auditoriaService;
         }
 
         public List<ContratoDto> Contratos { get; private set; } = new();
@@ -128,6 +131,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Documentos
 
             UsuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             RolUsuario = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            await _auditoriaService.RegistrarAccesoAsync("Documentos");
 
             // Para aplicar filtros ======
             DocumentosFiltrados = Filtrar(Documentos, Q, Categoria);
