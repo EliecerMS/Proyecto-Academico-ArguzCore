@@ -2,12 +2,14 @@ using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using CleanArchIdentityDemo.Infrastructure.Services;
 using CleanArchIdentityDemo.WebUI;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using IdentityDbContext = CleanArchIdentityDemo.Infrastructure.Identity.ApplicationDbContext;
+
 
 QuestPDF.Settings.License = LicenseType.Community;
 var builder = WebApplication.CreateBuilder(args);
@@ -42,7 +44,7 @@ builder.Services.AddScoped<IContratoService, ContratoService>();
 builder.Services.AddScoped<IAnaliticaService, AnaliticaService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IBDRespladosService, BDRespaldoService>();
-
+builder.Services.AddScoped<IAnaliticaService, AnaliticaService>();
 
 
 // Necesario para inyectar HttpContext en los servicios
