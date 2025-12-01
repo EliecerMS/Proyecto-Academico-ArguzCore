@@ -1,4 +1,143 @@
 ﻿@page
 @model CleanArchIdentityDemo.WebUI.Pages.Admin.AnaliticaModel
 @{
+    ViewData["Title"] = "Analítica";
 }
+
+<div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold text-gray-800">Analítica</h1>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0">Comparación de Proyectos</h5>
+
+            <form method="post" asp-page-handler="DescargarPdf">
+                <!-- Estos hidden mantienen los filtros actuales -->
+                <input type="hidden" asp-for="ProyectoAId" />
+                <input type="hidden" asp-for="ProyectoBId" />
+                <input type="hidden" asp-for="MesA" />
+                <input type="hidden" asp-for="MesB" />
+
+                <button type="submit" class="btn btn-danger">
+                    <i class="fa-solid fa-file-pdf me-1"></i> Descargar PDF
+                </button>
+            </form>
+        </div>
+
+        <!-- Filtros de proyectos y meses -->
+        <form method="get">
+            <div class="row align-items-center mb-3">
+                <!-- Proyecto A -->
+                <div class="col-md-5 mb-3 mb-md-0">
+                    <label class="form-label fw-semibold">Proyecto A</label>
+                    <select class="form-select mb-2"
+                            asp-for="ProyectoAId"
+                            asp-items="Model.Proyectos">
+                        <option value="">Seleccione un proyecto...</option>
+                    </select>
+
+                    <label class="form-label small text-muted mb-1">Mes de ejecución</label>
+                    <select class="form-select form-select-sm"
+                            asp-for="MesA"
+                            asp-items="Model.MesesProyectoA">
+                        <option value="">Todos los meses / actual</option>
+                    </select>
+                </div>
+
+                <!-- VS -->
+                <div class="col-md-2 text-center fw-bold">
+                    VS
+                </div>
+
+                <!-- Proyecto B -->
+                <div class="col-md-5 mb-3 mb-md-0">
+                    <label class="form-label fw-semibold">Proyecto B</label>
+                    <select class="form-select mb-2"
+                            asp-for="ProyectoBId"
+                            asp-items="Model.Proyectos">
+                        <option value="">Seleccione un proyecto...</option>
+                    </select>
+
+                    <label class="form-label small text-muted mb-1">Mes de ejecución</label>
+                    <select class="form-select form-select-sm"
+                            asp-for="MesB"
+                            asp-items="Model.MesesProyectoB">
+                        <option value="">Todos los meses / actual</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Botón para aplicar filtros -->
+            <div class="text-end mb-3">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    Aplicar filtros
+                </button>
+            </div>
+        </form>
+
+
+        <!-- Tabla de comparación (por ahora con datos de ejemplo / placeholders) -->
+        @if (Model.Comparacion != null)
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th></th>
+                            <th class="text-center">
+                                @Model.Comparacion.NombreProyectoA
+                                @if (Model.Comparacion.MesA.HasValue)
+                                {
+                                    <div class="small text-muted">
+                                        Mes @Model.Comparacion.MesA
+                                    </div>
+                                }
+                            </th>
+                            <th class="text-center">
+                                @Model.Comparacion.NombreProyectoB
+                                @if (Model.Comparacion.MesB.HasValue)
+                                {
+                                    <div class="small text-muted">
+                                        Mes @Model.Comparacion.MesB
+                                    </div>
+                                }
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Estado</strong></td>
+                            <td>@Model.Comparacion.EstadoProyectoA</td>
+                            <td>@Model.Comparacion.EstadoProyectoB</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Avance físico (%)</strong></td>
+                            <td>@Model.Comparacion.AvanceFisicoA %</td>
+                            <td>@Model.Comparacion.AvanceFisicoB %</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Presupuesto ejecutado (%)</strong></td>
+                            <td>@Model.Comparacion.PresupuestoEjecutadoPorcentajeA %</td>
+                            <td>@Model.Comparacion.PresupuestoEjecutadoPorcentajeB %</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Desviación (%)</strong></td>
+                            <td>@Model.Comparacion.DesviacionPorcentajeA %</td>
+                            <td>@Model.Comparacion.DesviacionPorcentajeB %</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Riesgo</strong></td>
+                            <td>@Model.Comparacion.RiesgoA</td>
+                            <td>@Model.Comparacion.RiesgoB</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+
+
+    </div>
+</div>
