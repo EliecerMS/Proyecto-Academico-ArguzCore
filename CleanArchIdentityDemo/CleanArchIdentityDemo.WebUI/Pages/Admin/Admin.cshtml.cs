@@ -15,13 +15,12 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAuditoriaService _auditoriaService;
-        
 
-        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager, IAuditoriaService auditoria)
+
         private readonly IBDRespladosService _BDRespaldoService;
         private readonly IBlobStorageService _blobStorageService;
 
-        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager, IBDRespladosService BDRespladosService, IBlobStorageService blobStorageService)
+        public AdminModel(IUserService userService, UserManager<ApplicationUser> userManager, IBDRespladosService BDRespladosService, IBlobStorageService blobStorageService, IAuditoriaService auditoria)
         {
             _userService = userService;
             _userManager = userManager;
