@@ -22,9 +22,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         private readonly IAnaliticaService _analiticaService;
         private readonly IAuditoriaService _auditoriaService;
 
-        public AnaliticaModel(IAuditoriaService auditoria, IAnaliticaService analiticaService)
         public AnaliticaModel(IProyectoService proyectoService,
                               ApplicationDbContext context,
+                              IAuditoriaService auditoria,
                               IAnaliticaService analiticaService)
         {
             _proyectoService = proyectoService;
@@ -71,6 +71,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
             {
                 Comparacion = await ConstruirComparacionAsync();
             }
+
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            await _auditoriaService.RegistrarAccesoAsync("Analitica");
         }
 
         private async Task CargarProyectosAsync()
@@ -85,7 +88,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
                 })
                 .ToList();
         }
-        public async Task OnGet()
+        
 
         private async Task<List<SelectListItem>> CargarMesesProyectoAsync(int idProyecto)
         {
@@ -278,7 +281,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         {
 
             //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
-            await _auditoriaService.RegistrarAccesoAsync("Materiales");
+           
             public int IdProyectoA { get; set; }
             public int IdProyectoB { get; set; }
 
