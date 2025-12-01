@@ -187,15 +187,17 @@
                 <label class="form-label">Usuario</label>
                 <select id="filtroUsuario" class="form-control">
                     <option value="">Todos</option>
+
                     @foreach (var usuario in Model.RegistrosAccesosModulo
-                                        .Select(r => r.NombreUsuario)
-                                        .Where(u => !string.IsNullOrEmpty(u))
-                                        .Distinct())
+                                        .Where(r => r.UsuarioId != null)
+                                        .GroupBy(r => r.UsuarioId)
+                                        .Select(g => g.First()))
                     {
-                        <option value="@usuario">@usuario</option>
+                        <option value="@usuario.UsuarioId">@usuario.NombreUsuario</option>
                     }
                 </select>
             </div>
+
            
 
 
@@ -285,7 +287,7 @@
             window.location.href = `?handler=DescargarExcel&usuario=${usuario}&accion=${accion}&modulo=${modulo}&desde=${desde}&hasta=${hasta}`;
         });
 
-        //Actualizar Tabla de Acciones por Modulo
+        //Filtrar Tabla de Acciones por Modulo
                 document.getElementById("btnFiltrarAccesos").addEventListener("click", function () {
             const modulo = document.getElementById("filtroModulo").value;
             const usuario = document.getElementById("filtroUsuario").value;
