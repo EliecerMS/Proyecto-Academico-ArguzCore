@@ -14,5 +14,8 @@
         public decimal Desviacion { get; set; }
 
         public int PorcentajeAvance { get; set; }
+
+        //porcentaje de presupuesto ejecutado
+        public decimal PorcentajePresupuestoEjecutado { get; set; }
     }
 }

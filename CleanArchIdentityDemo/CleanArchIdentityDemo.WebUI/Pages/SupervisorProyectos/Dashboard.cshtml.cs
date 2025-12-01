@@ -1,6 +1,7 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
@@ -21,6 +22,11 @@ namespace CleanArchIdentityDemo.WebUI.Pages.SupervisorProyectos
         public async Task OnGetAsync()
         {
             Proyectos = await _proyectoService.MostrarProyectosActivosEInactivosAsync();
+        }
+        public async Task<IActionResult> OnGetDescargarInformeAsync(int proyectoId)
+        {
+            var pdfBytes = await _dashboardService.GenerarInformeProyectoAsync(proyectoId);
+            return File(pdfBytes, "application/pdf", $"Informe_Proyecto_{proyectoId}.pdf");
         }
     }
 }

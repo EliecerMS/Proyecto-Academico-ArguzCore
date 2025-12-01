@@ -116,5 +116,8 @@ namespace CleanArchIdentityDemo.Application.Interfaces
 
         //Método para reporte financiero
         Task<ReporteFinancieroDto> ObtenerReporteFinancieroAsync(int proyectoId, DateTime? fechaInicio, DateTime? fechaFin);
+
+        //Método para obtener el porcentaje de presupuesto ejecutado para un proyecto
+        Task<decimal> CalcularPorcentajePresupuestoEjecutadoAsync(int proyectoId, decimal presupuestoProyecto);
     }
 }

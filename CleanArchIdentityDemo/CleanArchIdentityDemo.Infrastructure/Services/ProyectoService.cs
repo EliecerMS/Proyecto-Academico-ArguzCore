@@ -915,7 +915,9 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 EstadoProyecto = p.EstadoProyecto.NombreEstado,
                 IdEstadoProyecto = p.EstadoProyectoId,
                 PorcentajeAvance = RecalculoPorcentajeAvance(p.Tareas.ToList()),
-                Desviacion = DesviacionAsync(p.Presupuesto, CostosEjecutadosAsync(p.IdProyecto), RecalculoPorcentajeAvance(p.Tareas.ToList())).Result //Desviacion se debe agregar y calcular cuando se tenga lista elreporte financiero en detalle proyecto
+                Desviacion = DesviacionAsync(p.Presupuesto, CostosEjecutadosAsync(p.IdProyecto), RecalculoPorcentajeAvance(p.Tareas.ToList())).Result, //Desviacion se debe agregar y calcular cuando se tenga lista elreporte financiero en detalle proyecto
+                
+                PorcentajePresupuestoEjecutado = CalcularPorcentajePresupuestoEjecutadoAsync(p.IdProyecto, p.Presupuesto).Result
             });
 
         }
@@ -969,6 +971,22 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             var totalEjecutado = costos.Sum(c => c.Monto);
 
             return totalEjecutado;
+        }
+        // Método para el Avance físico vs financiero
+        public async Task<decimal> CalcularPorcentajePresupuestoEjecutadoAsync(int proyectoId, decimal presupuestoProyecto)
+        {
+            if (presupuestoProyecto <= 0)
+                return 0;
+
+            // método privado que ya tienes en este mismo service
+            var costoEjecutadoProyecto = await CostosEjecutadosAsync(proyectoId);
+
+            if (costoEjecutadoProyecto <= 0)
+                return 0;
+
+            var porcentaje = (costoEjecutadoProyecto / presupuestoProyecto) * 100m;
+
+            return Math.Round(porcentaje, 2);
         }
     }
 }
