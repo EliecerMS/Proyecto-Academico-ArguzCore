@@ -1,4 +1,5 @@
-﻿using CleanArchIdentityDemo.Application.Interfaces;
+﻿using CleanArchIdentityDemo.Application.DTOs;
+using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
@@ -10,48 +11,49 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
     public class DashboardService : IDashboardService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IProyectoService _proyectoService;
 
-        public DashboardService(ApplicationDbContext context)
+        public DashboardService(ApplicationDbContext context, IProyectoService proyectoService)
         {
             _context = context;
+            _proyectoService = proyectoService;
         }
 
         public async Task<byte[]> GenerarInformeProyectoAsync(int proyectoId)
         {
+            // 1. Traer el proyecto de la BD (para nombre, descripción, fechas, presupuesto)
             var proyecto = await _context.Proyectos
-                .Include(p => p.Tareas)
                 .FirstOrDefaultAsync(p => p.IdProyecto == proyectoId);
 
             if (proyecto == null)
                 throw new Exception("Proyecto no encontrado.");
 
-            // Avance físico (promedio de las tareas) 
-            int avanceFisico = 0;
-            if (proyecto.Tareas != null && proyecto.Tareas.Any())
+            // 2. Traer el MISMO DTO que usas en el dashboard
+            var proyectosDashboard = await _proyectoService.MostrarProyectosActivosEInactivosAsync();
+            var proyectoDash = proyectosDashboard.FirstOrDefault(p => p.IdProyecto == proyectoId);
+
+            if (proyectoDash == null)
+                throw new Exception("Proyecto no encontrado en dashboard.");
+
+            // 3. Usar los mismos valores que ve el usuario en la tarjeta
+            int avanceFisico = proyectoDash.PorcentajeAvance;                          // mismo 100% del dashboard
+            decimal porcentajeFinanciero = proyectoDash.PorcentajePresupuestoEjecutado; // mismo % financiero
+            decimal desviacion = proyectoDash.Desviacion;                               // misma desviación
+
+            // 4. Calcular el total ejecutado a partir del porcentaje financiero
+            decimal totalEjecutado = 0;
+            if (proyectoDash.Presupuesto > 0 && porcentajeFinanciero > 0)
             {
-                avanceFisico = (int)Math.Round(
-                    proyecto.Tareas.Average(t => t.PorcentajeAvance)
+                totalEjecutado = Math.Round(
+                    proyectoDash.Presupuesto * (porcentajeFinanciero / 100m), 2
                 );
             }
-
-            // Costos ejecutados
-            var costos = await _context.CostosEjecutados
-                .Where(c => c.ProyectoId == proyectoId)
-                .ToListAsync();
-
-            decimal totalEjecutado = costos.Sum(c => c.Monto);
-            decimal porcentajeFinanciero = 0;
-
-            if (proyecto.Presupuesto > 0)
-                porcentajeFinanciero = Math.Round((totalEjecutado / proyecto.Presupuesto) * 100, 2);
-
-            decimal desviacion = proyecto.Presupuesto - totalEjecutado;
 
             // Limitar 0–100 para las barras
             int avanceClamped = Math.Clamp(avanceFisico, 0, 100);
             int financieroClamped = (int)Math.Clamp(porcentajeFinanciero, 0, 100);
 
-            //Documento QuestPDF 
+            // 5. Construir el PDF con esos mismos valores
             var document = Document.Create(container =>
             {
                 container.Page(page =>
@@ -83,7 +85,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                         // Barras comparativas 
                         col.Item().Row(row =>
                         {
-                            //Barra de AVANCE FÍSICO
+                            // Barra AVANCE FÍSICO
                             row.RelativeItem().Column(c =>
                             {
                                 c.Item().Text("Avance físico").Bold();
@@ -94,24 +96,21 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
                                     if (avance <= 0f)
                                     {
-                                        // 0% -> solo barra gris
-                                        r.RelativeItem(1f).Background(Colors.Grey.Lighten4);
+                                        r.RelativeItem(100f).Background(Colors.Grey.Lighten4);
                                     }
                                     else if (avance >= 100f)
                                     {
-                                        // 100% -> solo barra azul
-                                        r.RelativeItem(1f).Background(Colors.Blue.Medium);
+                                        r.RelativeItem(100f).Background(Colors.Blue.Medium);
                                     }
                                     else
                                     {
-                                        // entre 0 y 100 -> tramo azul + tramo gris
                                         r.RelativeItem(avance).Background(Colors.Blue.Medium);
                                         r.RelativeItem(100f - avance).Background(Colors.Grey.Lighten4);
                                     }
                                 });
                             });
 
-                            //Barra de PRESUPUESTO EJECUTADO
+                            // Barra PRESUPUESTO EJECUTADO
                             row.RelativeItem().Column(c =>
                             {
                                 c.Item().Text("Presupuesto ejecutado").Bold();
@@ -122,17 +121,14 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
                                     if (financiero <= 0f)
                                     {
-                                        // 0% -> solo barra gris
-                                        r.RelativeItem(1f).Background(Colors.Grey.Lighten4);
+                                        r.RelativeItem(100f).Background(Colors.Grey.Lighten4);
                                     }
                                     else if (financiero >= 100f)
                                     {
-                                        // 100% -> solo barra verde
-                                        r.RelativeItem(1f).Background(Colors.Green.Medium);
+                                        r.RelativeItem(100f).Background(Colors.Green.Medium);
                                     }
                                     else
                                     {
-                                        // entre 0 y 100 -> tramo verde + tramo gris
                                         r.RelativeItem(financiero).Background(Colors.Green.Medium);
                                         r.RelativeItem(100f - financiero).Background(Colors.Grey.Lighten4);
                                     }
@@ -140,37 +136,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                             });
                         });
 
-
-                        //Tabla de costos 
-                        if (costos.Any())
-                        {
-                            col.Item().Text("Detalle de costos ejecutados")
-                                .FontSize(14).Bold();
-
-                            col.Item().Table(table =>
-                            {
-                                table.ColumnsDefinition(columns =>
-                                {
-                                    columns.RelativeColumn(3); // Categoría
-                                    columns.RelativeColumn(2); // Fecha
-                                    columns.RelativeColumn(2); // Monto
-                                });
-
-                                table.Header(header =>
-                                {
-                                    header.Cell().Text("Categoría").Bold();
-                                    header.Cell().Text("Fecha").Bold();
-                                    header.Cell().Text("Monto").Bold();
-                                });
-
-                                foreach (var c in costos)
-                                {
-                                    table.Cell().Text(c.CategoriaGasto);
-                                    table.Cell().Text(c.Fecha.ToString("dd/MM/yyyy"));
-                                    table.Cell().Text($"₡{c.Monto:N0}");
-                                }
-                            });
-                        }
+                        // (Opcional) Si quieres tabla de costos, aquí sí podrías consultar CostosEjecutados
+                        // para ese proyectoId, como antes.
                     });
                 });
             });
