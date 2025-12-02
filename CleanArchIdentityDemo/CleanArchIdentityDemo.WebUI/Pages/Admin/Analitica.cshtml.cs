@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CleanArchIdentityDemo.Application.Interfaces;
+using CleanArchIdentityDemo.Infrastructure.Services;
 using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -19,14 +20,17 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         private readonly IProyectoService _proyectoService;
         private readonly ApplicationDbContext _context;
         private readonly IAnaliticaService _analiticaService;
+        private readonly IAuditoriaService _auditoriaService;
 
         public AnaliticaModel(IProyectoService proyectoService,
                               ApplicationDbContext context,
+                              IAuditoriaService auditoria,
                               IAnaliticaService analiticaService)
         {
             _proyectoService = proyectoService;
             _context = context;
             _analiticaService = analiticaService;
+            _auditoriaService = auditoria;
         }
 
 
@@ -67,6 +71,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
             {
                 Comparacion = await ConstruirComparacionAsync();
             }
+
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            await _auditoriaService.RegistrarAccesoAsync("Analitica");
         }
 
         private async Task CargarProyectosAsync()
@@ -81,6 +88,7 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
                 })
                 .ToList();
         }
+        
 
         private async Task<List<SelectListItem>> CargarMesesProyectoAsync(int idProyecto)
         {
@@ -271,6 +279,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         // ViewModel para la tabla
         public class ComparacionVm
         {
+
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+           
             public int IdProyectoA { get; set; }
             public int IdProyectoB { get; set; }
 

@@ -12,7 +12,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Persistence
         public ApplicationDbContext CreateDbContext(string[] args)
         {
             // Ajustar ruta según donde esté el proyecto WebUI
-            var webUIPath = @"C:\Users\Lenovo\source\repos\ArguzCore-Proyecto\CleanArchIdentityDemo\CleanArchIdentityDemo.WebUI";
+            var webUIPath = @"C:\Users\eliec\OneDrive\Documents\GitHub\CleanArquitectureDemo\CleanArchIdentityDemo\CleanArchIdentityDemo.WebUI";
+
 
         // Construir configuración apuntando al proyecto WebUI
         var configuration = new ConfigurationBuilder()

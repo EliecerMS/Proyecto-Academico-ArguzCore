@@ -1,6 +1,7 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
+using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,17 +16,21 @@ namespace CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria
         private readonly IUserService _userService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IProyectoService _proyectoService;
+        private readonly IAuditoriaService _auditoriaService;
+
 
         public ListaMaquinariaModel(
             IEquipoService equipoService,
             IUserService userService,
             UserManager<ApplicationUser> userManager,
-            IProyectoService proyectoService)
+            IProyectoService proyectoService,
+            IAuditoriaService auditoriaService)
         {
             _equipoService = equipoService;
             _userService = userService;
             _userManager = userManager;
             _proyectoService = proyectoService;
+            _auditoriaService = auditoriaService;
         }
 
         public IEnumerable<MaquinariaDto> Maquinarias { get; set; } = new List<MaquinariaDto>();
@@ -38,6 +43,9 @@ namespace CleanArchIdentityDemo.WebUI.Pages.JefeMaquinaria
         public async Task OnGetAsync()
         {
             Maquinarias = await _equipoService.GetAllAsync();
+
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            await _auditoriaService.RegistrarAccesoAsync("Maquinaria");
 
         }
 
