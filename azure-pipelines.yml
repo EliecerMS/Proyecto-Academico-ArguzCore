@@ -61,7 +61,7 @@ stages:
       displayName: 'Publicar aplicación'
       inputs:
         command: 'publish'
-        publishWebProjects: true
+        projects: '**/CleanArchIdentityDemo.WebUI.csproj'
         arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
         zipAfterPublish: true
         modifyOutputPath: false
