@@ -41,10 +41,10 @@ stages:
     
     # 3 Construir solución
     - task: DotNetCoreCLI@2
-      displayName: 'Construir solución'
+      displayName: 'Construir WebUI'
       inputs:
         command: 'build'
-        projects: '**/*.csproj'
+        projects: '**/CleanArchIdentityDemo.WebUI.csproj' # <--- AHORA ESPECIFICADO AQUI
         arguments: '--configuration $(buildConfiguration) --no-restore'
     
     # 4 Ejecutar pruebas
