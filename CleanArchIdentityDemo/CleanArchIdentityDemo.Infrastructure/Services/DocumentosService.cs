@@ -20,54 +20,64 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         // ==========================================
         public async Task<int> CrearDocumentoVersionadoAsync(CrearDocumentoVersionadoDto dto)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            // 1. Obtener la Estrategia de Ejecución
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            // 2. Ejecutar todas las operaciones dentro de la estrategia
+            return await strategy.ExecuteAsync(async () =>
             {
-                var documento = new Documento
+                // 3. Iniciar la transacción dentro del bloque de ejecución
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    ProyectoId = dto.ProyectoId,
-                    NombreDocumento = dto.NombreDocumento,
-                    CategoriaDocumento = dto.CategoriaDocumento ?? string.Empty,
-                    Descripcion = dto.Descripcion,
-                    TipoDocumento = "Versionado",
-                    VersionActual = 1.0m,
-                    TotalVersiones = 1,
-                    SubidoPor = dto.CreadoPor,
-                    FechaSubida = DateTime.Now,
-                    UltimaModificacion = DateTime.Now,
-                    Activo = true
-                };
+                    // Operación A: Crear el Documento
+                    var documento = new Documento
+                    {
+                        ProyectoId = dto.ProyectoId,
+                        NombreDocumento = dto.NombreDocumento,
+                        CategoriaDocumento = dto.CategoriaDocumento ?? string.Empty,
+                        Descripcion = dto.Descripcion,
+                        TipoDocumento = "Versionado",
+                        VersionActual = 1.0m,
+                        TotalVersiones = 1,
+                        SubidoPor = dto.CreadoPor,
+                        FechaSubida = DateTime.Now,
+                        UltimaModificacion = DateTime.Now,
+                        Activo = true
+                    };
+                    _context.Documentos.Add(documento);
+                    await _context.SaveChangesAsync();
 
-                _context.Documentos.Add(documento);
-                await _context.SaveChangesAsync();
+                    // Operación B: Crear la Versión
+                    var primeraVersion = new DocumentoVersion
+                    {
+                        DocumentoId = documento.IdDocumento,
+                        NumeroVersion = 1.0m,
+                        EsVersionActual = true,
+                        NombreArchivoOriginal = dto.NombreArchivoOriginal,
+                        NombreBlob = ExtraerNombreBlob(dto.RutaBlobCompleta),
+                        RutaBlobCompleta = dto.RutaBlobCompleta,
+                        TipoArchivo = dto.TipoArchivo,
+                        TamanoBytes = dto.TamanoBytes,
+                        SubidoPor = dto.CreadoPor,
+                        FechaSubida = DateTime.Now,
+                        Comentarios = dto.ComentariosVersion ?? "Versión inicial",
+                        Activo = true
+                    };
+                    _context.DocumentoVersiones.Add(primeraVersion);
+                    await _context.SaveChangesAsync();
 
-                var primeraVersion = new DocumentoVersion
+                    // 4. Commit de la transacción
+                    await transaction.CommitAsync();
+                    return documento.IdDocumento;
+                }
+                catch
                 {
-                    DocumentoId = documento.IdDocumento,
-                    NumeroVersion = 1.0m,
-                    EsVersionActual = true,
-                    NombreArchivoOriginal = dto.NombreArchivoOriginal,
-                    NombreBlob = ExtraerNombreBlob(dto.RutaBlobCompleta),
-                    RutaBlobCompleta = dto.RutaBlobCompleta,
-                    TipoArchivo = dto.TipoArchivo,
-                    TamanoBytes = dto.TamanoBytes,
-                    SubidoPor = dto.CreadoPor,
-                    FechaSubida = DateTime.Now,
-                    Comentarios = dto.ComentariosVersion ?? "Versión inicial",
-                    Activo = true
-                };
-
-                _context.DocumentoVersiones.Add(primeraVersion);
-                await _context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-                return documento.IdDocumento;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+                    // 5. Rollback en caso de fallo (antes de que la estrategia reintente)
+                    await transaction.RollbackAsync();
+                    throw; // Relanzar la excepción para que la estrategia de reintento pueda actuar
+                }
+            });
         }
 
         // ==========================================
@@ -75,59 +85,71 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         // ==========================================
         public async Task<int> AgregarVersionAsync(AgregarVersionDto dto)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            // 1. Obtener la Estrategia de Ejecución
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            // 2. Ejecutar todas las operaciones dentro de la estrategia para permitir reintentos
+            return await strategy.ExecuteAsync(async () =>
             {
-                var documento = await _context.Documentos
-                    .FirstOrDefaultAsync(d => d.IdDocumento == dto.DocumentoId && d.TipoDocumento == "Versionado");
-
-                if (documento == null)
-                    throw new InvalidOperationException("Documento no encontrado o no es versionable.");
-
-                var versionesAnteriores = await _context.DocumentoVersiones
-                    .Where(v => v.DocumentoId == dto.DocumentoId && v.EsVersionActual)
-                    .ToListAsync();
-
-                foreach (var version in versionesAnteriores)
+                // 3. Iniciar la transacción DENTRO del bloque de ejecución
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    version.EsVersionActual = false;
+                    var documento = await _context.Documentos
+                        .FirstOrDefaultAsync(d => d.IdDocumento == dto.DocumentoId && d.TipoDocumento == "Versionado");
+
+                    if (documento == null)
+                        throw new InvalidOperationException("Documento no encontrado o no es versionable.");
+
+                    // Desactivar versiones anteriores
+                    var versionesAnteriores = await _context.DocumentoVersiones
+                        .Where(v => v.DocumentoId == dto.DocumentoId && v.EsVersionActual)
+                        .ToListAsync();
+
+                    foreach (var version in versionesAnteriores)
+                    {
+                        version.EsVersionActual = false;
+                    }
+
+                    // Crear nueva versión
+                    var nuevoNumeroVersion = await ObtenerSiguienteNumeroVersionAsync(dto.DocumentoId);
+
+                    var nuevaVersion = new DocumentoVersion
+                    {
+                        DocumentoId = dto.DocumentoId,
+                        NumeroVersion = nuevoNumeroVersion,
+                        EsVersionActual = true,
+                        NombreArchivoOriginal = dto.NombreArchivoOriginal,
+                        NombreBlob = ExtraerNombreBlob(dto.RutaBlobCompleta),
+                        RutaBlobCompleta = dto.RutaBlobCompleta,
+                        TipoArchivo = dto.TipoArchivo,
+                        TamanoBytes = dto.TamanoBytes,
+                        SubidoPor = dto.SubidoPor,
+                        FechaSubida = DateTime.Now,
+                        Comentarios = dto.Comentarios,
+                        Activo = true
+                    };
+
+                    _context.DocumentoVersiones.Add(nuevaVersion);
+
+                    // Actualizar Documento principal
+                    documento.VersionActual = nuevoNumeroVersion;
+                    documento.TotalVersiones = await _context.DocumentoVersiones
+                        .CountAsync(v => v.DocumentoId == dto.DocumentoId && v.Activo);
+                    documento.UltimaModificacion = DateTime.Now;
+
+                    // Guardar todos los cambios (versiones anteriores, nueva versión, documento principal)
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync(); // Commit si todo fue exitoso
+
+                    return nuevaVersion.IdVersion;
                 }
-
-                var nuevoNumeroVersion = await ObtenerSiguienteNumeroVersionAsync(dto.DocumentoId);
-
-                var nuevaVersion = new DocumentoVersion
+                catch
                 {
-                    DocumentoId = dto.DocumentoId,
-                    NumeroVersion = nuevoNumeroVersion,
-                    EsVersionActual = true,
-                    NombreArchivoOriginal = dto.NombreArchivoOriginal,
-                    NombreBlob = ExtraerNombreBlob(dto.RutaBlobCompleta),
-                    RutaBlobCompleta = dto.RutaBlobCompleta,
-                    TipoArchivo = dto.TipoArchivo,
-                    TamanoBytes = dto.TamanoBytes,
-                    SubidoPor = dto.SubidoPor,
-                    FechaSubida = DateTime.Now,
-                    Comentarios = dto.Comentarios,
-                    Activo = true
-                };
-
-                _context.DocumentoVersiones.Add(nuevaVersion);
-
-                documento.VersionActual = nuevoNumeroVersion;
-                documento.TotalVersiones = await _context.DocumentoVersiones
-                    .CountAsync(v => v.DocumentoId == dto.DocumentoId && v.Activo);
-                documento.UltimaModificacion = DateTime.Now;
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return nuevaVersion.IdVersion;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+                    await transaction.RollbackAsync(); // Rollback en caso de fallo
+                    throw; // Relanzar la excepción para que la estrategia de reintento pueda actuar
+                }
+            });
         }
 
         // ==========================================
@@ -423,42 +445,53 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         // ==========================================
         public async Task MarcarVersionComoActualAsync(int idVersion)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            // 1. Obtener la Estrategia de Ejecución
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            // 2. Ejecutar todas las operaciones dentro de la estrategia para permitir reintentos
+            await strategy.ExecuteAsync(async () =>
             {
-                var version = await _context.DocumentoVersiones
-                    .FirstOrDefaultAsync(v => v.IdVersion == idVersion);
-
-                if (version == null)
-                    throw new InvalidOperationException("Versión no encontrada.");
-
-                var documento = await _context.Documentos
-                    .FirstOrDefaultAsync(d => d.IdDocumento == version.DocumentoId);
-
-                if (documento == null)
-                    throw new InvalidOperationException("Documento no encontrado.");
-
-                var todasVersiones = await _context.DocumentoVersiones
-                    .Where(v => v.DocumentoId == version.DocumentoId)
-                    .ToListAsync();
-
-                foreach (var v in todasVersiones)
+                // 3. Iniciar la transacción DENTRO del bloque de ejecución
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    v.EsVersionActual = false;
+                    var version = await _context.DocumentoVersiones
+                        .FirstOrDefaultAsync(v => v.IdVersion == idVersion);
+
+                    if (version == null)
+                        throw new InvalidOperationException("Versión no encontrada.");
+
+                    var documento = await _context.Documentos
+                        .FirstOrDefaultAsync(d => d.IdDocumento == version.DocumentoId);
+
+                    if (documento == null)
+                        throw new InvalidOperationException("Documento no encontrado.");
+
+                    // Desmarcar todas las versiones anteriores como actuales
+                    var todasVersiones = await _context.DocumentoVersiones
+                        .Where(v => v.DocumentoId == version.DocumentoId)
+                        .ToListAsync();
+
+                    foreach (var v in todasVersiones)
+                    {
+                        v.EsVersionActual = false;
+                    }
+
+                    // Marcar la versión seleccionada como actual y actualizar el documento principal
+                    version.EsVersionActual = true;
+                    documento.VersionActual = version.NumeroVersion;
+                    documento.UltimaModificacion = DateTime.Now;
+
+                    // Guardar todos los cambios
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 }
-
-                version.EsVersionActual = true;
-                documento.VersionActual = version.NumeroVersion;
-                documento.UltimaModificacion = DateTime.Now;
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
         }
 
         public async Task EliminarDocumentoAsync(int idDocumento)
