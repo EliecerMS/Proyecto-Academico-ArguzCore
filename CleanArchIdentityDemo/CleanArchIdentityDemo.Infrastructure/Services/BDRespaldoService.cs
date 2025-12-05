@@ -31,19 +31,53 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
         public BDRespaldoService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IConfiguration configuration, ILogger<AuditoriaService> logger)
         {
-            //logger de auditoría
             _logger = logger;
 
-            // Configuración de Azure
-            _subscriptionId = configuration["Azure:SubscriptionId"];
-            _resourceGroup = configuration["Azure:ResourceGroup"];
-            _serverName = configuration["Azure:ServerName"];
-            _databaseName = configuration["Azure:DatabaseName"];
-            _blobStorageConnectionString = configuration.GetSection("AzureBlobStorage:ConnectionString").Value;
-            _containerName = configuration["AzureBackupStorage:ContainerName"];
-            _sqlUser = configuration["Azure:SqlUser"];
-            _sqlPassword = configuration["Azure:SqlPassword"];
-            _storageAccountName = configuration["AzureBackupStorage:StorageAccount"];
+            // AZURE CONFIGURATION (lee de múltiples fuentes)
+
+            _subscriptionId = configuration["Azure:SubscriptionId"]              // User Secrets local
+                                                                                 //?? configuration["Azure__SubscriptionId"]                        // Azure App Service
+                ?? throw new InvalidOperationException("Azure:SubscriptionId no configurado");
+
+            _resourceGroup = configuration["Azure:ResourceGroup"]
+                //?? configuration["Azure__ResourceGroup"]
+                ?? throw new InvalidOperationException("Azure:ResourceGroup no configurado");
+
+            _serverName = configuration["Azure:ServerName"]
+                //?? configuration["Azure__ServerName"]
+                ?? throw new InvalidOperationException("Azure:ServerName no configurado");
+
+            _databaseName = configuration["Azure:DatabaseName"]
+                //?? configuration["Azure__DatabaseName"]
+                ?? throw new InvalidOperationException("Azure:DatabaseName no configurado");
+
+            _sqlUser = configuration["Azure:SqlUser"]
+                //?? configuration["Azure__SqlUser"]
+                ?? throw new InvalidOperationException("Azure:SqlUser no configurado");
+
+            _sqlPassword = configuration["Azure:SqlPassword"]
+                //?? configuration["Azure__SqlPassword"]
+                ?? throw new InvalidOperationException("Azure:SqlPassword no configurado");
+
+            // STORAGE CONFIGURATION
+
+            _storageAccountName = configuration["AzureBackupStorage:StorageAccount"]  // User Secrets local
+                ?? configuration["Azure:BackupStorageAccount"]                        // Alternativo
+                                                                                      //?? configuration["Azure__BackupStorageAccount"]                       // Azure App Service
+                ?? throw new InvalidOperationException("AzureBackupStorage:StorageAccount no configurado");
+
+            _containerName = configuration["AzureBackupStorage:ContainerName"]        // User Secrets local
+                ?? configuration["Azure:BackupContainerName"]                         // Alternativo
+                                                                                      //?? configuration["Azure__BackupContainerName"]                        // Azure App Service
+                ?? "backups";                                                         // Fallback
+
+            // BLOB STORAGE CONNECTION STRING
+
+            _blobStorageConnectionString = configuration.GetConnectionString("AzureBlobStorageConnectionString")  // Azure
+                ?? configuration["AzureBlobStorage:ConnectionString"]                                            // Local
+                ?? throw new InvalidOperationException("AzureBlobStorage ConnectionString no configurado");
+
+            _logger.LogInformation("BDRespaldoService inicializado correctamente");
         }
 
         // LISTAR PUNTOS DE RESTAURACIÓN DISPONIBLES (PITR)

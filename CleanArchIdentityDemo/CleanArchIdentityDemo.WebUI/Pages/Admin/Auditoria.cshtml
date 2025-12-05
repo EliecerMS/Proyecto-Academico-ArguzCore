@@ -66,9 +66,11 @@
         <button class="nav-link" id="nav-Acciones" data-bs-toggle="tab" data-bs-target="#nav-Acciones-tab" type="button" role="tab" aria-controls="nav-Acciones-tab" aria-selected="false">
             Acciones de usuarios
         </button>
+        <button class="nav-link" id="nav-Acciones" data-bs-toggle="tab" data-bs-target="#nav-AccionesModulos-tab" type="button" role="tab" aria-controls="nav-Acciones-tab" aria-selected="false">
+            Ingreso a los modulos
+        </button>
     </div>
 </nav>
-
 
 <div class="tab-content" id="nav-tabContent">
     <div class="tab-pane fade show active" id="nav-Acciones-tab" role="tabpanel" aria-labelledby="nav-Acciones">
@@ -86,7 +88,7 @@
                 <label class="form-label">Usuario</label>
                 <select id="usuario" class="form-control">
                     <option value="">Todos</option>
-                    @foreach (var usuario in Model.RegistrosAuditoria
+                    @foreach (var usuario in Model.Auditorias.Items
                                         .Select(r => r.NombreUsuario)
                                         .Where(u => !string.IsNullOrEmpty(u))
                                         .Distinct())
@@ -101,7 +103,7 @@
                 <label class="form-label">Acción</label>
                 <select id="accion" class="form-control">
                     <option value="">Todos</option>
-                    @foreach (var accion in Model.RegistrosAuditoria
+                    @foreach (var accion in Model.Auditorias.Items
                                         .Select(r => r.Accion)
                                         .Where(a => !string.IsNullOrEmpty(a))
                                         .Distinct())
@@ -116,7 +118,7 @@
                 <label class="form-label">Módulo</label>
                 <select id="modulo" class="form-control">
                     <option value="">Todos</option>
-                    @foreach (var modulo in Model.RegistrosAuditoria
+                    @foreach (var modulo in Model.Auditorias.Items
                                         .Select(r => r.Modulo)
                                         .Where(m => !string.IsNullOrEmpty(m))
                                         .Distinct())
@@ -144,78 +146,128 @@
             </div>
         </div>
 
-        <!-- Botón descargar PDF -->
+        <!-- Botón descargar excel -->
         <div class="text-end mb-3">
             <button id="btnDescargarExcel" class="btn btn-success">
                 <i class="bi bi-file-earmark-excel"></i> Descargar Excel
             </button>
         </div>
 
+        <!-- Selec de mostrar cantidad de registros en pagina -->
+        <!-- Selector de elementos -->
+        <form method="get" class="mb-3">
+            <select asp-for="ElementosPorPagina" class="form-select w-auto" onchange="this.form.submit()">
+                <option value="20">20 por página</option>
+                <option value="50">50 por página</option>
+                <option value="100">100 por página</option>
+            </select>
+        </form>
 
         <!-- Aca una base de la tabla que carga los resultados del filtro, diseñar como el prototipo -->
         <div id="tablaAuditoriaContainer">
-            @await Html.PartialAsync("_TablaAuditoriaPartial", Model.RegistrosAuditoria)
+            @await Html.PartialAsync("_TablaAuditoriaPartial", Model.Auditorias)
         </div>
+
+        <!-- Paginación -->
+        @if (Model.Auditorias.TotalPaginas > 1)
+        {
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item @(!Model.Auditorias.TienePaginaAnterior ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-page=""
+                           asp-route-paginaActual="@(Model.PaginaActual - 1)"
+                           asp-route-elementosPorPagina="@Model.ElementosPorPagina">
+                            Anterior
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.Auditorias.TotalPaginas; i++)
+                    {
+                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                            <a class="page-link"
+                               asp-page=""
+                               asp-route-paginaActual="@i"
+                               asp-route-elementosPorPagina="@Model.ElementosPorPagina">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    <li class="page-item @(!Model.Auditorias.TienePaginaSiguiente ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-page=""
+                           asp-route-paginaActual="@(Model.PaginaActual + 1)"
+                           asp-route-elementosPorPagina="@Model.ElementosPorPagina">
+                            Siguiente
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
 
     </div>
 
-    <div class="tab-pane fade" id="nav-GenerarReporte-tab" role="tabpanel" aria-labelledby="nav-GenerarReporte">
+    <!--Tab de los Accesos modulos-->
+    <div class="tab-pane fade" id="nav-AccionesModulos-tab" role="tabpanel" aria-labelledby="nav-GenerarReporte">
         <br />
-        <div class="row justify-content-between">
-            <div class="col-4">
-                Accesos por módulo
+        <h4>Accesos por módulo</h4>
+
+        <div class="row mb-4">
+            <!-- Filtro por módulo -->
+            <div class="col-md-4">
+                <label class="form-label">Seleccionar módulo</label>
+                <select id="filtroModulo" class="form-control">
+                    <option value="">Todos</option>
+                    @foreach (var modulo in Model.RegistrosAccesosModulo
+                                        .Select(r => r.Modulo)
+                                        .Where(m => !string.IsNullOrEmpty(m))
+                                        .Distinct())
+                    {
+                        <option value="@modulo">@modulo</option>
+                    }
+                </select>
             </div>
-        </div>
-        <br />
-        <div class="col-4">
-            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#">
-                <i class="fa-solid fa-file-pdf"></i> Descargar reporte
-            </button>
-        </div>
 
-        <!-- Componentes del filtrado para tener una base que pueda le sirva -->
-        <div class="col-4">
-            <label for="" class="form-label">Seleccionar modulo</label>
-            <select id="" class="form-control">
-                <option value="">Todos</option>
-                @* @foreach (var proveedor in Model.Proveedores)
-                    {
-                        <option value="@proveedor.IdProveedor">@proveedor.NombreProveedor</option>
-                    } *@
-            </select>
-        </div>
-        <div class="col-4">
-            <label for="" class="form-label">Filtrar por usuario</label>
-            <select id="" class="form-control">
-                <option value="">Todos</option>
-                @* @foreach (var proveedor in Model.Proveedores)
-                    {
-                        <option value="@proveedor.IdProveedor">@proveedor.NombreProveedor</option>
-                    } *@
-            </select>
-        </div>
-        <br />
-        <!-- Aca una base de la tabla que carga los resultados del filtro, diseñar como el prototipo -->
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Colum 1</th>
-                    <th>Colum 2</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        Colum 1
-                    </td>
-                    <td>
-                        Colum 2
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+            <!-- Filtro por usuario -->
+            <div class="col-md-4">
+                <label class="form-label">Usuario</label>
+                <select id="filtroUsuario" class="form-control">
+                    <option value="">Todos</option>
 
+                    @foreach (var usuario in Model.RegistrosAccesosModulo
+                                        .Where(r => r.UsuarioId != null)
+                                        .GroupBy(r => r.UsuarioId)
+                                        .Select(g => g.First()))
+                    {
+                        <option value="@usuario.UsuarioId">@usuario.NombreUsuario</option>
+                    }
+                </select>
+            </div>
+
+           
+
+
+            <div class="col-md-4 d-flex align-items-end">
+                <button id="btnFiltrarAccesos" class="btn btn-primary w-100">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+            </div>
+
+            <!-- Botón para descargar PDF accesos a módulos -->
+            <div class="text-end mb-3">
+                <button id="btnDescargarPdfAccesos" class="btn btn-danger">
+                    <i class="fa-solid fa-file-pdf me-1"></i> Descargar PDF
+                </button>
+            </div>
+
+
+        <!-- Partial dinámico -->
+        <div id="tablaAccesosModuloContainer">
+            @await Html.PartialAsync("_TablaAccesosModuloPartial", Model.RegistrosAccesosModulo)
+        </div>
     </div>
+
 </div>
 
 
@@ -281,7 +333,53 @@
             // Redirige a la ruta que genera el Excel
             window.location.href = `?handler=DescargarExcel&usuario=${usuario}&accion=${accion}&modulo=${modulo}&desde=${desde}&hasta=${hasta}`;
         });
+
+        //Filtrar Tabla de Acciones por Modulo
+                document.getElementById("btnFiltrarAccesos").addEventListener("click", function () {
+            const modulo = document.getElementById("filtroModulo").value;
+            const usuario = document.getElementById("filtroUsuario").value;
+
+            fetch(`?handler=FiltrarAccesos&modulo=${modulo}&usuario=${usuario}`, {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById("tablaAccesosModuloContainer").innerHTML = html;
+            })
+            .catch(err => console.error("Error al filtrar accesos por módulo:", err));
+        });
     
+            //Descargar en pdf la tabla de accesos por modulo
+                          document.getElementById("btnDescargarPdfAccesos").addEventListener("click", function () {
+
+                const modulo = document.getElementById("filtroModulo").value;
+                const usuario = document.getElementById("filtroUsuario").value;
+
+                // Ruta correcta para Razor Pages dentro de /Admin/
+                const url = `/Admin/Auditoria?handler=DescargarPdfAuditoria`
+                    + `&modulo=${encodeURIComponent(modulo)}`
+                    + `&usuarioId=${encodeURIComponent(usuario)}`;
+
+                fetch(url, {
+                    method: 'GET'
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    const urlBlob = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = urlBlob;
+                    link.download = "AccesosModulo.pdf";
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    window.URL.revokeObjectURL(urlBlob);
+                })
+                .catch(error => console.error("Error descargando PDF:", error));
+            });
+
 
     </script>
 }

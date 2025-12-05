@@ -1,4 +1,5 @@
-﻿using CleanArchIdentityDemo.Infrastructure.Identity;
+﻿using CleanArchIdentityDemo.Domain.Entities;
+using CleanArchIdentityDemo.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -14,8 +15,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Persistence
             var webUIPath = @"C:\Users\eliec\OneDrive\Documents\GitHub\CleanArquitectureDemo\CleanArchIdentityDemo\CleanArchIdentityDemo.WebUI";
 
 
-            // Construir configuración apuntando al proyecto WebUI
-            var configuration = new ConfigurationBuilder()
+        // Construir configuración apuntando al proyecto WebUI
+        var configuration = new ConfigurationBuilder()
                     .SetBasePath(webUIPath)
                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                     .AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true) // Habilitar User Secrets

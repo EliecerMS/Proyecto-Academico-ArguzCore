@@ -1,4 +1,4 @@
-﻿@model List<CleanArchIdentityDemo.Application.DTOs.AuditoriaDto>
+﻿@model CleanArchIdentityDemo.Application.DTOs.ResultadoPaginado<CleanArchIdentityDemo.Application.DTOs.AuditoriaDto>
 
 <table class="table table-striped align-middle">
     <thead>
@@ -11,9 +11,9 @@
         </tr>
     </thead>
     <tbody>
-        @if (Model != null && Model.Any())
+        @if (Model != null && Model.Items.Any())
         {
-            foreach (var item in Model)
+            foreach (var item in Model.Items)
             {
                 var collapseId = $"collapse_{item.IdAuditoria}";
                 <tr>
@@ -36,18 +36,53 @@
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <h6 class="text-danger fw-bold">Dato Anterior</h6>
-                                            <pre class="json-viewer bg-light p-2 rounded border border-danger-subtle"
-                                                 style="max-height: 250px; overflow-y: auto; white-space: pre-wrap;">
-        @item.DatoAnterior
-                                                    </pre>
+                                            <div class="audit-box border border-danger-subtle">
+                                                @if (!string.IsNullOrWhiteSpace(item.DatoAnterior))
+                                                {
+                                                    <dl class="row">
+                                                        @foreach (var line in item.DatoAnterior.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
+                                                        {
+                                                            var parts = line.Split(':', 2);
+                                                            if (parts.Length == 2)
+                                                            {
+                                                                <dt class="col-sm-9 fw-semibold">@parts[0].Trim()</dt>
+                                                                <dd class="col-sm-8">@parts[1].Trim()</dd>
+                                                            }
+                                                        }
+
+                                                    </dl>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted fst-italic">No contiene datos</p>
+                                                }
+                                            </div>
                                         </div>
+
                                         <div class="col-md-6 mb-3">
                                             <h6 class="text-success fw-bold">Dato Nuevo</h6>
-                                            <pre class="json-viewer bg-light p-2 rounded border border-success-subtle"
-                                                 style="max-height: 250px; overflow-y: auto; white-space: pre-wrap;">
-        @item.DatoNuevo
-                                                    </pre>
+                                            <div class="audit-box border border-success-subtle">
+                                                @if (!string.IsNullOrWhiteSpace(item.DatoNuevo))
+                                                {
+                                                    <dl class="row">
+                                                        @foreach (var line in item.DatoNuevo.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
+                                                        {
+                                                            var parts = line.Split(':', 2);
+                                                            if (parts.Length == 2)
+                                                            {
+                                                                <dt class="col-sm-9 fw-semibold">@parts[0]</dt>
+                                                                <dd class="col-sm-8">@parts[1].Trim()</dd>
+                                                            }
+                                                        }
+                                                    </dl>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted fst-italic">No contiene datos</p>
+                                                }
+                                            </div>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -63,4 +98,8 @@
             </tr>
         }
     </tbody>
+
 </table>
+
+
+

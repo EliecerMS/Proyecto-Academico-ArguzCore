@@ -48,29 +48,147 @@
                 <div class="card-footer bg-transparent border-0">
                     <div class="container">
                         <div class="row">
+
                             <div class="col">
-                                <a asp-page="DetallesProyecto" asp-route-CodigoProyecto="@proyecto.CodigoProyecto" class="btn btn-outline-primary btn-sm w-100">
+                                <a asp-page="DetallesProyecto"
+                                   asp-route-CodigoProyecto="@proyecto.CodigoProyecto"
+                                   class="btn btn-outline-primary btn-sm w-100">
                                     Ver detalles
                                 </a>
                             </div>
+
                             <div class="col">
-                                <!-- Boton que abre el Ver avance -->
-                                <button class="btn btn-outline-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#verAvanceModal">
+                                <button type="button"
+                                        class="btn btn-outline-primary btn-sm w-100"
+                                        onclick="abrirModalAvance(
+                                    '@proyecto.Nombre',
+                                    @proyecto.PorcentajeAvance,
+                                    @proyecto.PorcentajePresupuestoEjecutado,
+                                    @proyecto.IdProyecto)">
                                     Ver avance
                                 </button>
                             </div>
+
+                            <div class="col">
+                                <a asp-page-handler="DescargarInforme"
+                                   asp-route-proyectoId="@proyecto.IdProyecto"
+                                   class="btn btn-outline-primary btn-sm w-100">
+                                    Descargar informe
+                                </a>
+                            </div>
+
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     }
 </div>
+<!-- Modal Ver Avance -->
+<div class="modal fade" id="verAvanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalProyectoNombre">Avance del proyecto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
 
-@section Scripts {
-    @* Scritp para abrir el modal de Ver avance *@
+            <div class="modal-body">
+
+                <div class="row g-4">
+                    <!-- Tarjeta Avance físico -->
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background-color:#f8f9fb;">
+                            <p class="text-muted mb-1">Avance físico</p>
+                            <h3 class="fw-bold mb-2" id="textoFisico">0%</h3>
+                            <div class="progress" style="height: 10px;">
+                                <div id="barraFisica"
+                                     class="progress-bar"
+                                     role="progressbar"
+                                     style="width: 0%;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Presupuesto ejecutado -->
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background-color:#f8f9fb;">
+                            <p class="text-muted mb-1">Presupuesto ejecutado</p>
+                            <h3 class="fw-bold mb-2" id="textoFinanciero">0%</h3>
+                            <div class="progress" style="height: 10px;">
+                                <div id="barraFinanciera"
+                                     class="progress-bar bg-success"
+                                     role="progressbar"
+                                     style="width: 0%;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- (opcional) alerta de posible retraso -->
+                <div id="alertaRetraso" class="mt-3 text-danger fw-semibold d-none">
+                    El proyecto presenta posible retraso financiero (ejecución menor al avance físico).
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+                <form method="post" asp-page-handler="DescargarInforme" class="me-2">
+                    <input type="hidden" id="ProyectoIdInforme" name="proyectoId" />
+                    <button type="submit" class="btn btn-primary">
+                        Descargar informe
+                    </button>
+                </form>
+
+
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+   @section Scripts {
+    <script>
+
+        function abrirModalAvance(nombreProyecto, porcentajeFisico, porcentajeFinanciero, proyectoId) {
+            document.getElementById("modalProyectoNombre").innerText = nombreProyecto;
+
+            document.getElementById("textoFisico").textContent = porcentajeFisico + "%";
+            document.getElementById("barraFisica").style.width = porcentajeFisico + "%";
+
+            let porcentajeBarra = porcentajeFinanciero;
+
+            if (porcentajeBarra < 0) porcentajeBarra = 0;
+            if (porcentajeBarra > 100) porcentajeBarra = 100;
+
+            document.getElementById("barraFinanciera").style.width = porcentajeBarra + "%";
+
+            if (porcentajeFinanciero > 100) {
+                document.getElementById("textoFinanciero").textContent = "100%";
+            } else {
+                document.getElementById("textoFinanciero").textContent = porcentajeFinanciero.toFixed(2) + "%";
+            }
+
+            if (porcentajeFinanciero < porcentajeFisico) {
+                document.getElementById("alertaRetraso").classList.remove("d-none");
+            } else {
+                document.getElementById("alertaRetraso").classList.add("d-none");
+            }
+
+            document.getElementById("ProyectoIdInforme").value = proyectoId;
+
+            var modal = new bootstrap.Modal(document.getElementById('verAvanceModal'));
+            modal.show();
+        }
+
+    </script>
 }
-
 
 
 

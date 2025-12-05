@@ -22,17 +22,27 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         {
             _logger = logger;
 
-            // Leer configuración
-            var connectionString = configuration["AzureBlobStorage:ConnectionString"];
-            _containerName = configuration["AzureBlobStorage:ContainerName"] ?? "documentos-proyectos";
-            _backupContainer = configuration["AzureBackupStorage:ContainerName"] ?? "backups";
 
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                //throw new InvalidOperationException(
-                //    "La cadena de conexión de Azure Blob Storage no está configurada. " +
-                //    "Verifique la configuración 'AzureBlobStorage:ConnectionString' en User Secrets o appsettings.json");
-            }
+
+            // CONNECTION STRING (lee de múltiples fuentes)
+
+            var connectionString = configuration.GetConnectionString("AzureBlobStorageConnectionString")  // Azure App Service
+                ?? configuration["AzureBlobStorage:ConnectionString"]                                     // User Secrets local
+                ?? throw new InvalidOperationException(
+                    "La cadena de conexión de Azure Blob Storage no está configurada. " +
+                    "Verifique 'AzureBlobStorage:ConnectionString' en User Secrets o " +
+                    "'AzureBlobStorageConnectionString' en Azure App Service Connection Strings");
+
+            // CONTAINER NAMES (lee de múltiples fuentes)
+            _containerName = configuration["Azure:BlobContainerName"]           // Azure App Service (con __)
+                                                                                //?? configuration["Azure__BlobContainerName"]                    // Azure App Service alternativo
+                ?? configuration["AzureBlobStorage:ContainerName"]              // User Secrets local
+                ?? "documentos-proyectos";                                      // Fallback
+
+            _backupContainer = configuration["Azure:BackupContainerName"]       // Azure App Service
+                                                                                //?? configuration["Azure__BackupContainerName"]                  // Azure App Service alternativo
+                ?? configuration["AzureBackupStorage:ContainerName"]            // User Secrets local
+                ?? "backups";                                                   // Fallback
 
             try
             {
@@ -41,15 +51,20 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 _containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
                 _containerClientBackUps = _blobServiceClient.GetBlobContainerClient(_backupContainer);
 
-                // Crear contenedor si no existe (solo en desarrollo)
+                // Crear contenedor si no existe
                 _containerClient.CreateIfNotExists(PublicAccessType.None);
+                _containerClientBackUps.CreateIfNotExists(PublicAccessType.None);
 
-                _logger.LogInformation("BlobStorageService inicializado correctamente. Container: {ContainerName}", _containerName);
+                _logger.LogInformation(
+                    "BlobStorageService inicializado correctamente. " +
+                    "Container principal: {ContainerName}, Backup: {BackupContainer}",
+                    _containerName, _backupContainer);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al inicializar BlobStorageService");
-                //throw new InvalidOperationException("No se pudo conectar a Azure Blob Storage. Verifique la cadena de conexión.", ex);
+                throw new InvalidOperationException(
+                    "No se pudo conectar a Azure Blob Storage. Verifique la cadena de conexión.", ex);
             }
         }
 

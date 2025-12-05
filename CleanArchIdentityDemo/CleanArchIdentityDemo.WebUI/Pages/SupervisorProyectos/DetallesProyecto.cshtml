@@ -468,7 +468,17 @@
                         <tr>
                             <td>@incidente.Descripcion</td>
                             <td>@incidente.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@incidente.Estado</td>
+                            <td>
+                                @if (incidente.Estado == "Abierto")
+                                {
+                                    <span class="badge bg-success">Abierto</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Cerrado</span>
+                                }
+                            </td>
+
                             <td>
                                 @if (incidente.Estado == "Abierto")
                                 {
@@ -493,12 +503,11 @@
                                             <i class="fa-solid fa-circle-xmark"></i> Cerrar
                                         </button>
 
-
                                     </form>
                                 }
                                 else
                                 {
-                                    <span class="text-muted">Incidente cerrado</span>
+                                    <span class="text-muted fw-semibold">No accionable</span>
                                 }
                             </td>
                         </tr>
@@ -512,6 +521,7 @@
                 }
             </tbody>
         </table>
+
 
     </div>
 
@@ -1127,8 +1137,30 @@
                                 <td>@mat.Cantidad</td>
                                 <td>@mat.Prioridad</td>
                                 <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td>@solicitud.EstadoSolicitud</td>
+
+                                <!-- Estado con badge -->
+                                <td>
+                                    @if (solicitud.EstadoSolicitud == "Abierta")
+                                    {
+                                        <span class="badge bg-warning text-dark">Abierta</span>
+                                    }
+                                    else if (solicitud.EstadoSolicitud == "Aceptado")
+                                    {
+                                        <span class="badge bg-success">Aceptado</span>
+                                    }
+                                    else if (solicitud.EstadoSolicitud == "Rechazado")
+                                    {
+                                        <span class="badge bg-danger">Rechazado</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Desconocido</span>
+                                    }
+                                </td>
+
                                 <td>@solicitud.ObservacionesBodeguero</td>
+
+                                <!-- Acciones -->
                                 <td>
                                     @if (solicitud.EstadoSolicitud == "Abierta")
                                     {
@@ -1146,12 +1178,14 @@
                                               asp-route-idSolicitud="@solicitud.IdSolicitud"
                                               asp-route-CodigoProyecto="@Model.CodigoProyecto"
                                               style="display:inline;">
-                                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Eliminar</button>
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
                                         </form>
                                     }
                                     else
                                     {
-                                        <span class="text-muted">No editable</span>
+                                        <span class="text-muted">No accionable</span>
                                     }
                                 </td>
                             </tr>
@@ -1166,6 +1200,7 @@
                 }
             </tbody>
         </table>
+
     </div>
 </div>
 

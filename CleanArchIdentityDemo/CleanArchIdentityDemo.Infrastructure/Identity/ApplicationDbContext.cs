@@ -134,7 +134,18 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
                 .HasForeignKey(p => p.UsuarioId);
         }
 
-        //Guardar los registros de Auditoria
+        private string FormatearDiccionario(Dictionary<string, string> datos)
+        {
+            return string.Join("\n", datos.Select(d => $"{d.Key}: {d.Value}"));
+        }
+
+        private string FormatearCambios(Dictionary<string, (string Antes, string Despues)> cambios)
+        {
+            return string.Join("\n", cambios.Select(c =>
+                $"{c.Key}: Antes = {c.Value.Antes} | Después = {c.Value.Despues}"
+            ));
+        }
+
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             // verificar si hay un usuario autenticado
@@ -151,7 +162,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
                                 (e.State == EntityState.Added ||
                                  e.State == EntityState.Modified ||
                                  e.State == EntityState.Deleted))
-                    .ToList(); // ✅ fuerza evaluación antes del foreach
+                    .ToList(); // fuerza evaluación antes del foreach
 
                 // Crear una lista temporal para evitar modificar la colección durante la iteración
                 var auditorias = new List<AuditoriaAccion>();
@@ -235,6 +246,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
             // Se agregan todas las auditorías al final (fuera del foreach)
             return await base.SaveChangesAsync(cancellationToken);
         }
+
 
     }
 

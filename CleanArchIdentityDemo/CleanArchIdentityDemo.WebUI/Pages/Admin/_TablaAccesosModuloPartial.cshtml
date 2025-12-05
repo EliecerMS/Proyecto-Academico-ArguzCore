@@ -1,0 +1,31 @@
+﻿@model List<CleanArchIdentityDemo.Application.DTOs.AccesoModuloDto>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Módulo</th>
+            <th>Usuario</th>
+            <th>Cantidad de accesos</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Modulo</td>
+                    <td>@item.NombreUsuario</td>
+                    <td>@item.Cantidad</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="3" class="text-center text-muted">No se encontraron registros.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+

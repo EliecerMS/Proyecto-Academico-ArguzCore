@@ -1,6 +1,7 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
+using CleanArchIdentityDemo.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,12 +15,14 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
         private readonly IMaterialesService _MaterialesService;
         private readonly IUserService _UserService;
         private readonly UserManager<ApplicationUser> _UserManager;
+        private readonly IAuditoriaService _auditoriaService;
 
-        public MaterialesModel(IMaterialesService materialesService, IUserService userService, UserManager<ApplicationUser> userManager)
+        public MaterialesModel(IMaterialesService materialesService, IAuditoriaService auditoria, IUserService userService, UserManager<ApplicationUser> userManager)
         {
             _MaterialesService = materialesService;
             _UserService = userService;
             _UserManager = userManager;
+            _auditoriaService = auditoria;
         }
 
 
@@ -48,6 +51,10 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Bodeguero
 
             var proveedoresDto = await _MaterialesService.GetProveedoresAsync();
             Proveedores = proveedoresDto.ToList();
+
+            //Registra el acceso de los usuarios y lo guarda en la tabla de auditoria
+            await _auditoriaService.RegistrarAccesoAsync("Detalles Proyecto");
+
         }
 
         public async Task<IActionResult> OnPostRegistrarMaterial()

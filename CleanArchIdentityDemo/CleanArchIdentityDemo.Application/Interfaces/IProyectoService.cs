@@ -124,5 +124,8 @@ namespace CleanArchIdentityDemo.Application.Interfaces
         Task<decimal> DesviacionPorMesAsync(int idProyecto, int mesEjecucion);
 
 
+
+        //Método para obtener el porcentaje de presupuesto ejecutado para un proyecto
+        Task<decimal> CalcularPorcentajePresupuestoEjecutadoAsync(int proyectoId, decimal presupuestoProyecto);
     }
 }
