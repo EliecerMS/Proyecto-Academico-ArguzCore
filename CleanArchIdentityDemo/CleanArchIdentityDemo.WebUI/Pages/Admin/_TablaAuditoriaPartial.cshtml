@@ -1,4 +1,4 @@
-﻿@model List<CleanArchIdentityDemo.Application.DTOs.AuditoriaDto>
+﻿@model CleanArchIdentityDemo.Application.DTOs.ResultadoPaginado<CleanArchIdentityDemo.Application.DTOs.AuditoriaDto>
 
 <table class="table table-striped align-middle">
     <thead>
@@ -11,9 +11,9 @@
         </tr>
     </thead>
     <tbody>
-        @if (Model != null && Model.Any())
+        @if (Model != null && Model.Items.Any())
         {
-            foreach (var item in Model)
+            foreach (var item in Model.Items)
             {
                 var collapseId = $"collapse_{item.IdAuditoria}";
                 <tr>

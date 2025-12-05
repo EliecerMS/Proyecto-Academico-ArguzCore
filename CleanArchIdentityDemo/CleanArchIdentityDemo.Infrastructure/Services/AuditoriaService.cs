@@ -8,12 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CleanArchIdentityDemo.Infrastructure.Services
 {
@@ -111,31 +106,57 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
 
 
-        public async Task<IEnumerable<AuditoriaDto>> MostrarRegistrosAsync()
+        public async Task<ResultadoPaginado<AuditoriaDto>> MostrarRegistrosAsync(int numeroPagina = 1, int tamañoPagina = 20)
         {
+            // 1.IMPORTANTE: Contar primero ANTES de paginar
+            var totalRegistros = await _context.AuditoriaAcciones.CountAsync();
+
+            // 2. Obtener solo los registros de la página actual
             var auditorias = await _context.AuditoriaAcciones
+                .Where(a => a.Accion != "Acceso") // Placeholder para posibles filtros futuros
                 .OrderByDescending(a => a.FechaHora)
+                .Skip((numeroPagina - 1) * tamañoPagina)  // Saltar páginas anteriores
+                .Take(tamañoPagina)                       // Tomar solo los de esta página
                 .ToListAsync();
 
-            var result = new List<AuditoriaDto>();
+            // 3. Obtener IDs únicos de usuarios (solo los de esta página)
+            var usuarioIds = auditorias
+                .Where(a => !string.IsNullOrEmpty(a.UsuarioId))
+                .Select(a => a.UsuarioId)
+                .Distinct()
+                .ToList();
 
-            foreach (var a in auditorias)
+            // 4. Obtener usuarios en UNA SOLA consulta (no en loop)
+            var usuarios = await _context.Users
+                .Where(u => usuarioIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.UserName })
+                .ToListAsync();
+
+            // 5. Crear diccionario para lookup rápido
+            var usuariosDic = usuarios.ToDictionary(u => u.Id, u => u.UserName);
+
+            // 6. Mapear a DTOs
+            var result = auditorias.Select(a => new AuditoriaDto
             {
-                var user = await _userManager.FindByIdAsync(a.UsuarioId ?? "");
-                result.Add(new AuditoriaDto
-                {
-                    IdAuditoria = a.IdAuditoria,
-                    UsuarioId = a.UsuarioId,
-                    NombreUsuario = user?.UserName ?? "Sistema",
-                    Modulo = a.Modulo,
-                    Accion = a.Accion,
-                    DatoAnterior = a.DatoAnterior,
-                    DatoNuevo = a.DatoNuevo,
-                    FechaHora = a.FechaHora
-                });
-            }
+                IdAuditoria = a.IdAuditoria,
+                UsuarioId = a.UsuarioId,
+                NombreUsuario = string.IsNullOrEmpty(a.UsuarioId)
+                    ? "Sistema"
+                    : usuariosDic.GetValueOrDefault(a.UsuarioId, "Usuario desconocido"),
+                Modulo = a.Modulo,
+                Accion = a.Accion,
+                DatoAnterior = a.DatoAnterior,
+                DatoNuevo = a.DatoNuevo,
+                FechaHora = a.FechaHora
+            }).ToList();
 
-            return result;
+            // 7. Retornar resultado paginado
+            return new ResultadoPaginado<AuditoriaDto>(
+                result,
+                totalRegistros,
+                numeroPagina,
+                tamañoPagina
+            );
         }
 
         public async Task<List<AccesoModuloDto>> ObtenerAccesosPorModuloAsync(string modulo, string usuarioId)
@@ -188,8 +209,8 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
         public async Task RegistrarAccesoAsync(string modulo)
         {
-                var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                             ?? "Sistema";
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                         ?? "Sistema";
 
             var registro = new AuditoriaAccion
             {

@@ -1,14 +1,13 @@
 using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using CleanArchIdentityDemo.Infrastructure.Identity;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System.Data;
-using ClosedXML.Excel;
-using System.IO;
-using System.Reflection;
 
 namespace CleanArchIdentityDemo.WebUI.Pages.Admin
 {
@@ -35,12 +34,21 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
         public List<string> FiltroUsuarios { get; set; } = new();
         public List<string> Acciones { get; set; } = new();
         public List<string> Modulos { get; set; } = new();
+        //para paginacion
+
+        [BindProperty(SupportsGet = true)]
+        public int PaginaActual { get; set; } = 1;
+
+        [BindProperty(SupportsGet = true)]
+        public int ElementosPorPagina { get; set; } = 20;
+
+        public ResultadoPaginado<AuditoriaDto> Auditorias { get; set; }
+
         // Cargar los registros cuando se abre la página
 
         public async Task OnGetAsync()
         {
-            var auditorias = await _auditoriaService.MostrarRegistrosAsync();
-            RegistrosAuditoria = auditorias.ToList();
+            Auditorias = await _auditoriaService.MostrarRegistrosAsync(PaginaActual, ElementosPorPagina);
 
             RegistrosAccesosModulo = await _auditoriaService.ObtenerAccesosPorModuloAsync(null, null);
 
@@ -83,58 +91,48 @@ namespace CleanArchIdentityDemo.WebUI.Pages.Admin
 
         public async Task<PartialViewResult> OnGetFiltrarAsync(string usuario, string accion, string modulo, DateTime? desde, DateTime? hasta)
         {
-            var auditorias = await _auditoriaService.MostrarRegistrosAsync();
+            var resultado = await _auditoriaService.MostrarRegistrosAsync(PaginaActual = 1, ElementosPorPagina);
+
+            // Extraer la lista REAL
+            var auditorias = resultado.Items.AsQueryable();
 
             // Filtros por usuario, acción y módulo
             if (!string.IsNullOrEmpty(usuario))
                 auditorias = auditorias.Where(a => a.NombreUsuario == usuario);
-
             if (!string.IsNullOrEmpty(accion))
                 auditorias = auditorias.Where(a => a.Accion == accion);
-
             if (!string.IsNullOrEmpty(modulo))
                 auditorias = auditorias.Where(a => a.Modulo == modulo);
-
             // Filtros por fecha
             if (desde.HasValue)
                 auditorias = auditorias.Where(a => a.FechaHora >= desde.Value);
-
             if (hasta.HasValue)
                 auditorias = auditorias.Where(a => a.FechaHora <= hasta.Value);
-
             // Cargar listas para los select (evita duplicados)
             FiltroUsuarios = auditorias
                 .Where(a => !string.IsNullOrEmpty(a.NombreUsuario))
                 .Select(a => a.NombreUsuario)
                 .Distinct()
-                .OrderBy(u => u)
-                .ToList();
-
-            Acciones = auditorias
-                .Where(a => !string.IsNullOrEmpty(a.Accion))
-                .Select(a => a.Accion)
-                .Distinct()
-                .OrderBy(r => r)
-                .ToList();
-
-            Modulos = auditorias
-                .Where(a => !string.IsNullOrEmpty(a.Modulo))
-                .Select(a => a.Modulo)
-                .Distinct()
                 .OrderBy(m => m)
                 .ToList();
+
+            // Actualizar el resultado paginado con la lista filtrada
+            resultado.Items = auditorias.ToList();
 
             // Retornar la tabla parcial actualizada
             return new PartialViewResult
             {
                 ViewName = "_TablaAuditoriaPartial",
-                ViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<List<AuditoriaDto>>(ViewData, auditorias.ToList())
+                ViewData = new ViewDataDictionary<ResultadoPaginado<AuditoriaDto>>(ViewData, resultado)
             };
         }
 
         public async Task<FileResult> OnGetDescargarExcelAsync(string usuario, string accion, string modulo, DateTime? desde, DateTime? hasta)
         {
-            var auditorias = await _auditoriaService.MostrarRegistrosAsync();
+            var resultado = await _auditoriaService.MostrarRegistrosAsync(PaginaActual, ElementosPorPagina);
+
+            // Extraer la lista REAL
+            var auditorias = resultado.Items.AsQueryable();
 
             // Filtros iguales al método Filtrar
             if (!string.IsNullOrEmpty(usuario))

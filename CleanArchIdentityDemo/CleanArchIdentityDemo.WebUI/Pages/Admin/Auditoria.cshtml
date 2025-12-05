@@ -88,7 +88,7 @@
                 <label class="form-label">Usuario</label>
                 <select id="usuario" class="form-control">
                     <option value="">Todos</option>
-                    @foreach (var usuario in Model.RegistrosAuditoria
+                    @foreach (var usuario in Model.Auditorias.Items
                                         .Select(r => r.NombreUsuario)
                                         .Where(u => !string.IsNullOrEmpty(u))
                                         .Distinct())
@@ -103,7 +103,7 @@
                 <label class="form-label">Acción</label>
                 <select id="accion" class="form-control">
                     <option value="">Todos</option>
-                    @foreach (var accion in Model.RegistrosAuditoria
+                    @foreach (var accion in Model.Auditorias.Items
                                         .Select(r => r.Accion)
                                         .Where(a => !string.IsNullOrEmpty(a))
                                         .Distinct())
@@ -118,7 +118,7 @@
                 <label class="form-label">Módulo</label>
                 <select id="modulo" class="form-control">
                     <option value="">Todos</option>
-                    @foreach (var modulo in Model.RegistrosAuditoria
+                    @foreach (var modulo in Model.Auditorias.Items
                                         .Select(r => r.Modulo)
                                         .Where(m => !string.IsNullOrEmpty(m))
                                         .Distinct())
@@ -153,11 +153,58 @@
             </button>
         </div>
 
+        <!-- Selec de mostrar cantidad de registros en pagina -->
+        <!-- Selector de elementos -->
+        <form method="get" class="mb-3">
+            <select asp-for="ElementosPorPagina" class="form-select w-auto" onchange="this.form.submit()">
+                <option value="20">20 por página</option>
+                <option value="50">50 por página</option>
+                <option value="100">100 por página</option>
+            </select>
+        </form>
 
         <!-- Aca una base de la tabla que carga los resultados del filtro, diseñar como el prototipo -->
         <div id="tablaAuditoriaContainer">
-            @await Html.PartialAsync("_TablaAuditoriaPartial", Model.RegistrosAuditoria)
+            @await Html.PartialAsync("_TablaAuditoriaPartial", Model.Auditorias)
         </div>
+
+        <!-- Paginación -->
+        @if (Model.Auditorias.TotalPaginas > 1)
+        {
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item @(!Model.Auditorias.TienePaginaAnterior ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-page=""
+                           asp-route-paginaActual="@(Model.PaginaActual - 1)"
+                           asp-route-elementosPorPagina="@Model.ElementosPorPagina">
+                            Anterior
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.Auditorias.TotalPaginas; i++)
+                    {
+                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                            <a class="page-link"
+                               asp-page=""
+                               asp-route-paginaActual="@i"
+                               asp-route-elementosPorPagina="@Model.ElementosPorPagina">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    <li class="page-item @(!Model.Auditorias.TienePaginaSiguiente ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-page=""
+                           asp-route-paginaActual="@(Model.PaginaActual + 1)"
+                           asp-route-elementosPorPagina="@Model.ElementosPorPagina">
+                            Siguiente
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
 
     </div>
 

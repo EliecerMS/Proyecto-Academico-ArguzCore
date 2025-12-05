@@ -1,5 +1,4 @@
-﻿using CleanArchIdentityDemo.Application.Interfaces;
-using CleanArchIdentityDemo.Domain.Entities;
+﻿using CleanArchIdentityDemo.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -149,98 +148,106 @@ namespace CleanArchIdentityDemo.Infrastructure.Identity
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // Obtener usuario actual
-            var userId = _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            var entries = ChangeTracker.Entries()
-                .Where(e => e.State == EntityState.Added ||
-                            e.State == EntityState.Modified ||
-                            e.State == EntityState.Deleted)
-                .ToList();
+            // verificar si hay un usuario autenticado
+            var usuarioId = _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var tieneUsuarioAutenticado = !string.IsNullOrEmpty(usuarioId);
 
-            var auditorias = new List<AuditoriaAccion>();
+            // auditar solo si hay usuario autenticado
 
-            foreach (var entry in entries)
+            if (tieneUsuarioAutenticado)
             {
-                string accion = entry.State switch
+                // Detectar cambios
+                var entries = ChangeTracker.Entries()
+                    .Where(e => e.Entity is not AuditoriaAccion &&
+                                (e.State == EntityState.Added ||
+                                 e.State == EntityState.Modified ||
+                                 e.State == EntityState.Deleted))
+                    .ToList(); // fuerza evaluación antes del foreach
+
+                // Crear una lista temporal para evitar modificar la colección durante la iteración
+                var auditorias = new List<AuditoriaAccion>();
+
+                foreach (var entry in entries)
                 {
-                    EntityState.Added => "Creación",
-                    EntityState.Modified => "Modificación",
-                    EntityState.Deleted => "Eliminación",
-                    _ => "Desconocida"
-                };
-
-                string modulo = entry.Entity.GetType().Name;
-
-                string datosAnteriores = "";
-                string datosNuevos = "";
-
-                // MODIFICACIÓN
-                if (entry.State == EntityState.Modified)
-                {
-                    var cambios = new Dictionary<string, (string Antes, string Despues)>();
-
-                    foreach (var prop in entry.OriginalValues.Properties)
+                    string accion = entry.State switch
                     {
-                        var original = entry.OriginalValues[prop]?.ToString();
-                        var current = entry.CurrentValues[prop]?.ToString();
+                        EntityState.Added => "Creación",
+                        EntityState.Modified => "Modificación",
+                        EntityState.Deleted => "Eliminación",
+                        _ => "Desconocida"
+                    };
 
-                        if (original != current)
+                    string modulo = entry.Entity.GetType().Name;
+
+                    string datosAnteriores = "";
+                    string datosNuevos = "";
+
+                    if (entry.State == EntityState.Modified)
+                    {
+                        var cambios = new Dictionary<string, object>();
+
+                        foreach (var prop in entry.OriginalValues.Properties)
                         {
-                            cambios[prop.Name] = (Antes: original ?? "", Despues: current ?? "");
+                            var original = entry.OriginalValues[prop]?.ToString();
+                            var current = entry.CurrentValues[prop]?.ToString();
+
+                            if (original != current) // solo propiedades que cambiaron
+                            {
+                                cambios[prop.Name] = new
+                                {
+                                    Antes = original,
+                                    Despues = current
+                                };
+                            }
+                        }
+
+                        if (cambios.Any())
+                        {
+                            datosAnteriores = JsonSerializer.Serialize(
+                                cambios.ToDictionary(c => c.Key, c => ((dynamic)c.Value).Antes)
+                            );
+                            datosNuevos = JsonSerializer.Serialize(
+                                cambios.ToDictionary(c => c.Key, c => ((dynamic)c.Value).Despues)
+                            );
                         }
                     }
-
-                    if (cambios.Any())
+                    else if (entry.State == EntityState.Added)
                     {
-                        datosAnteriores = string.Join("\n",
-                            cambios.Select(c => $"{c.Key}: {c.Value.Antes}")
+                        var nuevos = entry.CurrentValues.Properties.ToDictionary(
+                            p => p.Name,
+                            p => entry.CurrentValues[p]?.ToString()
                         );
-
-                        datosNuevos = string.Join("\n",
-                            cambios.Select(c => $"{c.Key}: {c.Value.Despues}")
-                        );
+                        datosNuevos = JsonSerializer.Serialize(nuevos);
                     }
+                    else if (entry.State == EntityState.Deleted)
+                    {
+                        var antiguos = entry.OriginalValues.Properties.ToDictionary(
+                            p => p.Name,
+                            p => entry.OriginalValues[p]?.ToString()
+                        );
+                        datosAnteriores = JsonSerializer.Serialize(antiguos);
+                    }
+
+                    auditorias.Add(new AuditoriaAccion
+                    {
+                        UsuarioId = usuarioId ?? "Sistema",
+                        Modulo = modulo,
+                        Accion = accion,
+                        FechaHora = DateTime.Now,
+                        DatoAnterior = datosAnteriores,
+                        DatoNuevo = datosNuevos
+                    });
                 }
 
-                // CREACIÓN
-                else if (entry.State == EntityState.Added)
-                {
-                    var nuevos = entry.CurrentValues.Properties.ToDictionary(
-                        p => p.Name,
-                        p => entry.CurrentValues[p]?.ToString() ?? ""
-                    );
+                if (auditorias.Any())
+                    await AuditoriaAcciones.AddRangeAsync(auditorias, cancellationToken);
 
-                    datosNuevos = FormatearDiccionario(nuevos);
-                }
-
-                // ELIMINACIÓN
-                else if (entry.State == EntityState.Deleted)
-                {
-                    var antiguos = entry.OriginalValues.Properties.ToDictionary(
-                        p => p.Name,
-                        p => entry.OriginalValues[p]?.ToString() ?? ""
-                    );
-
-                    datosAnteriores = FormatearDiccionario(antiguos);
-                }
-
-                auditorias.Add(new AuditoriaAccion
-                {
-                    UsuarioId = userId ?? "Sistema",
-                    Modulo = modulo,
-                    Accion = accion,
-                    FechaHora = DateTime.Now,
-                    DatoAnterior = datosAnteriores,
-                    DatoNuevo = datosNuevos
-                });
             }
-
-            if (auditorias.Any())
-                await AuditoriaAcciones.AddRangeAsync(auditorias, cancellationToken);
-
+            // Se agregan todas las auditorías al final (fuera del foreach)
             return await base.SaveChangesAsync(cancellationToken);
         }
 
 
     }
+
 }
