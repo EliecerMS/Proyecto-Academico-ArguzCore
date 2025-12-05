@@ -102,3 +102,4 @@ stages:
               appName: '$(appServiceName)'
               package: '$(Pipeline.Workspace)/drop/**/*.zip'
               deploymentMethod: 'auto'
+              appSettings: '-WEBSITE_RUN_FROM_PACKAGE 0'
