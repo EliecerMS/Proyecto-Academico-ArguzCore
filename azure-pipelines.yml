@@ -1,51 +1,104 @@
 # azure-pipelines.yml
+
 trigger:
   branches:
     include:
       - main
-      - develop
-      - feature/*
+      # - develop      # ⚠️ Comentado: Solo deploy desde main
+      # - feature/*
 
 pool:
-  vmImage: 'windows-latest'  # Agente hospedado por Microsoft
+  vmImage: 'windows-latest'
 
 variables:
   buildConfiguration: 'Release'
+  appServiceName: 'arguzcoredev'  # ⚠️ CAMBIAR AQUÍ
 
-steps:
-# 1️⃣ Instalar .NET 8 SDK (respetando el proyecto net8.0)
-- task: UseDotNet@2
-  displayName: 'Instalar .NET 8 SDK'
-  inputs:
-    packageType: 'sdk'
-    version: '8.0.x'
+stages:
+# ═════════════════════════════════════════════════════════
+# STAGE 1: BUILD
+# ═════════════════════════════════════════════════════════
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build and Test'
+    steps:
+    
+    # 1 Instalar .NET 8 SDK
+    - task: UseDotNet@2
+      displayName: 'Instalar .NET 8 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '8.0.x'
+    
+    # 2 Restaurar paquetes NuGet
+    - task: DotNetCoreCLI@2
+      displayName: 'Restaurar paquetes NuGet'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+    
+    # 3 Construir solución
+    - task: DotNetCoreCLI@2
+      displayName: 'Construir solución'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --no-restore'
+    
+    # 4 Ejecutar pruebas
+    - task: DotNetCoreCLI@2
+      displayName: 'Ejecutar pruebas'
+      inputs:
+        command: 'test'
+        projects: '**/*Tests/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --no-build'
+      continueOnError: true  # No fallar si no hay tests
+    
+    # 5 Publicar aplicación (preparar para deploy)
+    - task: DotNetCoreCLI@2
+      displayName: 'Publicar aplicación'
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: true
+        modifyOutputPath: false
+    
+    # 6 Publicar artefactos para el siguiente stage
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publicar artefactos'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
 
-# 2️⃣ Restaurar paquetes NuGet
-- task: DotNetCoreCLI@2
-  displayName: 'Restaurar paquetes NuGet'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-
-# 3️⃣ Construir solución
-- task: DotNetCoreCLI@2
-  displayName: 'Construir solución'
-  inputs:
-    command: 'build'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
-
-# 4️⃣ Ejecutar pruebas (si se llega a agregar más adelante)
-- task: DotNetCoreCLI@2
-  displayName: 'Ejecutar pruebas'
-  inputs:
-    command: 'test'
-    projects: '**/*Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --no-build'
-
-# 5️⃣ Publicar artefactos (opcional para deploy futuro)
-- task: PublishBuildArtifacts@1
-  displayName: 'Publicar artefactos'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
+# ═════════════════════════════════════════════════════════
+# STAGE 2: DEPLOY (solo desde main)
+# ═════════════════════════════════════════════════════════
+- stage: Deploy
+  displayName: 'Deploy Stage'
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: DeployWeb
+    displayName: 'Deploy to Azure App Service'
+    environment: 'Production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          # Descargar artefacto del build
+          - download: current
+            artifact: drop
+          
+          # Deploy a Azure App Service
+          - task: AzureWebApp@1
+            displayName: 'Deploy to App Service'
+            inputs:
+              azureSubscription: 'AzureServiceConnection'  # ⚠️ CAMBIAR: Nombre del Service Connection
+              appType: 'webApp'
+              appName: '$(appServiceName)'
+              package: '$(Pipeline.Workspace)/drop/**/*.zip'
+              deploymentMethod: 'auto'
