@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using CleanArchIdentityDemo.Application.DTOs;
+﻿using CleanArchIdentityDemo.Application.DTOs;
 using CleanArchIdentityDemo.Application.Interfaces;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -25,10 +23,27 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
                     // Encabezado
                     page.Header()
-                        .Text("Comparativa de Proyectos")
-                        .FontSize(20)
-                        .SemiBold()
-                        .FontColor(Colors.Blue.Darken2);
+                   .Row(row =>
+                   {
+                       // 1. Columna de la Izquierda (Logo/Ícono)
+                       row.RelativeItem(1)
+                           .AlignLeft()
+                           .PaddingBottom(50)
+                           .Image("wwwroot/imgs/ArguzCore.png")
+                           .FitWidth();
+
+                       // 2. Columna Central (Título Centrado)
+                       row.RelativeItem(4)
+                           .AlignMiddle()
+                           .Text("Comparativa de proyectos")
+                           .FontSize(20)
+                           .Bold()
+                           .AlignCenter();
+
+                       // 3. Columna de la Derecha 
+                       row.RelativeItem(1);
+
+                   });
 
                     // Contenido principal
                     page.Content().Column(col =>
@@ -102,10 +117,29 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                     });
 
                     // Footer
-                    page.Footer().AlignRight().Text(txt =>
+                    page.Footer()
+                    .Row(row =>
                     {
-                        txt.Span("Generado el ").FontSize(9).FontColor(Colors.Grey.Darken1);
-                        txt.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(9).FontColor(Colors.Grey.Darken1);
+                        row.RelativeItem();
+
+                        // Columna para la paginación centrada
+                        row.RelativeItem()
+                            .AlignMiddle()
+                            .AlignCenter()
+                            .Text(text =>
+                            {
+                                text.Span("Página ").FontSize(10);
+                                text.CurrentPageNumber().FontSize(10);
+                                text.Span(" / ").FontSize(10);
+                                text.TotalPages().FontSize(10);
+                            });
+
+
+                        row.RelativeItem()
+                            .AlignMiddle()
+                            .AlignRight()
+                            .Text($"Generado: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                            .FontSize(10);
                     });
 
                 });

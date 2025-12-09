@@ -26,6 +26,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         private readonly string _sqlUser;
         private readonly string _sqlPassword;
         private readonly string _storageAccountName;
+        private readonly string _managedIdentityClientId;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuditoriaService> _logger;
 
@@ -36,39 +37,39 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             // AZURE CONFIGURATION (lee de múltiples fuentes)
 
             _subscriptionId = configuration["Azure:SubscriptionId"]              // User Secrets local
-                                                                                 //?? configuration["Azure__SubscriptionId"]                        // Azure App Service
+                ?? configuration["Azure__SubscriptionId"]                        // Azure App Service
                 ?? throw new InvalidOperationException("Azure:SubscriptionId no configurado");
 
             _resourceGroup = configuration["Azure:ResourceGroup"]
-                //?? configuration["Azure__ResourceGroup"]
+                ?? configuration["Azure__ResourceGroup"]
                 ?? throw new InvalidOperationException("Azure:ResourceGroup no configurado");
 
             _serverName = configuration["Azure:ServerName"]
-                //?? configuration["Azure__ServerName"]
+                ?? configuration["Azure__ServerName"]
                 ?? throw new InvalidOperationException("Azure:ServerName no configurado");
 
             _databaseName = configuration["Azure:DatabaseName"]
-                //?? configuration["Azure__DatabaseName"]
+                ?? configuration["Azure__DatabaseName"]
                 ?? throw new InvalidOperationException("Azure:DatabaseName no configurado");
 
             _sqlUser = configuration["Azure:SqlUser"]
-                //?? configuration["Azure__SqlUser"]
+                ?? configuration["Azure__SqlUser"]
                 ?? throw new InvalidOperationException("Azure:SqlUser no configurado");
 
             _sqlPassword = configuration["Azure:SqlPassword"]
-                //?? configuration["Azure__SqlPassword"]
+                ?? configuration["Azure__SqlPassword"]
                 ?? throw new InvalidOperationException("Azure:SqlPassword no configurado");
 
             // STORAGE CONFIGURATION
 
             _storageAccountName = configuration["AzureBackupStorage:StorageAccount"]  // User Secrets local
                 ?? configuration["Azure:BackupStorageAccount"]                        // Alternativo
-                                                                                      //?? configuration["Azure__BackupStorageAccount"]                       // Azure App Service
+                ?? configuration["Azure__BackupStorageAccount"]                       // Azure App Service
                 ?? throw new InvalidOperationException("AzureBackupStorage:StorageAccount no configurado");
 
             _containerName = configuration["AzureBackupStorage:ContainerName"]        // User Secrets local
                 ?? configuration["Azure:BackupContainerName"]                         // Alternativo
-                                                                                      //?? configuration["Azure__BackupContainerName"]                        // Azure App Service
+                ?? configuration["Azure__BackupContainerName"]                        // Azure App Service
                 ?? "backups";                                                         // Fallback
 
             // BLOB STORAGE CONNECTION STRING
@@ -77,8 +78,36 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 ?? configuration["AzureBlobStorage:ConnectionString"]                                            // Local
                 ?? throw new InvalidOperationException("AzureBlobStorage ConnectionString no configurado");
 
+            // MANAGED IDENTITY CLIENT ID
+            _managedIdentityClientId = configuration["Azure:ManagedIdentityClientId"]
+                ?? configuration["Azure__ManagedIdentityClientId"];
+
+            if (!string.IsNullOrEmpty(_managedIdentityClientId))
+            {
+                _logger.LogInformation($"Usando Managed Identity con Client ID: {_managedIdentityClientId}");
+            }
+
             _logger.LogInformation("BDRespaldoService inicializado correctamente");
         }
+
+
+        private TokenCredential GetAzureCredential()
+        {
+            if (!string.IsNullOrEmpty(_managedIdentityClientId))
+            {
+                _logger.LogInformation("Usando User-Assigned Managed Identity");
+                var options = new DefaultAzureCredentialOptions
+                {
+                    ManagedIdentityClientId = _managedIdentityClientId
+                };
+                return new DefaultAzureCredential(options);
+            }
+
+            _logger.LogWarning("Client ID no configurado, usando DefaultAzureCredential genérico");
+            return new DefaultAzureCredential();
+        }
+
+
 
         // LISTAR PUNTOS DE RESTAURACIÓN DISPONIBLES (PITR)
         public async Task<List<PuntoRestauracionDto>> ListarPuntosRestauracionAsync()
@@ -119,120 +148,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         }
 
 
-        // OBTENER FECHA DEL BACKUP MÁS ANTIGUO
 
-        public async Task<string> ObtenerFechaBackupMasAntiguoAsync()
-        {
-            try
-            {
-                var credential = new DefaultAzureCredential();
-                var armClient = new ArmClient(credential);
-
-                var subscriptionResource = armClient.GetSubscriptionResource(
-                    new ResourceIdentifier($"/subscriptions/{_subscriptionId}"));
-
-                var resourceGroupResource = await subscriptionResource
-                    .GetResourceGroups()
-                    .GetAsync(_resourceGroup);
-
-                var sqlServerResource = await resourceGroupResource.Value
-                    .GetSqlServers()
-                    .GetAsync(_serverName);
-
-                var databaseResource = await sqlServerResource.Value
-                    .GetSqlDatabases()
-                    .GetAsync(_databaseName);
-
-                // Fecha más antigua de restauración (earliest restore point)
-                var earliestRestore = databaseResource.Value.Data.EarliestRestoreOn;
-
-                if (earliestRestore.HasValue)
-                {
-                    return earliestRestore.Value.ToString("dd/MM/yyyy HH:mm");
-                }
-
-                return "No disponible";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener fecha más antigua");
-                return "Error";
-            }
-        }
-
-        // OPCIÓN 2: BACKUPS MANUALES CON BACPAC es más simple, no requiere Azure AD
-
-        //public async Task<ResultadoOperacion> CrearBackupManualBacpacAsync(string nombreBackup)
-        //{
-        //    try
-        //    {
-        //        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        //        var nombreArchivo = $"{nombreBackup}_{timestamp}.bacpac";
-
-
-        //        // Leer el nombre del contenedor de backups desde la nueva sección de configuración
-        //        var contenedorBackups = _configuration["AzureBackupStorage:ContainerName"];
-
-        //        // Asumo que esta clave "Azure:StorageAccount" existe en tus secrets o settings.
-        //        var storageAccountName = _configuration["AzureBackupStorage:StorageAccount"];
-
-
-        //        // Usar Azure CLI (debe estar instalado en el servidor)
-        //        var command = "az";
-        //        var arguments = $"sql db export " +
-        //                      $"--resource-group {_resourceGroup} " +
-        //                      $"--server {_serverName} " +
-        //                      $"--name {_databaseName} " +
-        //                      $"--admin-user {_configuration["Azure:SqlUser"]} " +
-        //                      $"--admin-password {_configuration["Azure:SqlPassword"]} " +
-        //                      $"--storage-key {_configuration["Azure:StorageKey"]} " +
-        //                      $"--storage-key-type StorageAccessKey " +
-        //                      $"--storage-uri https://{storageAccountName}.blob.core.windows.net/{contenedorBackups}/{nombreArchivo}";
-
-        //        var processInfo = new ProcessStartInfo
-        //        {
-        //            FileName = command,
-        //            Arguments = arguments,
-        //            RedirectStandardOutput = true,
-        //            RedirectStandardError = true,
-        //            UseShellExecute = false,
-        //            CreateNoWindow = true
-        //        };
-
-        //        using var process = Process.Start(processInfo);
-        //        var output = await process.StandardOutput.ReadToEndAsync();
-        //        var error = await process.StandardError.ReadToEndAsync();
-        //        await process.WaitForExitAsync();
-
-        //        if (process.ExitCode != 0)
-        //        {
-        //            _logger.LogError($"Error al crear backup: {error}");
-        //            return new ResultadoOperacion
-        //            {
-        //                Exito = false,
-        //                Mensaje = "Error al crear backup. Verifique los logs."
-        //            };
-        //        }
-
-        //        // Guardar metadata en tabla
-        //        // (implementar según necesites)
-
-        //        return new ResultadoOperacion
-        //        {
-        //            Exito = true,
-        //            Mensaje = $"Backup '{nombreArchivo}' creado exitosamente"
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error al crear backup manual");
-        //        return new ResultadoOperacion
-        //        {
-        //            Exito = false,
-        //            Mensaje = $"Error: {ex.Message}"
-        //        };
-        //    }
-        //}
 
         public async Task<ResultadoOperacion> CrearBackupManualBacpacAsync(string nombreBackup)
         {
@@ -248,7 +164,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
                 // Autenticación con Azure Resource Manager usando DefaultAzureCredential
                 // DefaultAzureCredential intentará usar la Managed Identity del App Service
-                var credential = new DefaultAzureCredential();
+                var credential = GetAzureCredential(); // obtener credenciales
                 var armClient = new ArmClient(credential);
 
                 // Identificar el recurso de la base de datos SQL
@@ -282,7 +198,7 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear backup manual con Azure SDK.");
+                _logger.LogError(ex, "Error al crear backup manual");
                 return new ResultadoOperacion
                 {
                     Exito = false,
@@ -294,9 +210,11 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         // Helper para generar una SAS Token temporal necesaria para que el servicio de Exportación de SQL acceda al Blob
         private async Task<(Uri BlobUri, string SasToken)> GetBlobSasUrlAsync(string blobName)
         {
+            var credential = GetAzureCredential(); //obtener credenciales
+
             var blobServiceClient = new BlobServiceClient(
                 new Uri($"https://{_storageAccountName}.blob.core.windows.net/"),
-                new DefaultAzureCredential());
+                credential);
 
             var containerClient = blobServiceClient.GetBlobContainerClient(_containerName);
             await containerClient.CreateIfNotExistsAsync();
@@ -344,10 +262,11 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
         {
             try
             {
-                //DefaultAzureCredential igual que en GetBlobSasUrlAsync
+                var credential = GetAzureCredential(); //obtener credenciales
+
                 var blobServiceClient = new BlobServiceClient(
                     new Uri($"https://{_storageAccountName}.blob.core.windows.net/"),
-                    new DefaultAzureCredential()
+                    credential
                 );
 
                 // obtener referencia al contenedor

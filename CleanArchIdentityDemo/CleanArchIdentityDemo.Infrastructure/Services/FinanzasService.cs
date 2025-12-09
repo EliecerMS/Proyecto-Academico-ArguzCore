@@ -66,21 +66,40 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
                         // Header
                         page.Header()
-                            .Column(column =>
-                            {
-                                column.Item().Text("Generación de comprobante")
-                                    .FontSize(20)
-                                    .Bold()
-                                    .AlignCenter();
+                         .Column(column =>
+                         {
+                             // 1. FILA SUPERIOR: Logo y Título Principal
+                             column.Item().Row(row =>
+                             {
+                                 // 1.1 Columna de la Izquierda (Logo/Ícono)
+                                 row.RelativeItem(1) // Peso 1 para el logo
+                                     .AlignLeft()
+                                     .PaddingBottom(50) // Espacio debajo del logo para separar
+                                     .Image("wwwroot/imgs/ArguzCore.png")
+                                     .FitWidth();
 
-                                column.Item().PaddingVertical(10);
+                                 // 1.2 Columna Central (Título Centrado)
+                                 row.RelativeItem(4)
+                                     .AlignMiddle()
+                                     .Text("Generación de comprobante")
+                                     .FontSize(20)
+                                     .Bold()
+                                     .AlignCenter();
 
-                                column.Item().Row(row =>
-                                {
-                                    row.RelativeItem().Text($"Recibo No: {datos.IdPago}").Bold();
-                                    row.RelativeItem().Text($"Fecha de registro de pago: {datos.FechaPago:dd/MM/yyyy}").AlignRight();
-                                });
-                            });
+                                 // 1.3 Columna de la Derecha
+                                 row.RelativeItem(1);
+                             });
+
+                             // 2. Separación vertical
+                             column.Item().PaddingVertical(10);
+
+                             // 3. FILA INFERIOR: Detalles del Recibo (Recibo No. y Fecha)
+                             column.Item().Row(row =>
+                             {
+                                 row.RelativeItem().Text($"Recibo No: {datos.IdPago}").Bold();
+                                 row.RelativeItem().Text($"Fecha de registro de pago: {datos.FechaPago:dd/MM/yyyy}").AlignRight();
+                             });
+                         });
 
                         // Content
                         page.Content()
@@ -108,12 +127,29 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
 
                         // Footer
                         page.Footer()
-                            .AlignCenter()
-                            .Text(txt =>
-                            {
-                                //txt.Line("___________________________");
-                                txt.Span("Arguz Inversiones").FontSize(10);
-                            });
+                        .Row(row =>
+                        {
+                            row.RelativeItem();
+
+                            // Columna para la paginación centrada
+                            row.RelativeItem()
+                                .AlignMiddle()
+                                .AlignCenter()
+                                .Text(text =>
+                                {
+                                    text.Span("Página ").FontSize(10);
+                                    text.CurrentPageNumber().FontSize(10);
+                                    text.Span(" / ").FontSize(10);
+                                    text.TotalPages().FontSize(10);
+                                });
+
+
+                            row.RelativeItem()
+                                .AlignMiddle()
+                                .AlignRight()
+                                .Text($"Generado: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                                .FontSize(10);
+                        });
 
                         // Métodos helper
                         void ComposeProveedor(IContainer container)
