@@ -141,7 +141,7 @@ namespace CleanArchIdentityDemo.WebUI.Areas.Identity.Pages.Account
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Intento de inicio de sesión invalido");
                     return Page();
                 }
             }

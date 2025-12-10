@@ -6,7 +6,7 @@ namespace CleanArchIdentityDemo.Application.Interfaces
     {
         //Metodos para respaldos de BD
         Task<List<PuntoRestauracionDto>> ListarPuntosRestauracionAsync();
-        Task<string> ObtenerFechaBackupMasAntiguoAsync();
+        //Task<string> ObtenerFechaBackupMasAntiguoAsync();
         Task<ResultadoOperacion> CrearBackupManualBacpacAsync(string nombreBackup);
         Task<List<BackupManualDto>> ListarBackupsManualesAsync();
     }

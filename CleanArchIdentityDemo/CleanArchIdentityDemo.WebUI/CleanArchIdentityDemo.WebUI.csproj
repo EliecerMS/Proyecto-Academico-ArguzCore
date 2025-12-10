@@ -29,4 +29,8 @@
     <ProjectReference Include="..\CleanArchIdentityDemo.Infrastructure\CleanArchIdentityDemo.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\imgs\" />
+  </ItemGroup>
+
 </Project>

@@ -42,164 +42,201 @@
     </header>
 
     <div class="container-fluid">
-        <div class="row flex-nowrap">
-            <!-- Sidebar -->
-            <aside class="col-4 sidebar border-end d-flex flex-column">
-                <nav class="sticky-top pt-5">
-                    <!--
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-                    </ul>-->
-                        @if (SignInManager.IsSignedIn(User))
+    <div class="row flex-nowrap">
+        <!-- Sidebar -->
+        <aside class="col-4 sidebar border-end d-flex flex-column">
+            <nav class="sticky-top pt-5">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    {
+                        //VALIDACIÓN: Usuario puede ser nulo
+                        var currentUser = await UserManager.GetUserAsync(User);
+                        
+                        if (currentUser != null && currentUser.Activo)
                         {
-                            var currentUser = await UserManager.GetUserAsync(User);
                             var roles = await UserManager.GetRolesAsync(currentUser);
-
+                            
+                            // Menú para Administrador
                             if (roles.Contains("Administrador"))
                             {
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-page="/SupervisorProyectos/Dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-                                </li>
-                            </ul>
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-page="/SupervisorProyectos/ListaProyectos"><i class="fa-solid fa-diagram-project"></i> Proyectos</a>
-                                </li>
-                            </ul>
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-page="/Admin/Admin"><i class="fa-solid fa-shield-halved"></i> Seguridad</a>
-                                </li>
-                            </ul>
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-page="/Documentos/Documentos"><i class="fa-solid fa-file"></i> Documentos</a>
-                                </li>
-                            </ul>
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-page="/Bodeguero/Materiales"><i class="fa-solid fa-cubes"></i> Materiales</a>
-                                </li>
-                            </ul>
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-page="/Contador/Finanzas"><i class="fa-solid fa-dollar-sign"></i> Finanzas</a>
-                                </li>
-                            </ul>
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-page="/JefeMaquinaria/ListaMaquinaria"><i class="fa-solid fa-screwdriver-wrench"></i> Equipos</a>
-                                </li>
-                            </ul>
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-page="/Admin/Auditoria"><i class="fa-solid fa-user-secret"></i> Auditoria</a>
-                                </li>
-                            </ul>
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-page="/Admin/Analitica"><i class="fa-solid fa-chart-line"></i> Analítica</a>
-                                </li>
-                            </ul>
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/SupervisorProyectos/Dashboard">
+                                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/SupervisorProyectos/ListaProyectos">
+                                            <i class="fa-solid fa-diagram-project"></i> Proyectos
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/Admin/Admin">
+                                            <i class="fa-solid fa-shield-halved"></i> Seguridad
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/Documentos/Documentos">
+                                            <i class="fa-solid fa-file"></i> Documentos
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/Bodeguero/Materiales">
+                                            <i class="fa-solid fa-cubes"></i> Materiales
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/Contador/Finanzas">
+                                            <i class="fa-solid fa-dollar-sign"></i> Finanzas
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/JefeMaquinaria/ListaMaquinaria">
+                                            <i class="fa-solid fa-screwdriver-wrench"></i> Equipos
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/Admin/Auditoria">
+                                            <i class="fa-solid fa-user-secret"></i> Auditoria
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/Admin/Analitica">
+                                            <i class="fa-solid fa-chart-line"></i> Analítica
+                                        </a>
+                                    </li>
+                                </ul>
                             }
-                            if (roles.Contains("SupervisorProyectos"))
-                             {
-                                <ul class="nav flex-column">
-                                    <li class="nav-item">
-                                    <a class="nav-link" asp-page="/SupervisorProyectos/Dashboard"><i class="fa-solid fas fa-tachometer-alt"></i> Dashboard</a>
-                                    </li>
-                                </ul>
-                                <ul class="nav flex-column">
-                                    <li class="nav-item">
-                                    <a class="nav-link" asp-page="/SupervisorProyectos/ListaProyectos"><i class="fa-solid fa-diagram-project"></i> Proyectos</a>
-                                    </li>
-                                </ul>
-                                <ul class="nav flex-column">
-                                    <li class="nav-item">
-                                    <a class="nav-link" asp-page="/Documentos/Documentos"><i class="fa-solid fa-file"></i> Documentos</a>
-                                    </li>
-                                </ul>
                             
-                             }
+                            // Menú para SupervisorProyectos
+                            if (roles.Contains("SupervisorProyectos"))
+                            {
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/SupervisorProyectos/Dashboard">
+                                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/SupervisorProyectos/ListaProyectos">
+                                            <i class="fa-solid fa-diagram-project"></i> Proyectos
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-page="/Documentos/Documentos">
+                                            <i class="fa-solid fa-file"></i> Documentos
+                                        </a>
+                                    </li>
+                                </ul>
+                            }
+                            
+                            // Menú para Bodeguero
                             if (roles.Contains("Bodeguero"))
                             {
                                 <ul class="nav flex-column">
                                     <li class="nav-item">
-                                    <a class="nav-link" asp-page="/Bodeguero/Materiales"><i class="fa-solid fa-cubes"></i> Materiales</a>
+                                        <a class="nav-link" asp-page="/Bodeguero/Materiales">
+                                            <i class="fa-solid fa-cubes"></i> Materiales
+                                        </a>
                                     </li>
                                 </ul>
                             }
+                            
+                            // Menú para Contador
                             if (roles.Contains("Contador"))
                             {
-                                
                                 <ul class="nav flex-column">
                                     <li class="nav-item">
-                                    <a class="nav-link" asp-page="/Contador/Finanzas"><i class="fa-solid fa-dollar-sign"></i> Finanzas</a>
+                                        <a class="nav-link" asp-page="/Contador/Finanzas">
+                                            <i class="fa-solid fa-dollar-sign"></i> Finanzas
+                                        </a>
                                     </li>
-                                </ul>
-                                <ul class="nav flex-column">
                                     <li class="nav-item">
-                                        <a class="nav-link" asp-page="/Documentos/Documentos"><i class="fa-solid fa-file"></i> Documentos</a>
+                                        <a class="nav-link" asp-page="/Documentos/Documentos">
+                                            <i class="fa-solid fa-file"></i> Documentos
+                                        </a>
                                     </li>
                                 </ul>
                             }
-                        if (roles.Contains("JefeMaquinaria"))
+                            
+                            // Menú para JefeMaquinaria
+                            if (roles.Contains("JefeMaquinaria"))
                             {
                                 <ul class="nav flex-column">
                                     <li class="nav-item">
-                                    <a class="nav-link" asp-page="/JefeMaquinaria/ListaMaquinaria"><i class="fa-solid fa-screwdriver-wrench"></i> Equipos</a>
+                                        <a class="nav-link" asp-page="/JefeMaquinaria/ListaMaquinaria">
+                                            <i class="fa-solid fa-screwdriver-wrench"></i> Equipos
+                                        </a>
                                     </li>
                                 </ul>
                             }
-                             <ul class="nav flex-column">
+                            
+                            // Saludo al usuario
+                            <ul class="nav flex-column mt-3">
                                 <li class="nav-item">
-                                    <a class="nav-link">
-                                        Hola @currentUser.NombreCompleto!
-                                    </a>
+                                    <span class="nav-link">
+                                        <i class="fas fa-user"></i> Hola @currentUser.NombreCompleto!
+                                    </span>
                                 </li>
                             </ul>
                         }
                         else
                         {
-                            <ul class="nav flex-column">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
-                                </li>
-                            </ul>
+                            //Usuario nulo o inactivo - Sign out automático
+                            await SignInManager.SignOutAsync();
+                            
+                            <div class="alert alert-warning mx-3 mt-3">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Sesión inválida</strong>
+                                <p class="mb-0">Tu usuario ha sido desactivado o no existe.</p>
+                                <p class="mb-0"><small>Redirigiendo al login...</small></p>
+                            </div>
+                            
+                            <script>
+                                setTimeout(function() {
+                                    window.location.href = '/Identity/Account/Login?invalidSession=true';
+                                }, 2000);
+                            </script>
                         }
-                    
-                </nav>
-
-                <!-- Logout (sticky abajo) -->
-                @if (SignInManager.IsSignedIn(User))
-                {
-                    <div class="mt-auto p-3">
-                        <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" method="post">
-                            <button type="submit" class="nav-link btn btn-link">Cerrar Sesión</button>
-                        </form>
-                    </div>
+                    }
                 }
+                else
+                {
+                    // Usuario no autenticado
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+                                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                }
+            </nav>
 
-            </aside>
+            <!-- Logout (sticky abajo) -->
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div class="mt-auto p-3">
+                    <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" method="post">
+                        <button type="submit" class="nav-link">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </button>
+                    </form>
+                </div>
+            }
+        </aside>
 
-            <!-- Main content -->
-            <main role="main" class="col" style="margin-top:25px;">
-                @RenderBody()
-            </main>
-        </div>
+        <!-- Main content -->
+        <main role="main" class="col" style="margin-top:25px;">
+            @RenderBody()
+        </main>
     </div>
+</div>
 
     <!-- Footer -->
     <footer class="border-top footer text-muted mt-3">
         <div class="container">
-            &copy; 2025 - ArguzCore -
-            <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2025 - ArguzCore
         </div>
     </footer>
 

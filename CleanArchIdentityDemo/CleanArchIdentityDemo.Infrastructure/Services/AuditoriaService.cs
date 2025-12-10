@@ -38,10 +38,28 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                 {
                     page.Margin(40);
 
-                    page.Header().Text(titulo)
-                        .FontSize(20)
-                        .SemiBold()
-                        .AlignCenter();
+                    page.Header()
+                    .Row(row =>
+                    {
+                        // 1. Columna de la Izquierda (Logo/Ícono)
+                        row.RelativeItem(1)
+                            .AlignLeft()
+                            .PaddingBottom(50)
+                            .Image("wwwroot/imgs/ArguzCore.png")
+                            .FitWidth();
+
+                        // 2. Columna Central (Título Centrado)
+                        row.RelativeItem(4)
+                            .AlignMiddle()
+                            .Text(titulo)
+                            .FontSize(20)
+                            .Bold()
+                            .AlignCenter();
+
+                        // 3. Columna de la Derecha 
+                        row.RelativeItem(1);
+
+                    });
 
                     page.Content().Column(col =>
                     {
@@ -83,20 +101,32 @@ namespace CleanArchIdentityDemo.Infrastructure.Services
                             }
                         });
 
-                        col.Item().Text($"Generado: {DateTime.Now:yyyy-MM-dd HH:mm}")
-                            .FontSize(10)
-                            .AlignRight();
                     });
 
                     page.Footer()
-                        .AlignCenter()
-                        .Text(text =>
-                        {
-                            text.Span("Página ");
-                            text.CurrentPageNumber();
-                            text.Span(" / ");
-                            text.TotalPages();
-                        });
+                    .Row(row =>
+                    {
+                        row.RelativeItem();
+
+                        // Columna para la paginación centrada
+                        row.RelativeItem()
+                            .AlignMiddle()
+                            .AlignCenter()
+                            .Text(text =>
+                            {
+                                text.Span("Página ").FontSize(10);
+                                text.CurrentPageNumber().FontSize(10);
+                                text.Span(" / ").FontSize(10);
+                                text.TotalPages().FontSize(10);
+                            });
+
+
+                        row.RelativeItem()
+                            .AlignMiddle()
+                            .AlignRight()
+                            .Text($"Generado: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                            .FontSize(10);
+                    });
                 });
             });
 
