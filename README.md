@@ -1,4 +1,4 @@
-# Proyecto académico con enfasis en desarollo bajo un problema real de una empresa
+# Proyecto académico con enfasis en desarrollo para solución a un problema real de una empresa
 
 Proyecto hecho en C# ASP.NET Core, usando razor pages e implementado Identity
 
