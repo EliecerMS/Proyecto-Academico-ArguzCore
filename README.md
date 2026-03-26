@@ -1,4 +1,5 @@
-# Demo de Clean Architecture
+# Proyecto académico con enfasis en desarollo bajo un problema real de una empresa
+
 Proyecto hecho en C# ASP.NET Core, usando razor pages e implementado Identity
 
 Se implementa un sistema web diseñado para centralizar y automatizar los procesos de una empresa contratista, incluyendo la gestión de proyectos, materiales, personal, maquinaria, finanzas, documentos y seguridad.
@@ -27,4 +28,4 @@ ArguzCore.sln
 └── ArguzCore.Domain        # Entidades y modelos del dominio
 
 #Enfoque futuro,
-- **Implementar mejores practicas de código y testing
+- Implementar mejores practicas de código e implementar testing en el pipeline
