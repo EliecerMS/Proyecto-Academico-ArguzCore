@@ -39,5 +39,5 @@ https://drive.google.com/file/d/1Hb3IzeHhhsUHT3QLWT1YGeegkLF2dmbj/view?usp=drive
 - **Cuatrimestre 3 - Experiencia en adopción y aceptación del sistema: Capacitación al cliente, planes de capacitación, instalación, desarrollo de materiales para capacitación**
 
 ## Enfoque personal futuro:
-- ** Ya que el sistema desarrollado llegaba a una implementación hasta un ambiente lo más completo de prueba se busca implementar mejores practicas de código, eficiencia, implementar testing del sistema y en el pipeline, para posible entrega en ambiente de producción**
+- **El sistema desarrollado llegaba a una implementación lo más completa posible hasta un ambiente de prueba, se busca implementar mejores practicas de código, eficiencia, implementar testing del sistema y en el pipeline, para posible entrega en ambiente de producción**
 
