@@ -27,5 +27,11 @@ ArguzCore.sln
 ├── ArguzCore.Infrastructure # Acceso a datos (EF Core, repositorios)
 └── ArguzCore.Domain        # Entidades y modelos del dominio
 
-#Enfoque futuro,
-- Implementar mejores practicas de código e implementar testing en el pipeline
+## Retrospectiva del proceso de desarrollo (Documento de resumen de experiencia de inicio a fin)
+- **Cuatrimestre 1- Experiencia en temas de documentación: Requerimientos, levantamiento de HUs, viabilidad, Arquitectura.**
+- **Cuatrimestre 2 - Experiencia en desarrollo del sistema: Desarrollo bajo clean architecture, retos, configuraciones, buenas practicas de implementacion de recursos en Azure, y CD/CI.**
+- **Cuatrimestre 3 - Experiencia en adopción y aceptación del sistema: Capacitación al cliente, planes de capacitación, instalación, desarrollo de materiales para capacitación**
+
+##Enfoque personal futuro:
+- ** Implementar mejores practicas de código, eficiencia, implementar testing del sistema y en el pipeline, para posible entrega en ambiente de producción**
+
