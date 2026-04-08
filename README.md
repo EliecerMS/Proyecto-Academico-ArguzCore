@@ -6,7 +6,7 @@ Se implementa un sistema web diseñado para centralizar y automatizar los proces
 
 ---
 
-## 🚀 Tecnologías utilizadas
+## Tecnologías utilizadas
 
 - **ASP.NET Core 8.0** (Razor Pages)
 - **Entity Framework Core**
@@ -18,7 +18,7 @@ Se implementa un sistema web diseñado para centralizar y automatizar los proces
 
 ---
 
-## 📂 Estructura del proyecto
+## Estructura del proyecto
 
 ```bash
 ArguzCore.sln
