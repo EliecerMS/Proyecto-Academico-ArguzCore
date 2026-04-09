@@ -14,6 +14,7 @@ Se implementa un sistema web diseñado para centralizar y automatizar los proces
 - **Entity Framework Core**
 - **ASP.NET Identity**
 - **SQL Server / Azure SQL Database (ORM)**
+- **Azure container para documentos y archivos (blob storage)**
 - **Azure App Service** (para despliegue)
 - **Enfoque de Arquitectura por capas (Clean Architecture como base)**
 - **Azure pipelines para CD/CI**
